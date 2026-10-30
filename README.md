@@ -4,7 +4,7 @@ Platforma operacyjna rekrutacji dla wielu firm i wszystkich branż w Polsce/UE. 
 
 **Stan: działający prototyp, plan produkcyjny i backlog. Nie jest to autonomiczna agencja produkcyjna.** Operacje HR docelowo automatyzuje trwały workflow; decyzje o odrzuceniu i zatrudnieniu wymagają znaczącego nadzoru człowieka.
 
-[Otwórz publiczny demonstrator HTTPS](https://nezla.bieda.it/)
+[Otwórz publiczny demonstrator HTTPS](https://niezla.bieda.it/)
 
 Publiczny adres jest statycznym demonstratorem `hireos/dist` i zapisuje dane w `localStorage` przeglądarki. Prywatny Node/SQLite pozostaje dostępny przez tunnel `127.0.0.1:4317`. Endpoint health sygnalizuje brak implementacji worker API (`workerApi: "not-implemented"`, `outreachEnabled: false`); nie ma działającego API worker, klucza ani rutyny outreachu. Auth API jest pracą przyszłą, a publiczny routing demo nie dowodzi ukończenia integracji.
 

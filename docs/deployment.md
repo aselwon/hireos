@@ -2,7 +2,7 @@
 
 ## Aktualny publiczny demonstrator
 
-Adres HTTPS: <https://nezla.bieda.it/>
+Adres HTTPS: <https://niezla.bieda.it/>
 
 To statyczny demonstrator `hireos/dist` z danymi przechowywanymi wyłącznie w `localStorage` przeglądarki. Prywatny Node/SQLite pozostaje dostępny przez tunnel `127.0.0.1:4317`; nie jest częścią publicznego wdrożenia. Publiczny endpoint health opisuje `workerApi: "not-implemented"` i `outreachEnabled: false`. Nie ma działającego API worker, klucza ani rutyny outreachu; auth API pozostaje pracą przyszłą. Publiczny routing demo nie dowodzi ukończenia integracji.
 
@@ -10,7 +10,7 @@ Kontener VPS: `hireos-public`, `nginx:1.28-alpine`, digest `sha256:a8b39bd9cf0f8
 
 N8n jest zatrzymany, nie usunięty. Rollback: `docker stop hireos-public`, `docker start n8n`; nie usuwać danych. Backup znajduje się root-only w `/root/hireos-backup-before-public/` i nie należy czytać jego zawartości.
 
-Test edge z 2026-10-30 potwierdził rozbieżność: publiczne `/` zwróciło 200, ale tytuł `CYTR.US`, zasoby oraz endpointy oczekiwane dla HireOS zwróciły 404. `python urllib` dostał `HTTP 403 Forbidden` na edge; bezpośredni root i pliki w kontenerze były poprawne. `curl` bez `-k` zestawił TLS, natomiast `--cert-status` zakończył się brakiem OCSP (`curl: (91) No OCSP response received`).
+Weryfikacja 2026-10-30 dla https://niezla.bieda.it: root 200 z tytułem HireOS, app.js/seed.js/styles.css 200, health 200, prywatne /api/state 403, niegotowe /hireos-api/v1/tasks 503, /.env i /lib/store.mjs 404. TLS sprawdzono przez curl bez -k; health potwierdzono również z VPS po IPv4 i IPv6. Wcześniejszy raport CYTR.US dotyczył literówki w nazwie domeny i nie opisywał tej instalacji.
 
 URL: https://hireos-hr-control-20261030.adamselwon1993.chatgpt.site
 
