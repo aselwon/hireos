@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-08",
+  "synthetic": true,
+  "language": "en",
+  "area": "backend",
+  "layout": "table",
+  "facts": [
+    {
+      "field": "role",
+      "value": "Backend Developer",
+      "evidence": "Position: Backend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "mid",
+      "evidence": "Level: mid",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Java",
+      "evidence": "Technology: Java",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Spring",
+      "evidence": "Technology: Spring",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "PostgreSQL",
+      "evidence": "Technology: PostgreSQL",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Kotlin",
+      "evidence": "Only starting to learn: Kotlin",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo BACKEND Lab 8-1",
+      "evidence": "Company: Demo BACKEND Lab 8-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "Backend Developer",
+      "evidence": "Role: Backend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2017-03",
+      "evidence": "From: 2017-03",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2019-08",
+      "evidence": "To: 2019-08",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "Java",
+      "evidence": "Project: Java",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo BACKEND Lab 8-2",
+      "evidence": "Company: Demo BACKEND Lab 8-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "Backend Developer",
+      "evidence": "Role: Backend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2019-09",
+      "evidence": "From: 2019-09",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "To: present",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "Spring",
+      "evidence": "Project: Spring",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "BSc Computer Science",
+      "evidence": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Institution: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Language: English",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "B2",
+      "evidence": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}

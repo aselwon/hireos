@@ -10,7 +10,8 @@
     "quality:prepare": "qoq --warmup",
     "quality:check": "qoq --check --json",
     "quality:fix": "qoq --fix",
-    "ci": "npm run quality:check && npm run check && npm test"
+    "ci": "npm run quality:check && npm run check && npm test",
+    "eval:generate": "node scripts/generate-cv-eval.mjs"
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0",

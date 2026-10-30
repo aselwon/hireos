@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-04",
+  "synthetic": true,
+  "language": "en",
+  "area": "devops",
+  "layout": "table",
+  "facts": [
+    {
+      "field": "role",
+      "value": "DevOps Engineer",
+      "evidence": "Position: DevOps Engineer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "junior",
+      "evidence": "Level: junior",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Linux",
+      "evidence": "Technology: Linux",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Docker",
+      "evidence": "Technology: Docker",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Terraform",
+      "evidence": "Technology: Terraform",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Kubernetes",
+      "evidence": "Only starting to learn: Kubernetes",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo DEVOPS Lab 4-1",
+      "evidence": "Company: Demo DEVOPS Lab 4-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "DevOps Engineer",
+      "evidence": "Role: DevOps Engineer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2024-01",
+      "evidence": "From: 2024-01",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2024-06",
+      "evidence": "To: 2024-06",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "Linux",
+      "evidence": "Project: Linux",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo DEVOPS Lab 4-2",
+      "evidence": "Company: Demo DEVOPS Lab 4-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "DevOps Engineer",
+      "evidence": "Role: DevOps Engineer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2025-09",
+      "evidence": "From: 2025-09",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "To: present",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "Docker",
+      "evidence": "Project: Docker",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "BSc Computer Science",
+      "evidence": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Institution: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Language: English",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "B1",
+      "evidence": "CEFR: B1",
+      "uncertain": false
+    }
+  ]
+}

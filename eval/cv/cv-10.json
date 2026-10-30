@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-10",
+  "synthetic": true,
+  "language": "en",
+  "area": "mobile",
+  "layout": "two_columns",
+  "facts": [
+    {
+      "field": "role",
+      "value": "Mobile Developer",
+      "evidence": "Position: Mobile Developer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "mid",
+      "evidence": "Level: mid",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Kotlin",
+      "evidence": "Technology: Kotlin",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Android",
+      "evidence": "Technology: Android",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "SQLite",
+      "evidence": "Technology: SQLite",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Swift",
+      "evidence": "Only starting to learn: Swift",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo MOBILE Lab 10-1",
+      "evidence": "Company: Demo MOBILE Lab 10-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "Mobile Developer",
+      "evidence": "Role: Mobile Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2017-03",
+      "evidence": "From: 2017-03",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2019-08",
+      "evidence": "To: 2019-08",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "Kotlin",
+      "evidence": "Project: Kotlin",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo MOBILE Lab 10-2",
+      "evidence": "Company: Demo MOBILE Lab 10-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "Mobile Developer",
+      "evidence": "Role: Mobile Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2019-09",
+      "evidence": "From: 2019-09",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "To: present",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "Android",
+      "evidence": "Project: Android",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "BSc Computer Science",
+      "evidence": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Institution: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Language: English",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "B2",
+      "evidence": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}

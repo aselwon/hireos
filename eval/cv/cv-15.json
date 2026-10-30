@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-15",
+  "synthetic": true,
+  "language": "pl",
+  "area": "backend",
+  "layout": "date_gaps",
+  "facts": [
+    {
+      "field": "role",
+      "value": "Backend Developer",
+      "evidence": "Stanowisko: Backend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "senior",
+      "evidence": "Poziom: senior",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Java",
+      "evidence": "Technologia: Java",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Spring",
+      "evidence": "Technologia: Spring",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "PostgreSQL",
+      "evidence": "Technologia: PostgreSQL",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Kotlin",
+      "evidence": "Dopiero uczę się: Kotlin",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo BACKEND Lab 15-1",
+      "evidence": "Firma: Demo BACKEND Lab 15-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "Backend Developer",
+      "evidence": "Rola: Backend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2017-03",
+      "evidence": "Od: 2017-03",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2019-08",
+      "evidence": "Do: 2019-08",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "Java",
+      "evidence": "Projekt: Java",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo BACKEND Lab 15-2",
+      "evidence": "Firma: Demo BACKEND Lab 15-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "Backend Developer",
+      "evidence": "Rola: Backend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2022-11",
+      "evidence": "Od: 2022-11",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "Do: obecnie",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "Spring",
+      "evidence": "Projekt: Spring",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "Inżynier informatyki",
+      "evidence": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "C1",
+      "evidence": "CEFR: C1",
+      "uncertain": false
+    }
+  ]
+}
