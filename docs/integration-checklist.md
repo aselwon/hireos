@@ -12,10 +12,15 @@ Szkic Antigravity, po przeglądzie Astry 6. Żadne połączenie produkcyjne nie 
 - [ ] Trwale zapisać inbox przed odpowiedzią 2xx. Unikalny identyfikator zdarzenia w Postgres; cache nie jest źródłem prawdy.
 - [ ] Replay, out-of-order events, wygasłe subskrypcje, paginacja, reconciliation, retry z jitter i Retry-After, dead-letter queue.
 - [ ] Nie ponawiać ślepo wysyłki po timeout, gdy jej rezultat jest nieznany. Przetestować deduplikację i ustalenie stanu u dostawcy.
+- [ ] Dla Grok Bota: traktować deklarację serwera i zdalnej przeglądarki jako deklarację dostawcy przekazaną przez użytkownika do czasu kontrolowanego E2E; lokalny worker Mac nie jest architekturą docelową.
+- [ ] Dla kolejki outreachu: wymagać HTTPS, API z ograniczonym/rotowalnym kluczem, leasingu i id zadania, audytu oraz wyniku `verified_sent`, `verified_not_sent_retryable` albo `unresolved`.
+- [ ] Przed każdą wysyłką sprawdzić pauzę, opt-out i potwierdzenie API. Po `unresolved` nie wykonywać automatycznego retry; brak widocznej wiadomości nie jest sam w sobie dowodem niewysłania.
 - [ ] Mapa pól, pochodzenie danych, retencja, usuwanie, region i podwykonawcy; test wycieku między tenantami.
 - [ ] Testy na danych syntetycznych, kill switch per tenant i connector, metryki błędów/latencji bez PII.
 
 ## Kanały pozyskiwania
+
+Szczegółowe wymaganie dla rozmów rekrutacyjnych z konta LinkedIn opisano w [LinkedIn Outreach z Grokbotem](linkedin-outreach.md). Jest to zakres do walidacji, a nie potwierdzenie działającego konektora.
 
 | Dostawca         | Oczekiwany zakres                       | Co potwierdzić przed kodowaniem                                                      |
 | ---------------- | --------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -28,6 +33,14 @@ Szkic Antigravity, po przeglądzie Astry 6. Żadne połączenie produkcyjne nie 
 | No Fluff Jobs    | Ogłoszenia                              | Dostępny kanał ATS/feed, wymagane pola, umowa i raporty                              |
 
 Brak dostępu oznacza zablokowany adapter lub uzgodniony import, nigdy obchodzenie ograniczeń. Dostępność konkretnego API nie została w tym projekcie zweryfikowana.
+
+### LinkedIn Outreach z Grok Botem
+
+- [ ] Przed aktywacją uzgodnić niskie, konfigurowalne limity osobno dla zaproszeń, wiadomości i follow-upów. Nie deklarować bezpiecznej uniwersalnej liczby i nie obchodzić limitów ani CAPTCHA.
+- [ ] Rutyna zawiera zatwierdzoną instrukcję automatycznego pierwszego kontaktu i dalszych odpowiedzi, z konkretnym zakresem rekrutacji, ofert i odbiorców.
+- [ ] Wykonać test pełnego przepływu z Maciem wyłączonym, obejmujący awarie, timeouty, pauzę oraz jawnie opisane/testowane okno wyścigu pauza–wysyłka; nie obiecywać atomowości API i LinkedIn.
+- [ ] Właściciel wykonuje logowanie do zdalnej przeglądarki Grok Bota. Hasła i cookies nie trafiają do HireOS ani logów.
+- [ ] Częstotliwość około 5 minut traktować jako deklarację domyślną, bez real-time SLA.
 
 ## Poczta i kalendarz
 

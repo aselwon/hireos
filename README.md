@@ -4,7 +4,9 @@ Platforma operacyjna rekrutacji dla wielu firm i wszystkich branż w Polsce/UE. 
 
 **Stan: działający prototyp, plan produkcyjny i backlog. Nie jest to autonomiczna agencja produkcyjna.** Operacje HR docelowo automatyzuje trwały workflow; decyzje o odrzuceniu i zatrudnieniu wymagają znaczącego nadzoru człowieka.
 
-[Otwórz prywatne demo](https://hireos-hr-control-20261030.adamselwon1993.chatgpt.site)
+[Otwórz publiczny demonstrator HTTPS](https://nezla.bieda.it/)
+
+Publiczny adres jest statycznym demonstratorem `hireos/dist` i zapisuje dane w `localStorage` przeglądarki. Prywatny Node/SQLite pozostaje dostępny przez tunnel `127.0.0.1:4317`. Endpoint health sygnalizuje brak implementacji worker API (`workerApi: "not-implemented"`, `outreachEnabled: false`); nie ma działającego API worker, klucza ani rutyny outreachu. Auth API jest pracą przyszłą, a publiczny routing demo nie dowodzi ukończenia integracji.
 
 ## Uruchomienie lokalne
 
@@ -58,6 +60,7 @@ Linear: [status synchronizacji](planning/linear-sync-status.json). Lokalne klucz
 
 - [Propozycja Definition of Done](docs/definition-of-done.md)
 - [Prywatny podgląd na VPS, logi i operacje](docs/vps-preview.md)
+- [Publikacja demonstracyjna i ograniczenia](docs/deployment.md)
 
 - [Plan produktu, etapy, mierniki i hipoteza skali](docs/product-plan.md)
 - [System design i model domenowy](docs/system-design.md)

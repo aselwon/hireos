@@ -38,6 +38,8 @@ To kończy etap infrastruktury demonstratora, nie realizację HireOS.
 - Wyniki AI oparte na materiałach i wymaganiach stanowiska, ze źródłami i oznaczeniem niepewności; brak domyślnych ocen osobowości i emocji. Testy jakości na reprezentatywnych, legalnie pozyskanych lub syntetycznych przykładach oraz próby prompt injection.
 - Minimum trzy różne branże w pilotażu, w tym jedna z uprawnieniami zawodowymi. Każdy playbook zatwierdzony przez specjalistę dziedzinowego, dostępne usprawnienia dla kandydatów.
 - Co najmniej jeden udokumentowany pełny scenariusz w każdej pilotowanej branży, obejmujący także awarię dostawcy i odwołanie spotkania. Bez otwartych krytycznych problemów bezpieczeństwa lub utraty danych.
+- Dla automatycznego outreachu LinkedIn spełniono osobne kryteria [deklaracji Grok Bota i E2E](linkedin-outreach.md): docelowy VPS działa przez HTTPS, API ma ograniczony/rotowalny klucz, kolejka ma leasing i id zadania, a Mac jest wyłączony w teście niezależności.
+- Przed każdą wysyłką sprawdzane są pauza i opt-out; timeout daje wynik `unresolved` bez automatycznego retry, a okno wyścigu pauza–wysyłka jest jawnie opisane i przetestowane bez obietnicy atomowości API i LinkedIn.
 
 ## Poziom 4 — gotowość produkcyjna i skala agencji
 
@@ -58,5 +60,8 @@ Proponowane progi do zatwierdzenia, nie osiągnięte wyniki:
 2. Jakie wolumeny i koszty konkretnej agencji stanowią punkt odniesienia dla „100 osób”?
 3. Kto po stronie klienta odpowiada za znaczący nadzór, odwołania i decyzje dotyczące zatrudnienia?
 4. Które portale i konta integracyjne są już dostępne oraz jaki jest miesięczny budżet infrastruktury i modeli?
+5. Dla outreachu LinkedIn: jaki jest konkretny zakres rekrutacji i odbiorców, jakie niskie limity osobno dla zaproszeń, wiadomości i follow-upów oraz kto zatwierdza wynik `unresolved`?
 
 Dopiero po ustaleniu tych punktów aktualizujemy podział na etapy i backlog. Nie tworzymy kolejnych tasków na podstawie niezatwierdzonych założeń.
+
+Powiązane wymaganie: [LinkedIn Outreach z Grokbotem](linkedin-outreach.md) — zakres, pytania otwarte i warunki gotowości kanału wiadomości.
