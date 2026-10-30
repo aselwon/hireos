@@ -1,0 +1,11 @@
+node_modules/
+.agents/
+.agent/
+.codex/
+.git/
+.impeccable/
+artifacts/
+data/
+bin/
+docs/vendor/
+package-lock.json

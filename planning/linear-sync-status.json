@@ -1,0 +1,563 @@
+{
+  "status": "complete",
+  "checkedAt": "2026-10-30",
+  "projectCreated": true,
+  "teamCreated": false,
+  "issuesCreated": 36,
+  "reason": "Brak narzędzia create_team w sesji; projekt utworzony w istniejącym zespole Algov (ALG).",
+  "source": "planning/backlog.json",
+  "workspace": {
+    "id": "6a2ee8dc-e575-4cf7-8f77-53a44b04745b",
+    "name": "Algov",
+    "url": "https://linear.app/algovpl"
+  },
+  "team": {
+    "id": "d80711f6-075d-4acc-98fa-b7cec5279886",
+    "name": "Algov",
+    "key": "ALG"
+  },
+  "project": {
+    "id": "P-ALG-1",
+    "uuid": "a14f745a-7e99-4f00-b262-a0a0789effe0",
+    "url": "https://linear.app/algovpl/project/hireos-platforma-rekrutacyjna-pleu-8ff4bcc945f0",
+    "name": "HireOS — platforma rekrutacyjna PL/EU"
+  },
+  "epics": {
+    "E01": {
+      "id": "ALG-5",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-5/e01-discovery-procesy-i-zakres-autonomii",
+      "title": "[E01] Discovery, procesy i zakres autonomii",
+      "milestone": "M0 Discovery"
+    },
+    "E02": {
+      "id": "ALG-6",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-6/e02-platforma-tozsamosc-i-bezpieczenstwo",
+      "title": "[E02] Platforma, tożsamość i bezpieczeństwo",
+      "milestone": "M1 Fundament"
+    },
+    "E03": {
+      "id": "ALG-7",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-7/e03-design-system-i-doswiadczenie-uzytkownika",
+      "title": "[E03] Design system i doświadczenie użytkownika",
+      "milestone": "M1 Fundament"
+    },
+    "E04": {
+      "id": "ALG-8",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-8/e04-pozyskiwanie-i-obsluga-aplikacji",
+      "title": "[E04] Pozyskiwanie i obsługa aplikacji",
+      "milestone": "M2 MVP operacyjne"
+    },
+    "E05": {
+      "id": "ALG-9",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-9/e05-workflow-i-asystenci-ai",
+      "title": "[E05] Workflow i asystenci AI",
+      "milestone": "M2 MVP operacyjne"
+    },
+    "E06": {
+      "id": "ALG-10",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-10/e06-rozmowy-i-zadania-branzowe",
+      "title": "[E06] Rozmowy i zadania branżowe",
+      "milestone": "M3 Ocena i kanały"
+    },
+    "E07": {
+      "id": "ALG-11",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-11/e07-integracje-i-komunikacja",
+      "title": "[E07] Integracje i komunikacja",
+      "milestone": "M3 Ocena i kanały"
+    },
+    "E08": {
+      "id": "ALG-12",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-12/e08-pilotaz-skalowanie-i-operacje",
+      "title": "[E08] Pilotaż, skalowanie i operacje",
+      "milestone": "M4 Pilot i skala"
+    }
+  },
+  "issues": {
+    "HOS-001": {
+      "id": "ALG-13",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-13/hos-001-zmierzyc-procesy-3-klientow-i-bazowa-pracochlonnosc",
+      "title": "[HOS-001] Zmierzyć procesy 3 klientów i bazową pracochłonność",
+      "epic": "E01",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 3,
+      "dependsOn": []
+    },
+    "HOS-002": {
+      "id": "ALG-14",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-14/hos-002-zatwierdzic-podstawy-przetwarzania-i-polityke-nadzoru",
+      "title": "[HOS-002] Zatwierdzić podstawy przetwarzania i politykę nadzoru",
+      "epic": "E01",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-001"]
+    },
+    "HOS-003": {
+      "id": "ALG-15",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-15/hos-003-zweryfikowac-katalog-playbookow-8-branz",
+      "title": "[HOS-003] Zweryfikować katalog playbooków 8 branż",
+      "epic": "E01",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 3,
+      "dependsOn": ["HOS-001", "HOS-002"]
+    },
+    "HOS-004": {
+      "id": "ALG-16",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-16/hos-004-potwierdzic-dostep-api-i-umowy-portali-pracy",
+      "title": "[HOS-004] Potwierdzić dostęp API i umowy portali pracy",
+      "epic": "E01",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 3,
+      "dependsOn": []
+    },
+    "HOS-005": {
+      "id": "ALG-17",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-17/hos-005-uruchomic-oidc-mfa-i-role-organizacji",
+      "title": "[HOS-005] Uruchomić OIDC, MFA i role organizacji",
+      "epic": "E02",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-002"]
+    },
+    "HOS-006": {
+      "id": "ALG-18",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-18/hos-006-wdrozyc-postgres-i-izolacje-tenantow",
+      "title": "[HOS-006] Wdrożyć Postgres i izolację tenantów",
+      "epic": "E02",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-005"]
+    },
+    "HOS-007": {
+      "id": "ALG-19",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-19/hos-007-bezpieczny-magazyn-dokumentow-i-skanowanie-plikow",
+      "title": "[HOS-007] Bezpieczny magazyn dokumentów i skanowanie plików",
+      "epic": "E02",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-006"]
+    },
+    "HOS-008": {
+      "id": "ALG-20",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-20/hos-008-audyt-append-only-i-uzasadnienia-decyzji",
+      "title": "[HOS-008] Audyt append-only i uzasadnienia decyzji",
+      "epic": "E02",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-006"]
+    },
+    "HOS-009": {
+      "id": "ALG-21",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-21/hos-009-obsluzyc-retencje-dostep-i-usuniecie-danych",
+      "title": "[HOS-009] Obsłużyć retencję, dostęp i usunięcie danych",
+      "epic": "E02",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-002", "HOS-007", "HOS-008"]
+    },
+    "HOS-010": {
+      "id": "ALG-22",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-22/hos-010-przeniesc-tokeny-i-komponenty-do-produkcyjnego-frontendu",
+      "title": "[HOS-010] Przenieść tokeny i komponenty do produkcyjnego frontendu",
+      "epic": "E03",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-005"]
+    },
+    "HOS-011": {
+      "id": "ALG-23",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-23/hos-011-polskie-microcopy-i-scenariusze-pustych-stanow",
+      "title": "[HOS-011] Polskie microcopy i scenariusze pustych stanów",
+      "epic": "E03",
+      "priority": {
+        "local": 3,
+        "linear": 4
+      },
+      "estimate": 2,
+      "dependsOn": ["HOS-010"]
+    },
+    "HOS-012": {
+      "id": "ALG-24",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-24/hos-012-zweryfikowac-wcag-22-aa-i-mobile",
+      "title": "[HOS-012] Zweryfikować WCAG 2.2 AA i mobile",
+      "epic": "E03",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 3,
+      "dependsOn": ["HOS-010", "HOS-011"]
+    },
+    "HOS-013": {
+      "id": "ALG-25",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-25/hos-013-crm-klientow-rekrutacje-i-wersjonowany-brief",
+      "title": "[HOS-013] CRM klientów, rekrutacje i wersjonowany brief",
+      "epic": "E04",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-006", "HOS-010", "HOS-003"]
+    },
+    "HOS-014": {
+      "id": "ALG-26",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-26/hos-014-portal-kandydata-i-formularz-aplikacyjny",
+      "title": "[HOS-014] Portal kandydata i formularz aplikacyjny",
+      "epic": "E04",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-007", "HOS-013", "HOS-002"]
+    },
+    "HOS-015": {
+      "id": "ALG-27",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-27/hos-015-pochodzenie-danych-i-deduplikacja-aplikacji",
+      "title": "[HOS-015] Pochodzenie danych i deduplikacja aplikacji",
+      "epic": "E04",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-014"]
+    },
+    "HOS-018": {
+      "id": "ALG-28",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-28/hos-018-trwale-workflow-i-transactional-outboxinbox",
+      "title": "[HOS-018] Trwałe workflow i transactional outbox/inbox",
+      "epic": "E05",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-006"]
+    },
+    "HOS-019": {
+      "id": "ALG-29",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-29/hos-019-policy-engine-approvals-i-wylacznik-awaryjny",
+      "title": "[HOS-019] Policy engine, approvals i wyłącznik awaryjny",
+      "epic": "E05",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-002", "HOS-018", "HOS-008"]
+    },
+    "HOS-020": {
+      "id": "ALG-30",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-30/hos-020-gateway-modeli-z-budzetami-i-wersjami-promptow",
+      "title": "[HOS-020] Gateway modeli z budżetami i wersjami promptów",
+      "epic": "E05",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-006", "HOS-002"]
+    },
+    "HOS-016": {
+      "id": "ALG-31",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-31/hos-016-parser-cv-z-cytatami-i-niepewnoscia",
+      "title": "[HOS-016] Parser CV z cytatami i niepewnością",
+      "epic": "E04",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-007", "HOS-020"]
+    },
+    "HOS-017": {
+      "id": "ALG-32",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-32/hos-017-panel-dowodow-i-zatwierdzanie-etapow",
+      "title": "[HOS-017] Panel dowodów i zatwierdzanie etapów",
+      "epic": "E04",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-008", "HOS-013", "HOS-016"]
+    },
+    "HOS-021": {
+      "id": "ALG-33",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-33/hos-021-asystent-briefu-i-podsumowan-z-dowodami",
+      "title": "[HOS-021] Asystent briefu i podsumowań z dowodami",
+      "epic": "E05",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-019", "HOS-020", "HOS-016"]
+    },
+    "HOS-022": {
+      "id": "ALG-34",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-34/hos-022-korpus-syntetyczny-i-scenariusze-ewaluacji",
+      "title": "[HOS-022] Korpus syntetyczny i scenariusze ewaluacji",
+      "epic": "E05",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 3,
+      "dependsOn": ["HOS-003"]
+    },
+    "HOS-023": {
+      "id": "ALG-35",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-35/hos-023-biblioteka-zatwierdzonych-rozmow-branzowych",
+      "title": "[HOS-023] Biblioteka zatwierdzonych rozmów branżowych",
+      "epic": "E06",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-003", "HOS-017"]
+    },
+    "HOS-026": {
+      "id": "ALG-36",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-36/hos-026-izolowany-runner-zadan-technicznych-i-praktycznych",
+      "title": "[HOS-026] Izolowany runner zadań technicznych i praktycznych",
+      "epic": "E06",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-023", "HOS-007"]
+    },
+    "HOS-027": {
+      "id": "ALG-37",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-37/hos-027-adapter-poczty-i-polityka-komunikacji",
+      "title": "[HOS-027] Adapter poczty i polityka komunikacji",
+      "epic": "E07",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-019", "HOS-002"]
+    },
+    "HOS-028": {
+      "id": "ALG-38",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-38/hos-028-adapter-google-calendar-lub-outlook",
+      "title": "[HOS-028] Adapter Google Calendar lub Outlook",
+      "epic": "E07",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-018", "HOS-005"]
+    },
+    "HOS-024": {
+      "id": "ALG-39",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-39/hos-024-koordynacja-rozmow-i-rezerwacja-terminu",
+      "title": "[HOS-024] Koordynacja rozmów i rezerwacja terminu",
+      "epic": "E06",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-028", "HOS-018"]
+    },
+    "HOS-025": {
+      "id": "ALG-40",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-40/hos-025-rozmowa-wspomagana-ai-i-transkrypcja-opt-in",
+      "title": "[HOS-025] Rozmowa wspomagana AI i transkrypcja opt-in",
+      "epic": "E06",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-023", "HOS-024", "HOS-020", "HOS-009"]
+    },
+    "HOS-029": {
+      "id": "ALG-41",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-41/hos-029-pierwszy-partnerski-portal-pracy",
+      "title": "[HOS-029] Pierwszy partnerski portal pracy",
+      "epic": "E07",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-004", "HOS-013", "HOS-015", "HOS-018"]
+    },
+    "HOS-030": {
+      "id": "ALG-42",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-42/hos-030-adapter-atshris-i-konflikty-synchronizacji",
+      "title": "[HOS-030] Adapter ATS/HRIS i konflikty synchronizacji",
+      "epic": "E07",
+      "priority": {
+        "local": 3,
+        "linear": 4
+      },
+      "estimate": 8,
+      "dependsOn": ["HOS-017", "HOS-018"]
+    },
+    "HOS-031": {
+      "id": "ALG-43",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-43/hos-031-oferty-i-podpis-po-zatwierdzeniu-czlowieka",
+      "title": "[HOS-031] Oferty i podpis po zatwierdzeniu człowieka",
+      "epic": "E07",
+      "priority": {
+        "local": 3,
+        "linear": 4
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-019", "HOS-017", "HOS-027"]
+    },
+    "HOS-032": {
+      "id": "ALG-44",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-44/hos-032-observability-koszty-i-alerty-sla",
+      "title": "[HOS-032] Observability, koszty i alerty SLA",
+      "epic": "E08",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-018", "HOS-020"]
+    },
+    "HOS-033": {
+      "id": "ALG-45",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-45/hos-033-testy-przeciazenia-i-awarii-dostawcow",
+      "title": "[HOS-033] Testy przeciążenia i awarii dostawców",
+      "epic": "E08",
+      "priority": {
+        "local": 2,
+        "linear": 3
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-024", "HOS-027", "HOS-032"]
+    },
+    "HOS-034": {
+      "id": "ALG-46",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-46/hos-034-kopie-zapasowe-i-pelne-odtworzenie",
+      "title": "[HOS-034] Kopie zapasowe i pełne odtworzenie",
+      "epic": "E08",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 5,
+      "dependsOn": ["HOS-009", "HOS-018"]
+    },
+    "HOS-035": {
+      "id": "ALG-47",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-47/hos-035-onboarding-klientow-i-instrukcje-operatora",
+      "title": "[HOS-035] Onboarding klientów i instrukcje operatora",
+      "epic": "E08",
+      "priority": {
+        "local": 3,
+        "linear": 4
+      },
+      "estimate": 3,
+      "dependsOn": ["HOS-011", "HOS-019", "HOS-027"]
+    },
+    "HOS-036": {
+      "id": "ALG-48",
+      "identifier": null,
+      "url": "https://linear.app/algovpl/issue/ALG-48/hos-036-pilotaz-obserwacyjny-i-decyzja-gono-go",
+      "title": "[HOS-036] Pilotaż obserwacyjny i decyzja go/no-go",
+      "epic": "E08",
+      "priority": {
+        "local": 1,
+        "linear": 2
+      },
+      "estimate": 8,
+      "dependsOn": [
+        "HOS-012",
+        "HOS-017",
+        "HOS-022",
+        "HOS-024",
+        "HOS-027",
+        "HOS-033",
+        "HOS-034",
+        "HOS-035"
+      ]
+    }
+  },
+  "completedAt": "2026-10-30"
+}

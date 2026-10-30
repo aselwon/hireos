@@ -1,0 +1,538 @@
+{
+  "project": {
+    "name": "HireOS — platforma rekrutacyjna PL/EU",
+    "teamName": "HireOS",
+    "teamKey": "HIRE",
+    "description": "Platforma operacyjna agencji HR dla wielu klientów i wszystkich branż w Polsce/UE. Automatyzacja operacji, znaczący nadzór człowieka nad decyzjami zatrudnienia. Astra 6 prowadzi implementację; Antigravity realizuje proste zadania.",
+    "status": "planned"
+  },
+  "epics": [
+    { "key": "E01", "title": "Discovery, procesy i zakres autonomii", "milestone": "M0 Discovery" },
+    { "key": "E02", "title": "Platforma, tożsamość i bezpieczeństwo", "milestone": "M1 Fundament" },
+    {
+      "key": "E03",
+      "title": "Design system i doświadczenie użytkownika",
+      "milestone": "M1 Fundament"
+    },
+    { "key": "E04", "title": "Pozyskiwanie i obsługa aplikacji", "milestone": "M2 MVP operacyjne" },
+    { "key": "E05", "title": "Workflow i asystenci AI", "milestone": "M2 MVP operacyjne" },
+    { "key": "E06", "title": "Rozmowy i zadania branżowe", "milestone": "M3 Ocena i kanały" },
+    { "key": "E07", "title": "Integracje i komunikacja", "milestone": "M3 Ocena i kanały" },
+    { "key": "E08", "title": "Pilotaż, skalowanie i operacje", "milestone": "M4 Pilot i skala" }
+  ],
+  "issues": [
+    {
+      "key": "HOS-001",
+      "epic": "E01",
+      "title": "Zmierzyć procesy 3 klientów i bazową pracochłonność",
+      "priority": 1,
+      "estimate": 3,
+      "owner": "Product + HR",
+      "dependsOn": [],
+      "acceptance": [
+        "Minimum 3 mapy procesów i 2 różne branże",
+        "Wolumeny, czasy ręczne i koszty potwierdzone przez klienta",
+        "Lista wyjątków i właścicieli decyzji"
+      ]
+    },
+    {
+      "key": "HOS-002",
+      "epic": "E01",
+      "title": "Zatwierdzić podstawy przetwarzania i politykę nadzoru",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Legal + HR / Astra",
+      "dependsOn": ["HOS-001"],
+      "acceptance": [
+        "Analiza ról RODO i zastosowania AI Act dla wdrożenia",
+        "Decyzje wymagające człowieka egzekwowane w polityce",
+        "Uzgodnione informacje dla kandydata, retencja, odwołanie i DPIA jeśli wymagana"
+      ]
+    },
+    {
+      "key": "HOS-003",
+      "epic": "E01",
+      "title": "Zweryfikować katalog playbooków 8 branż",
+      "priority": 2,
+      "estimate": 3,
+      "owner": "Antigravity + ekspert HR / Astra",
+      "dependsOn": ["HOS-001", "HOS-002"],
+      "acceptance": [
+        "8 zatwierdzonych playbooków z wersją kryteriów",
+        "Każde wymaganie ma związek z pracą i materiał dowodowy",
+        "Udogodnienia i uprawnienia regulowane ocenione przez specjalistę; istniejący szkic docs nie oznacza zatwierdzenia"
+      ]
+    },
+    {
+      "key": "HOS-004",
+      "epic": "E01",
+      "title": "Potwierdzić dostęp API i umowy portali pracy",
+      "priority": 1,
+      "estimate": 3,
+      "owner": "Partnerships / Astra",
+      "dependsOn": [],
+      "acceptance": [
+        "Macierz LinkedIn, Pracuj.pl, OLX, Indeed, JJIT, NFJ",
+        "Dla każdego aktualna dokumentacja lub jawna blokada",
+        "Wybrany jeden legalnie dostępny kanał pilota"
+      ]
+    },
+    {
+      "key": "HOS-005",
+      "epic": "E02",
+      "title": "Uruchomić OIDC, MFA i role organizacji",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-002"],
+      "acceptance": [
+        "Admin, recruiter, hiring manager, auditor i candidate mają odrębne role",
+        "MFA operatorów i odwołanie sesji",
+        "Testy dostępu bez logowania i po cofnięciu roli"
+      ]
+    },
+    {
+      "key": "HOS-006",
+      "epic": "E02",
+      "title": "Wdrożyć Postgres i izolację tenantów",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-005"],
+      "acceptance": [
+        "RLS i złożone klucze obce tenant_id",
+        "Migracje, rollback i testy cross-tenant DB/API/cache/storage",
+        "Tenant scope pochodzi z tożsamości serwera"
+      ]
+    },
+    {
+      "key": "HOS-007",
+      "epic": "E02",
+      "title": "Bezpieczny magazyn dokumentów i skanowanie plików",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-006"],
+      "acceptance": [
+        "Obiekty w uzgodnionym regionie UE i podpisane URL",
+        "Skanowanie, limit rozmiaru/typu i kwarantanna",
+        "Parser nie widzi aktywnej zawartości ani sekretów"
+      ]
+    },
+    {
+      "key": "HOS-008",
+      "epic": "E02",
+      "title": "Audyt append-only i uzasadnienia decyzji",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-006"],
+      "acceptance": [
+        "Actor, tenant, wersja obiektu i correlation id",
+        "Brak edycji zdarzeń przez role operacyjne",
+        "Zatwierdzający ma dostęp do dowodów i może zmienić wynik"
+      ]
+    },
+    {
+      "key": "HOS-009",
+      "epic": "E02",
+      "title": "Obsłużyć retencję, dostęp i usunięcie danych",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Astra + Legal",
+      "dependsOn": ["HOS-002", "HOS-007", "HOS-008"],
+      "acceptance": [
+        "Polityki retencji per cel i tenant",
+        "Usunięcie z DB, storage, indeksów i dostawców",
+        "Restore respektuje tombstones; legal hold audytowany"
+      ]
+    },
+    {
+      "key": "HOS-010",
+      "epic": "E03",
+      "title": "Przenieść tokeny i komponenty do produkcyjnego frontendu",
+      "priority": 2,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-005"],
+      "acceptance": [
+        "Tokeny i komponenty oparte o istniejący prototyp",
+        "Widoki loading/error/empty/offline",
+        "Spójne formularze i dostępna nawigacja"
+      ]
+    },
+    {
+      "key": "HOS-011",
+      "epic": "E03",
+      "title": "Polskie microcopy i scenariusze pustych stanów",
+      "priority": 3,
+      "estimate": 2,
+      "owner": "Antigravity / Astra review",
+      "dependsOn": ["HOS-010"],
+      "acceptance": [
+        "Etykiety dla wszystkich stanów workflow",
+        "Brak deklaracji AI/połączenia gdy funkcja nieaktywna",
+        "Słownik branżowy i komunikaty błędów zatwierdzone"
+      ]
+    },
+    {
+      "key": "HOS-012",
+      "epic": "E03",
+      "title": "Zweryfikować WCAG 2.2 AA i mobile",
+      "priority": 2,
+      "estimate": 3,
+      "owner": "QA + Astra",
+      "dependsOn": ["HOS-010", "HOS-011"],
+      "acceptance": [
+        "Keyboard i screen-reader dla głównych przepływów",
+        "Kontrast, focus, zoom 200% i target sizes",
+        "Testy 390/768/1440 px i reduced-motion"
+      ]
+    },
+    {
+      "key": "HOS-013",
+      "epic": "E04",
+      "title": "CRM klientów, rekrutacje i wersjonowany brief",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-006", "HOS-010", "HOS-003"],
+      "acceptance": [
+        "CRUD klientów i rekrutacji z uprawnieniami",
+        "Wersja kryteriów, budżet, właściciel i zatwierdzenie",
+        "Zmiana briefu nie nadpisuje historii oceny"
+      ]
+    },
+    {
+      "key": "HOS-014",
+      "epic": "E04",
+      "title": "Portal kandydata i formularz aplikacyjny",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-007", "HOS-013", "HOS-002"],
+      "acceptance": [
+        "Aplikacja, upload i potwierdzenie z idempotencją",
+        "Informacja o AI, prywatności i kontakt do człowieka",
+        "Antyspam, dostępność i brak konta firmowego jako wymogu"
+      ]
+    },
+    {
+      "key": "HOS-015",
+      "epic": "E04",
+      "title": "Pochodzenie danych i deduplikacja aplikacji",
+      "priority": 2,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-014"],
+      "acceptance": [
+        "Źródło, cel, data, wersja informacji i retencja",
+        "Brak automatycznego scalenia po podobnym imieniu",
+        "Deduplikacja nie przekracza granic tenant scope"
+      ]
+    },
+    {
+      "key": "HOS-016",
+      "epic": "E04",
+      "title": "Parser CV z cytatami i niepewnością",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-007", "HOS-020"],
+      "acceptance": [
+        "JSON schema i cytat/strona dla każdego faktu",
+        "Brak dowodu oznacza niezweryfikowane",
+        "Eval dokumentów PL/EN, skanów i prompt injection"
+      ]
+    },
+    {
+      "key": "HOS-017",
+      "epic": "E04",
+      "title": "Panel dowodów i zatwierdzanie etapów",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra + HR",
+      "dependsOn": ["HOS-008", "HOS-013", "HOS-016"],
+      "acceptance": [
+        "Macierz kryterium → źródło i stan weryfikacji",
+        "Uprawniony człowiek podejmuje decyzję z uzasadnieniem",
+        "Brak autonomicznego rankingu/odrzucania; odwołanie dostępne"
+      ]
+    },
+    {
+      "key": "HOS-018",
+      "epic": "E05",
+      "title": "Trwałe workflow i transactional outbox/inbox",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-006"],
+      "acceptance": [
+        "Restart workera nie gubi zadań",
+        "Replay i out-of-order events przetestowane",
+        "Retry z jitter, deadline i DLQ; webhook ACK dopiero po zapisie"
+      ]
+    },
+    {
+      "key": "HOS-019",
+      "epic": "E05",
+      "title": "Policy engine, approvals i wyłącznik awaryjny",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-002", "HOS-018", "HOS-008"],
+      "acceptance": [
+        "Allowlist narzędzi i limity per tenant",
+        "Approval powiązany z niezmienioną wersją materiałów",
+        "Pause blokuje nowe efekty zewnętrzne, restart nie omija polityki"
+      ]
+    },
+    {
+      "key": "HOS-020",
+      "epic": "E05",
+      "title": "Gateway modeli z budżetami i wersjami promptów",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-006", "HOS-002"],
+      "acceptance": [
+        "Dostawca wybrany po ocenie API, retencji i regionu",
+        "JSON schema, timeout, koszt i token ledger",
+        "Nieudany eval blokuje zmianę modelu; brak sekretów w wejściu"
+      ]
+    },
+    {
+      "key": "HOS-021",
+      "epic": "E05",
+      "title": "Asystent briefu i podsumowań z dowodami",
+      "priority": 2,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-019", "HOS-020", "HOS-016"],
+      "acceptance": [
+        "Podsumowania odsyłają do źródeł",
+        "Zatwierdzanie przez rekrutera i edycja",
+        "Niepewność jawna, brak ocen osobowości"
+      ]
+    },
+    {
+      "key": "HOS-022",
+      "epic": "E05",
+      "title": "Korpus syntetyczny i scenariusze ewaluacji",
+      "priority": 2,
+      "estimate": 3,
+      "owner": "Antigravity / Astra review",
+      "dependsOn": ["HOS-003"],
+      "acceptance": [
+        "Fixture dla 8 branż bez danych rzeczywistych",
+        "Brak materiałów, konflikty faktów i złośliwe instrukcje w CV",
+        "Wyniki oczekiwane zatwierdzone przez eksperta; brak cech chronionych w rankingu"
+      ]
+    },
+    {
+      "key": "HOS-023",
+      "epic": "E06",
+      "title": "Biblioteka zatwierdzonych rozmów branżowych",
+      "priority": 2,
+      "estimate": 5,
+      "owner": "HR + Antigravity / Astra review",
+      "dependsOn": ["HOS-003", "HOS-017"],
+      "acceptance": [
+        "IT, operacje, sprzedaż i role regulowane mają różne scenariusze",
+        "Jawna rubryka związana z pracą",
+        "Wersja szablonu i dostosowania zapisane w sesji"
+      ]
+    },
+    {
+      "key": "HOS-024",
+      "epic": "E06",
+      "title": "Koordynacja rozmów i rezerwacja terminu",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-028", "HOS-018"],
+      "acceptance": [
+        "Wybór terminu, zmiana, anulowanie i strefa IANA",
+        "Wyścig dwóch rezerwacji i DST pokryte testami",
+        "Awaria kalendarza trafia do wyjątków"
+      ]
+    },
+    {
+      "key": "HOS-025",
+      "epic": "E06",
+      "title": "Rozmowa wspomagana AI i transkrypcja opt-in",
+      "priority": 2,
+      "estimate": 8,
+      "owner": "Astra + Legal",
+      "dependsOn": ["HOS-023", "HOS-024", "HOS-020", "HOS-009"],
+      "acceptance": [
+        "Kandydat wie o AI i ma kontakt do człowieka",
+        "Nagrywanie sterowane osobno i zgodnie z podstawą",
+        "Brak analizy emocji/głosu jako oceny; transkrypcja z korektą i retencją"
+      ]
+    },
+    {
+      "key": "HOS-026",
+      "epic": "E06",
+      "title": "Izolowany runner zadań technicznych i praktycznych",
+      "priority": 2,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-023", "HOS-007"],
+      "acceptance": [
+        "Efemeryczne środowisko, brak sekretów i sieci domyślnie",
+        "Limity CPU/RAM/czasu, cleanup i testy izolacji",
+        "Wyniki testów są dowodem, nie decyzją zatrudnienia"
+      ]
+    },
+    {
+      "key": "HOS-027",
+      "epic": "E07",
+      "title": "Adapter poczty i polityka komunikacji",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-019", "HOS-002"],
+      "acceptance": [
+        "Jeden provider OAuth i minimalne scopes",
+        "Threading, bounce, suppression, opt-out i limity",
+        "Timeout wysyłki obsłużony bez ślepego duplikowania; odmowa tylko po zatwierdzeniu"
+      ]
+    },
+    {
+      "key": "HOS-028",
+      "epic": "E07",
+      "title": "Adapter Google Calendar lub Outlook",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-018", "HOS-005"],
+      "acceptance": [
+        "Free-busy bez treści prywatnych spotkań",
+        "Tworzenie/zmiana/anulowanie i odnawianie subskrypcji",
+        "Cofnięcie OAuth i konflikt aktualizacji obsłużone"
+      ]
+    },
+    {
+      "key": "HOS-029",
+      "epic": "E07",
+      "title": "Pierwszy partnerski portal pracy",
+      "priority": 2,
+      "estimate": 8,
+      "owner": "Astra + Partnerships",
+      "dependsOn": ["HOS-004", "HOS-013", "HOS-015", "HOS-018"],
+      "acceptance": [
+        "Publikacja zgodna z zatwierdzonym API/feed",
+        "Przyjęcie aplikacji lub legalny redirect",
+        "Limity, deduplikacja, aktualizacja i wycofanie ogłoszenia"
+      ]
+    },
+    {
+      "key": "HOS-030",
+      "epic": "E07",
+      "title": "Adapter ATS/HRIS i konflikty synchronizacji",
+      "priority": 3,
+      "estimate": 8,
+      "owner": "Astra",
+      "dependsOn": ["HOS-017", "HOS-018"],
+      "acceptance": [
+        "Jeden ATS pilota i źródło prawdy per pole",
+        "Reconciliation, mapping etapów i brak pętli sync",
+        "Nieautoryzowana zmiana nie staje się decyzją zatrudnienia"
+      ]
+    },
+    {
+      "key": "HOS-031",
+      "epic": "E07",
+      "title": "Oferty i podpis po zatwierdzeniu człowieka",
+      "priority": 3,
+      "estimate": 5,
+      "owner": "Astra + Legal",
+      "dependsOn": ["HOS-019", "HOS-017", "HOS-027"],
+      "acceptance": [
+        "Szablon i forma podpisu zatwierdzone prawnie",
+        "Wysyłka wyłącznie zatwierdzonej wersji",
+        "Webhook, dowód podpisu i bezpieczne archiwum"
+      ]
+    },
+    {
+      "key": "HOS-032",
+      "epic": "E08",
+      "title": "Observability, koszty i alerty SLA",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-018", "HOS-020"],
+      "acceptance": [
+        "Trace od aplikacji do zadania dostawcy",
+        "Koszt per tenant/aplikację/rozmowę",
+        "Alerty backlogu, błędów i limitów bez PII"
+      ]
+    },
+    {
+      "key": "HOS-033",
+      "epic": "E08",
+      "title": "Testy przeciążenia i awarii dostawców",
+      "priority": 2,
+      "estimate": 5,
+      "owner": "Astra + QA",
+      "dependsOn": ["HOS-024", "HOS-027", "HOS-032"],
+      "acceptance": [
+        "100 tys. aplikacji/mies. jako koperta testowa, szczyt 10×",
+        "129 sesji jako hipoteza testu współbieżności",
+        "Raport SLO, backlogu i kosztów; bez deklaracji skali przed pomiarem"
+      ]
+    },
+    {
+      "key": "HOS-034",
+      "epic": "E08",
+      "title": "Kopie zapasowe i pełne odtworzenie",
+      "priority": 1,
+      "estimate": 5,
+      "owner": "Astra",
+      "dependsOn": ["HOS-009", "HOS-018"],
+      "acceptance": [
+        "Zmierzony RPO ≤15 min i RTO ≤4 h",
+        "Restore obejmuje DB, obiekty i workflow",
+        "Po restore retencja i tombstones nadal obowiązują"
+      ]
+    },
+    {
+      "key": "HOS-035",
+      "epic": "E08",
+      "title": "Onboarding klientów i instrukcje operatora",
+      "priority": 3,
+      "estimate": 3,
+      "owner": "Antigravity / Astra review",
+      "dependsOn": ["HOS-011", "HOS-019", "HOS-027"],
+      "acceptance": [
+        "Checklisty połączeń, ról, budżetu i kryteriów",
+        "Instrukcja pauzy, wyjątków i kontaktu z kandydatem",
+        "Ćwiczenie odwołania i błędu integracji z pilotem"
+      ]
+    },
+    {
+      "key": "HOS-036",
+      "epic": "E08",
+      "title": "Pilotaż obserwacyjny i decyzja go/no-go",
+      "priority": 1,
+      "estimate": 8,
+      "owner": "Product + HR + Astra",
+      "dependsOn": [
+        "HOS-012",
+        "HOS-017",
+        "HOS-022",
+        "HOS-024",
+        "HOS-027",
+        "HOS-033",
+        "HOS-034",
+        "HOS-035"
+      ],
+      "acceptance": [
+        "3 klientów i co najmniej 2 branże",
+        "Pomiar czasu ludzkiego, błędów, skarg i kosztu",
+        "Jawne go/no-go na podstawie SLO i jakości, bez automatycznych decyzji zatrudnienia"
+      ]
+    }
+  ]
+}
