@@ -8,7 +8,7 @@ Na VPS wdrożono kontener `hireos-public` z obrazu `nginx:1.28-alpine`, digest `
 
 Endpoint `GET /hireos-api/health` ma zwracać JSON z `workerApi: "not-implemented"` i `outreachEnabled: false`. Worker API, klucz, rutyna outreachu i auth API nie są działające ani ukończone; publiczny routing demo nie dowodzi ukończenia integracji. `/api/state` jest prywatnym endpointem (403), a `/hireos-api/v1/tasks` pozostaje niedostępny (503).
 
-N8n zatrzymano, ale nie usunięto. Backup rollbacku jest root-only w `/root/hireos-backup-before-public/` (`n8n-inspect.json` i `n8n-data.tar.gz`); jego zawartości nie należy czytać. Procedura awaryjna: `docker stop hireos-public`, następnie `docker start n8n` — bez kasowania danych. Auth API jest pracą przyszłą.
+N8n został całkowicie usunięty z VPS 2026-10-30 (kontenery, wolumeny i kopie zapasowe, w tym `/root/hireos-backup-before-public/`), więc nie jest już ścieżką rollbacku. Procedura awaryjna dla publicznego demonstratora: `docker stop hireos-public`. Prywatna usługa `hireos-preview` działa dalej przez tunel. Auth API jest pracą przyszłą.
 
 ### Weryfikacja publiczna
 
