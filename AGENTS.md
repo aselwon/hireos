@@ -31,6 +31,11 @@ Zweryfikowano lokalnie 2026-10-30 (Node 22.23.1): `npm run ci` przechodzi — qo
 
 Nowe pliki Markdown w `docs/` oraz JSON w `planning/` i katalogu głównym podlegają Prettierowi z qoq. Po edycji uruchom `npm run quality:fix`, a potem `npm run ci`.
 
+## Agenci kodujący i koszty
+
+- Agenci kodujący działają **wyłącznie w ramach subskrypcji ChatGPT (Codex)** właściciela. Nigdy nie używaj pay-per-token API do pracy agentowej.
+- Agentom nie wolno dodawać ani wywoływać płatnych API ani kupować kredytów. Jeśli zadanie wydaje się tego wymagać, zatrzymaj się i eskaluj do `planning/blocked.md`.
+
 ## Zasady kodowania
 
 - Małe, samodzielne zmiany: jedno zadanie z `planning/tasks.json` = jedna gałąź = jeden PR do `main`.
@@ -39,7 +44,7 @@ Nowe pliki Markdown w `docs/` oraz JSON w `planning/` i katalogu głównym podle
 - Bez nowych frameworków i ciężkich zależności bez uzasadnienia w opisie PR. Preferuj wbudowane moduły Node.
 - Zmiany schematu bazy wyłącznie przez wersjonowane migracje z testem migracji na istniejącej bazie.
 - Wszystkie operacje z efektem ubocznym (zapis, zadania, wysyłki) muszą być idempotentne (`Idempotency-Key`) i transakcyjne.
-- Wywołania modeli AI tylko przez wspólną bramkę modeli (zadanie MVP-04) z limitem kosztów. W testach i CI wyłącznie deterministyczny fake provider lub nagrane odpowiedzi.
+- Wywołania modeli AI tylko przez wspólną bramkę modeli (zadanie MVP-04). Jedyny prawdziwy dostawca to **Cloudflare Workers AI na koncie właściciela `2791466c5820cfd886aad95e0d3ef948`**, wyłącznie w darmowym dziennym przydziale (10 000 neuronów/dobę, reset 00:00 UTC) z twardym stopem w bramce. W testach i CI wyłącznie deterministyczny fake provider lub nagrane odpowiedzi.
 - Tekst interfejsu i dokumentacja po polsku, identyfikatory w kodzie po angielsku.
 - Dane w repo, testach i fixture'ach wyłącznie syntetyczne. Żadnych prawdziwych CV ani danych osobowych.
 - Brak automatycznego odrzucania kandydatów. Decyzję zawsze podejmuje człowiek.
@@ -50,7 +55,8 @@ Nowe pliki Markdown w `docs/` oraz JSON w `planning/` i katalogu głównym podle
 - Commitować, wypisywać w logach ani wklejać do PR sekretów (`.env*`, klucze API, tokeny, hasła). `.env*` jest w `.gitignore` i tak ma zostać.
 - Wdrażać na produkcję ani zmieniać VPS (`marek172.mikrus.xyz`), DNS, nginx, systemd ani kontenerów. Agent przygotowuje skrypt i instrukcję, wdrożenie wykonuje człowiek.
 - Wysyłać wiadomości do prawdziwych osób (LinkedIn, e-mail, SMS, GitHub). Outreach do kandydatów robi wyłącznie zewnętrzny wykonawca (Grok Bot) po zatwierdzeniu przez właściciela i tylko do kontrolowanego odbiorcy, dopóki DoD tego nie zmieni.
-- Używać płatnych API ponad limit. Domyślnie w pracy rozwojowej limit to **0 zł**: tylko fake provider. Wywołania prawdziwego modelu wymagają zgody właściciela i ustawionego miesięcznego limitu w bramce modeli.
+- Dodawać do kodu ani wywoływać jakichkolwiek płatnych API (OpenAI, Anthropic, Google i inne pay-per-token), kupować kredytów, włączać płatnych planów ani płatnego nadmiaru (overage). Dotyczy to też modeli Workers AI wymagających płatnej metody rozliczeń.
+- Przekraczać darmowego dziennego przydziału Workers AI. Po osiągnięciu limitu bramka ma zatrzymać wywołania do resetu, nigdy przełączać na płatny tryb ani innego dostawcę.
 - Mergować własnych PR, force-pushować do `main`, wyłączać kontroli CI ani obniżać progów jakości lub ewaluacji, żeby test przeszedł.
 - Scrapować LinkedIn ani omijać regulaminów portali. Sourcing tylko przez publiczne API GitHub, bez kontaktu.
 

@@ -14,7 +14,7 @@ Przepływ:
 4. **Raport screeningowy.** Każde wymaganie z macierzy ma status: spełnione / brak dowodu / niepewne, z cytatami. Rekruter zatwierdza albo odrzuca kandydata z uzasadnieniem. **Brak automatycznego odrzucania.**
 5. **Sourcing (opcjonalny).** Lista profili GitHub pasujących do stacku (publiczne API), bez żadnego automatycznego kontaktu.
 6. **API dla wykonawcy outreachu.** `/api/v1/tasks` z kluczem API dla Grok Bota obsługującego LinkedIn: rezerwacja (lease), idempotencja, historia prób, stan `unresolved`, pauza, przejęcie rozmowy i zatrzymanie po odmowie kandydata.
-7. **Operacje.** HTTPS na VPS, miesięczny limit kosztów modeli zatrzymujący wywołania AI, backup i odtworzenie sprawdzone testem.
+7. **Operacje.** HTTPS na VPS, twardy dzienny limit wywołań AI w darmowym przydziale Cloudflare Workers AI (konto właściciela `2791466c5820cfd886aad95e0d3ef948`), bez płatnego nadmiaru, backup i odtworzenie sprawdzone testem.
 
 ## Zakres (in scope)
 
@@ -22,7 +22,7 @@ Przepływ:
 - Tylko rekrutacje IT (backend, frontend, mobile, DevOps, data, QA, security). Słownik technologii i poziomów seniority.
 - PDF z warstwą tekstową. Skan bez tekstu oznacza CV jako `needs_manual_review` (bez OCR w MVP).
 - Język interfejsu: polski. Ogłoszenia: polski, opcjonalnie angielski.
-- Bramka modeli z jednym dostawcą, fake providerem do testów i ewidencją kosztów.
+- Bramka modeli z jednym dostawcą (Cloudflare Workers AI, darmowy przydział), fake providerem do testów i ewidencją zużycia neuronów.
 - Audit log decyzji i zmian etapów.
 - Wdrożenie na istniejącym VPS (mikr.us, 4 GB RAM) za istniejącym reverse proxy z TLS.
 
@@ -40,6 +40,6 @@ Przepływ:
 ## Założenia i ograniczenia
 
 - Dane w repo, testach i ewaluacji są syntetyczne. Prawdziwe dane kandydatów trafiają wyłącznie do produkcyjnej bazy na VPS po wdrożeniu HTTPS i backupu.
-- Koszty: praca deweloperska bez płatnego API (fake provider). Produkcyjny limit miesięczny ustala właściciel (domyślnie 50 zł/mies., do potwierdzenia).
+- Koszty: **0 zł za modele**. Wszystkie wywołania modeli idą przez Cloudflare Workers AI na koncie `2791466c5820cfd886aad95e0d3ef948` w darmowym przydziale 10 000 neuronów/dobę (reset 00:00 UTC). Bramka liczy zużycie i zatrzymuje wywołania przed limitem (domyślnie `MODEL_DAILY_NEURON_CAP=9000`), nigdy nie przechodzi w płatny nadmiar. Dozwolone tylko modele dostępne bez płatnej metody rozliczeń. Praca deweloperska i CI: fake provider. Agenci kodujący: wyłącznie subskrypcja ChatGPT (Codex), bez płatnych API.
 - Zasady kontaktu dla outreachu (limity dzienne, liczba follow-upów, zakres informacji przekazywanych kandydatom) ustala właściciel przed testem z prawdziwym kandydatem.
 - Zgodność z RODO i AI Act (rekrutacja to system wysokiego ryzyka) wymaga przeglądu specjalisty przed użyciem z prawdziwymi kandydatami.
