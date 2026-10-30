@@ -1,0 +1,295 @@
+{
+  "project": "HireOS MVP IT",
+  "updated": "2026-10-30",
+  "spec": "SPEC.md",
+  "dod": "docs/mvp-dod.md",
+  "archivedBacklog": "planning/backlog.json (poza zakresem MVP)",
+  "tiers": {
+    "planner": "mocny model: projekt, bezpieczeństwo, schematy, prompty",
+    "worker": "tani model: implementacja według kryteriów"
+  },
+  "statuses": ["todo", "in_progress", "review", "done", "blocked"],
+  "tasks": [
+    {
+      "id": "MVP-01",
+      "title": "Migracje i schemat danych MVP",
+      "description": "Wprowadź wersjonowane migracje node:sqlite (tabela schema_migrations) i tabele MVP: job_briefs, requirements, applications, cv_files, cv_profiles, profile_facts, screening_reports, decisions, outreach_tasks, task_attempts, model_calls, api_keys, audit_events. Zachowaj działanie obecnego demo.",
+      "acceptance": [
+        "Migracje uruchamiają się idempotentnie na pustej i istniejącej bazie (test).",
+        "Istniejące testy store przechodzą.",
+        "npm run ci zielone."
+      ],
+      "dependsOn": [],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-02",
+      "title": "Logowanie rekrutera i klucze API",
+      "description": "Logowanie jednego rekrutera (hasło z env, hash scrypt, sesja HttpOnly SameSite=Strict, limit prób). Klucze API przechowywane jako hash, z zakresami (admin, worker:outreach), odwoływalne; skrypt CLI do utworzenia i odwołania klucza (wypisuje klucz raz).",
+      "acceptance": [
+        "Brak sesji/klucza → 401, zły zakres → 403, odwołany klucz → 401 (testy).",
+        "Klucz nigdy nie jest zapisany ani logowany jawnie (test).",
+        "Panel i /api/state wymagają sesji."
+      ],
+      "dependsOn": ["MVP-01"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-03",
+      "title": "API i formularz briefu IT",
+      "description": "POST/GET /api/v1/briefs z walidacją: stanowisko, stack ze słownika technologii IT, seniority, widełki (min, max, waluta, netto/brutto, B2B/UoP), lokalizacja/zdalnie. Słownik technologii jako plik danych w lib/.",
+      "acceptance": [
+        "Nieprawidłowe dane → 400 z komunikatem po polsku (testy brzegowe).",
+        "Idempotency-Key zapobiega duplikatom (test)."
+      ],
+      "dependsOn": ["MVP-01", "MVP-02"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-04",
+      "title": "Bramka modeli z miesięcznym limitem kosztów",
+      "description": "Moduł lib/model-gateway.mjs: interfejs provider (fake deterministyczny + jeden prawdziwy dostawca przez fetch), ewidencja tokenów i kosztu w model_calls, cennik w konfiguracji, MODEL_MONTHLY_CAP_PLN. Po przekroczeniu limitu wywołania są blokowane, API generowania zwraca 503. Domyślnie w dev/CI provider=fake.",
+      "acceptance": [
+        "Test przekroczenia limitu blokuje kolejne wywołania i zwraca 503.",
+        "CI nie wykonuje żadnych zapytań sieciowych do modeli (test z blokadą fetch).",
+        "Koszt per wywołanie zapisany w bazie."
+      ],
+      "dependsOn": ["MVP-01"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-05",
+      "title": "Ogłoszenie i macierz wymagań z briefu",
+      "description": "Generowanie ogłoszenia (PL) i macierzy wymagań (must/nice, waga 1–3) przez bramkę modeli ze schematem JSON i walidacją odpowiedzi. Edycja i zatwierdzenie przez rekrutera; aplikacje przyjmowane tylko dla zatwierdzonej rekrutacji.",
+      "acceptance": [
+        "Fake provider daje deterministyczny wynik w testach.",
+        "Niepoprawny JSON z modelu → ponowienie raz, potem błąd z komunikatem (test).",
+        "Niezatwierdzona rekrutacja odrzuca aplikacje (test)."
+      ],
+      "dependsOn": ["MVP-03", "MVP-04"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-06",
+      "title": "Publiczny formularz aplikacji z PDF CV",
+      "description": "Strona aplikacji dla zatwierdzonej rekrutacji i endpoint multipart: dane kontaktowe, zgoda RODO z wersją klauzuli, PDF ≤ 10 MB (magic bytes). Plik zapisany poza hireos/dist w katalogu danych, nazwa losowa.",
+      "acceptance": [
+        "Zły typ/rozmiar → 400/413 (testy).",
+        "Plik niedostępny bez sesji rekrutera (test negatywny).",
+        "Idempotency-Key bez duplikatów (test)."
+      ],
+      "dependsOn": ["MVP-05"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-07",
+      "title": "Ekstrakcja tekstu z PDF",
+      "description": "Lokalna ekstrakcja tekstu (np. unpdf/pdfjs-dist, uzasadnij wybór w PR) z zachowaniem kolejności sekcji. PDF bez warstwy tekstowej → status needs_manual_review.",
+      "acceptance": [
+        "Fixture z tekstem i fixture-skan dają oczekiwane wyniki (testy).",
+        "Brak wywołań modeli w tym kroku."
+      ],
+      "dependsOn": ["MVP-06"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-08",
+      "title": "Zestaw ewaluacyjny ≥20 syntetycznych CV",
+      "description": "Skrypt generujący ≥20 syntetycznych CV PDF (różne role IT, seniority, PL/EN, min. 3 trudne układy: dwie kolumny, luki w datach, tabele) oraz pliki gold eval/cv/<id>.json z kluczowymi faktami. Żadnych prawdziwych danych osobowych.",
+      "acceptance": [
+        "≥20 par PDF + gold w repo.",
+        "Opis schematu gold w eval/README.md.",
+        "Skrypt deterministyczny (ten sam wynik przy ponownym uruchomieniu)."
+      ],
+      "dependsOn": [],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-09",
+      "title": "Parser CV z cytatami i flagą uncertain",
+      "description": "Ekstrakcja profilu przez bramkę modeli do schematu JSON: skills, experience (company, role, from, to, technologies), education, languages. Każdy fakt ma quote; jeśli quote nie jest dosłownym fragmentem tekstu CV → uncertain=true. Zapis w cv_profiles/profile_facts.",
+      "acceptance": [
+        "Walidacja cytatów testem (cytat spoza tekstu → uncertain).",
+        "Odpowiedź niezgodna ze schematem → błąd i status do ręcznego przeglądu (test)."
+      ],
+      "dependsOn": ["MVP-04", "MVP-07", "MVP-08"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-10",
+      "title": "Skrypt npm run eval:cv",
+      "description": "Porównanie wyników parsera z gold: dokładność kluczowych faktów (skills, role, okresy, języki), raport w eval/results/<data>.json. Tryb replay (nagrane odpowiedzi, w CI) i tryb live (ręczny, wymaga zgody i limitu kosztów).",
+      "acceptance": [
+        "Tryb replay w CI.",
+        "Raport zawiera dokładność per kategoria i koszt.",
+        "Próg 90% egzekwowany flagą --min=0.9."
+      ],
+      "dependsOn": ["MVP-08", "MVP-09"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-11",
+      "title": "Raport screeningowy wymaganie → dowody",
+      "description": "Dla każdej pary aplikacja–macierz: status met/missing/uncertain per wymaganie z listą cytatów z profilu. Wymaganie bez cytatu nie może być met. Bez liczbowego score decydującego o odrzuceniu.",
+      "acceptance": [
+        "Test reguły „met wymaga cytatu”.",
+        "Raport generuje się z fake providerem w CI."
+      ],
+      "dependsOn": ["MVP-05", "MVP-09"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-12",
+      "title": "Decyzja człowieka i audit log",
+      "description": "Akcje approve/reject z obowiązkowym uzasadnieniem, zapis do decisions i audit_events. Test strażnik: żaden kod poza akcją rekrutera nie ustawia etapu rejected.",
+      "acceptance": [
+        "Brak uzasadnienia → 400 (test).",
+        "Test braku auto-reject.",
+        "Audit log zawiera kto/kiedy/co."
+      ],
+      "dependsOn": ["MVP-11"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-13",
+      "title": "UI MVP: brief, aplikacje, raport",
+      "description": "Widoki w hireos/dist zgodne z design systemem: lista rekrutacji, brief i zatwierdzenie macierzy, lista aplikacji z oznaczeniem uncertain/needs_manual_review, raport z cytatami, przyciski decyzji. Demo-widoki spoza MVP ukryte za flagą lub usunięte.",
+      "acceptance": [
+        "Stany ładowania/błędu/pustych danych.",
+        "Obsługa klawiaturą i focus.",
+        "qoq bez błędów."
+      ],
+      "dependsOn": ["MVP-05", "MVP-06", "MVP-12"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-14",
+      "title": "API zadań outreach z lease i idempotencją",
+      "description": "/api/v1/tasks: tworzenie zadania przez rekrutera (kandydat, rekrutacja, kontekst, zatwierdzone zasady kontaktu), POST /claim (lease_until, worker_id), POST /:id/heartbeat, POST /:id/result (sent, replied, needs_intervention, failed, unresolved) z Idempotency-Key, task_id i message_id, historia prób. Wygasły lease wraca do kolejki.",
+      "acceptance": [
+        "Test współbieżnych claimów (brak podwójnej rezerwacji).",
+        "Ponowiony raport wyniku bez duplikatów.",
+        "Wykonawca widzi tylko swoje zadania (test 403/404)."
+      ],
+      "dependsOn": ["MVP-02"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-15",
+      "title": "Stan unresolved i weryfikacja przed ponowieniem",
+      "description": "Wynik unresolved blokuje ponowienie, dopóki wykonawca nie zgłosi verified_not_sent (ponowienie dozwolone) lub verified_sent (zamknięcie jako sent).",
+      "acceptance": ["Testy przejść stanów, w tym próba claim zadania unresolved → odmowa."],
+      "dependsOn": ["MVP-14"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-16",
+      "title": "Pauza, przejęcie i stop po odmowie",
+      "description": "Pauza rekrutacji lub rozmowy, przejęcie rozmowy przez człowieka i wynik refused natychmiast blokują claimy i wysyłki. GET /api/v1/tasks/:id/preflight zwraca allowed=false z powodem. Odmowa ustawia do_not_contact na kandydacie.",
+      "acceptance": [
+        "Testy dla każdej z trzech blokad.",
+        "do_not_contact blokuje tworzenie nowych zadań dla kandydata (test)."
+      ],
+      "dependsOn": ["MVP-14"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-17",
+      "title": "Dokumentacja kontraktu worker API",
+      "description": "docs/worker-api.md: endpointy, przykłady curl, stany, kody błędów, zasady ponowień i unresolved, przepływ preflight → wysyłka → result. Aktualizacja docs/linkedin-outreach.md.",
+      "acceptance": ["Przykłady zgodne z testami kontraktowymi.", "Prettier/qoq OK."],
+      "dependsOn": ["MVP-15", "MVP-16"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-18",
+      "title": "Sourcing GitHub bez kontaktu (opcjonalny)",
+      "description": "Dla zatwierdzonej rekrutacji: wyszukiwanie publicznych profili GitHub (language, location) przez REST API z respektowaniem limitów, lista z uzasadnieniem dopasowania. Token opcjonalny z env. Brak automatycznego tworzenia zadań outreach.",
+      "acceptance": [
+        "Testy z nagranymi odpowiedziami API GitHub.",
+        "Test: lista nie tworzy zadań outreach."
+      ],
+      "dependsOn": ["MVP-05"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-19",
+      "title": "Test E2E brief → aplikacja → raport → decyzja",
+      "description": "Test uruchamiający serwer na losowym porcie z fake providerem: logowanie, brief, zatwierdzenie macierzy, aplikacja z fixture PDF, parser, raport, decyzja. W CI w ramach npm test.",
+      "acceptance": ["Test przechodzi w CI w < 60 s.", "Brak wywołań sieciowych poza localhost."],
+      "dependsOn": ["MVP-13"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-20",
+      "title": "Retencja danych i skan sekretów w CI",
+      "description": "Zadanie czyszczące CV odrzuconych kandydatów po RETENTION_DAYS (test). Krok gitleaks (lub równoważny) w CI. Logger bez danych osobowych (test redakcji).",
+      "acceptance": ["Testy retencji i redakcji logów.", "CI zielone z nowym krokiem."],
+      "dependsOn": ["MVP-12"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-21",
+      "title": "Paczka wdrożeniowa VPS z HTTPS",
+      "description": "Przygotuj (nie wdrażaj) konfigurację: nginx hireos-public kieruje /api/v1 i formularz aplikacji do Node na 127.0.0.1:4317, panel za logowaniem, /api/state niedostępne publicznie, rate limit, sekrety w /etc/hireos/env poza repo. Skrypt deploy z release + symlink + rollback. Wdrożenie wykonuje właściciel.",
+      "acceptance": [
+        "Instrukcja w docs/vps-preview.md z lista kontrolną curl.",
+        "Rollback opisany i przetestowany lokalnie na dwóch release."
+      ],
+      "dependsOn": ["MVP-02", "MVP-14"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-22",
+      "title": "Backup i odtworzenie",
+      "description": "Skrypt backupu SQLite (sqlite backup API) i katalogu CV z rotacją, timer systemd. Skrypt restore na czysty katalog z porównaniem liczności rekordów i plików.",
+      "acceptance": ["Test restore lokalnie: liczby zgodne.", "Instrukcja w docs/vps-preview.md."],
+      "dependsOn": ["MVP-21"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-23",
+      "title": "Test integracyjny z Grok Botem (kontrolowany odbiorca)",
+      "description": "Scenariusz testu z właścicielem: zadanie dla konta testowego, claim przez Grok Bota przy wyłączonym MacBooku, wysyłka, unresolved, pauza, odmowa. Agent przygotowuje scenariusz i checklistę; uruchamia właściciel.",
+      "acceptance": [
+        "Raport testu w docs/verification.md.",
+        "Brak podwójnych wiadomości.",
+        "Pauza i odmowa skuteczne przed następną wiadomością."
+      ],
+      "dependsOn": ["MVP-16", "MVP-17", "MVP-21"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-24",
+      "title": "Aktualizacja README do MVP",
+      "description": "README opisuje MVP IT, uruchomienie, konfigurację env (bez wartości), ograniczenia i link do SPEC/DoD. Usunięcie twierdzeń o wielu branżach z sekcji głównej.",
+      "acceptance": ["Prettier/qoq OK.", "Linki działają."],
+      "dependsOn": ["MVP-19", "MVP-22"],
+      "tier": "worker",
+      "status": "todo"
+    }
+  ]
+}
