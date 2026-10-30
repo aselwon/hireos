@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-07",
+  "synthetic": true,
+  "language": "pl",
+  "area": "security",
+  "layout": "date_gaps",
+  "facts": [
+    {
+      "field": "role",
+      "value": "Security Engineer",
+      "evidence": "Stanowisko: Security Engineer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "junior",
+      "evidence": "Poziom: junior",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Python",
+      "evidence": "Technologia: Python",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Linux",
+      "evidence": "Technologia: Linux",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "OWASP",
+      "evidence": "Technologia: OWASP",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Rust",
+      "evidence": "Dopiero uczę się: Rust",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo SECURITY Lab 7-1",
+      "evidence": "Firma: Demo SECURITY Lab 7-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "Security Engineer",
+      "evidence": "Rola: Security Engineer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2024-01",
+      "evidence": "Od: 2024-01",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2024-06",
+      "evidence": "Do: 2024-06",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "Python",
+      "evidence": "Projekt: Python",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo SECURITY Lab 7-2",
+      "evidence": "Firma: Demo SECURITY Lab 7-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "Security Engineer",
+      "evidence": "Rola: Security Engineer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2025-09",
+      "evidence": "Od: 2025-09",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "Do: obecnie",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "Linux",
+      "evidence": "Projekt: Linux",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "Inżynier informatyki",
+      "evidence": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "B1",
+      "evidence": "CEFR: B1",
+      "uncertain": false
+    }
+  ]
+}

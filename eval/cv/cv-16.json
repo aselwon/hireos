@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-16",
+  "synthetic": true,
+  "language": "en",
+  "area": "frontend",
+  "layout": "table",
+  "facts": [
+    {
+      "field": "role",
+      "value": "Frontend Developer",
+      "evidence": "Position: Frontend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "senior",
+      "evidence": "Level: senior",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "TypeScript",
+      "evidence": "Technology: TypeScript",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "React",
+      "evidence": "Technology: React",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "CSS",
+      "evidence": "Technology: CSS",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Vue",
+      "evidence": "Only starting to learn: Vue",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo FRONTEND Lab 16-1",
+      "evidence": "Company: Demo FRONTEND Lab 16-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "Frontend Developer",
+      "evidence": "Role: Frontend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2017-03",
+      "evidence": "From: 2017-03",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2019-08",
+      "evidence": "To: 2019-08",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "TypeScript",
+      "evidence": "Project: TypeScript",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo FRONTEND Lab 16-2",
+      "evidence": "Company: Demo FRONTEND Lab 16-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "Frontend Developer",
+      "evidence": "Role: Frontend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2019-09",
+      "evidence": "From: 2019-09",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "To: present",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "React",
+      "evidence": "Project: React",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "BSc Computer Science",
+      "evidence": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Institution: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Language: English",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "C1",
+      "evidence": "CEFR: C1",
+      "uncertain": false
+    }
+  ]
+}

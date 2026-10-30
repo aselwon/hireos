@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-09",
+  "synthetic": true,
+  "language": "pl",
+  "area": "frontend",
+  "layout": "standard",
+  "facts": [
+    {
+      "field": "role",
+      "value": "Frontend Developer",
+      "evidence": "Stanowisko: Frontend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "mid",
+      "evidence": "Poziom: mid",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "TypeScript",
+      "evidence": "Technologia: TypeScript",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "React",
+      "evidence": "Technologia: React",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "CSS",
+      "evidence": "Technologia: CSS",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Vue",
+      "evidence": "Dopiero uczę się: Vue",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo FRONTEND Lab 9-1",
+      "evidence": "Firma: Demo FRONTEND Lab 9-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "Frontend Developer",
+      "evidence": "Rola: Frontend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2017-03",
+      "evidence": "Od: 2017-03",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2019-08",
+      "evidence": "Do: 2019-08",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "TypeScript",
+      "evidence": "Projekt: TypeScript",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo FRONTEND Lab 9-2",
+      "evidence": "Firma: Demo FRONTEND Lab 9-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "Frontend Developer",
+      "evidence": "Rola: Frontend Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2019-09",
+      "evidence": "Od: 2019-09",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "Do: obecnie",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "React",
+      "evidence": "Projekt: React",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "Inżynier informatyki",
+      "evidence": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "B2",
+      "evidence": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}

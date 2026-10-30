@@ -27,6 +27,7 @@ export default {
       'README.md',
       'docs/*.md',
       'planning',
+      'eval',
     ],
   },
   eslint: [

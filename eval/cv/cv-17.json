@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "cv-17",
+  "synthetic": true,
+  "language": "pl",
+  "area": "mobile",
+  "layout": "standard",
+  "facts": [
+    {
+      "field": "role",
+      "value": "Mobile Developer",
+      "evidence": "Stanowisko: Mobile Developer",
+      "uncertain": false
+    },
+    {
+      "field": "seniority",
+      "value": "senior",
+      "evidence": "Poziom: senior",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Kotlin",
+      "evidence": "Technologia: Kotlin",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Android",
+      "evidence": "Technologia: Android",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "SQLite",
+      "evidence": "Technologia: SQLite",
+      "uncertain": false
+    },
+    {
+      "field": "skills",
+      "value": "Swift",
+      "evidence": "Dopiero uczę się: Swift",
+      "uncertain": true
+    },
+    {
+      "field": "experience.0.company",
+      "value": "Demo MOBILE Lab 17-1",
+      "evidence": "Firma: Demo MOBILE Lab 17-1",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.role",
+      "value": "Mobile Developer",
+      "evidence": "Rola: Mobile Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.start",
+      "value": "2017-03",
+      "evidence": "Od: 2017-03",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.end",
+      "value": "2019-08",
+      "evidence": "Do: 2019-08",
+      "uncertain": false
+    },
+    {
+      "field": "experience.0.technologies",
+      "value": "Kotlin",
+      "evidence": "Projekt: Kotlin",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.company",
+      "value": "Demo MOBILE Lab 17-2",
+      "evidence": "Firma: Demo MOBILE Lab 17-2",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.role",
+      "value": "Mobile Developer",
+      "evidence": "Rola: Mobile Developer",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.start",
+      "value": "2019-09",
+      "evidence": "Od: 2019-09",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.end",
+      "value": null,
+      "evidence": "Do: obecnie",
+      "uncertain": false
+    },
+    {
+      "field": "experience.1.technologies",
+      "value": "Android",
+      "evidence": "Projekt: Android",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.degree",
+      "value": "Inżynier informatyki",
+      "evidence": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "field": "education.0.institution",
+      "value": "Demo Technical Academy",
+      "evidence": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.name",
+      "value": "English",
+      "evidence": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "field": "languages.0.level",
+      "value": "C1",
+      "evidence": "CEFR: C1",
+      "uncertain": false
+    }
+  ]
+}
