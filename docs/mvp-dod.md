@@ -6,7 +6,7 @@ MVP jest gotowe, gdy **wszystkie** punkty są odhaczone i każdy ma dowód (link
 
 - [ ] Formularz briefu IT przyjmuje: stanowisko, stack (min. 1 technologia ze słownika), seniority (junior/mid/senior/lead), widełki (min ≤ max, waluta, netto/brutto, B2B/UoP), lokalizację lub zdalnie. Nieprawidłowe dane → HTTP 400 z komunikatem po polsku (test).
 - [ ] Z briefu powstaje ogłoszenie i macierz wymagań (must/nice, waga 1–3). Rekruter może edytować i zatwierdzić; dopiero zatwierdzona rekrutacja przyjmuje aplikacje (test).
-- [ ] Generowanie działa z fake providerem w CI i z prawdziwym modelem za bramką kosztów (ręczny test raz, wynik w PR).
+- [ ] Generowanie działa z fake providerem w CI i z prawdziwym modelem Workers AI za bramką limitu dziennego (ręczny test raz, wynik w PR).
 
 ## 2. Aplikacja kandydata
 
@@ -20,7 +20,7 @@ MVP jest gotowe, gdy **wszystkie** punkty są odhaczone i każdy ma dowód (link
 - [ ] Ekstrakcja tekstu z PDF lokalnie, bez modelu. PDF bez warstwy tekstowej → `needs_manual_review` (test z fixture).
 - [ ] Profil zgodny ze schematem JSON: umiejętności, doświadczenie (firma, rola, od–do, technologie), edukacja, języki. Każdy fakt ma `quote`, a `quote` jest dosłownym fragmentem tekstu CV; jeśli nie jest → `uncertain: true` (test).
 - [ ] Zestaw ewaluacyjny: **≥ 20 syntetycznych CV PDF** z plikiem gold (`eval/cv/*.json`), w tym ≥ 3 trudne przypadki (dwie kolumny, CV po angielsku, luki w datach).
-- [ ] `npm run eval:cv` raportuje dokładność kluczowych faktów. **≥ 90% poprawnych** na prawdziwym modelu (wynik zapisany w `eval/results/`, koszt podany). W CI eval uruchamia się na nagranych odpowiedziach.
+- [ ] `npm run eval:cv` raportuje dokładność kluczowych faktów. **≥ 90% poprawnych** na modelu Workers AI w darmowym przydziale (wynik zapisany w `eval/results/`, zużycie neuronów podane). W CI eval uruchamia się na nagranych odpowiedziach.
 
 ## 4. Raport screeningowy i decyzja
 
@@ -48,7 +48,9 @@ MVP jest gotowe, gdy **wszystkie** punkty są odhaczone i każdy ma dowód (link
 ## 7. Bezpieczeństwo, koszty, operacje
 
 - [ ] HTTPS na VPS przez istniejące reverse proxy. Publiczny jest tylko formularz aplikacji i `/api/v1`. Panel rekrutera wymaga logowania. `/api/state` i demo-mutacje niedostępne publicznie (curl z wynikiem w PR).
-- [ ] Miesięczny limit kosztów modeli (konfiguracja `MODEL_MONTHLY_CAP_PLN`). Ewidencja kosztu każdego wywołania. Po przekroczeniu bramka zwraca błąd, a API generowania odpowiada 503 z czytelnym komunikatem; reszta aplikacji działa (test).
+- [ ] Jedyny prawdziwy dostawca modeli to Cloudflare Workers AI na koncie `2791466c5820cfd886aad95e0d3ef948` (REST API z tokenem o zakresie tylko Workers AI, trzymanym poza repo). W kodzie brak klientów płatnych API (test/grep w CI).
+- [ ] Twardy dzienny limit w darmowym przydziale: `MODEL_DAILY_NEURON_CAP` (domyślnie 9000 z 10 000 neuronów/dobę, doba liczona od 00:00 UTC). Ewidencja szacowanego zużycia neuronów każdego wywołania w `model_calls`. Wywołanie, które przekroczyłoby limit, nie jest wysyłane; błąd limitu zwrócony przez Cloudflare również zatrzymuje bramkę do resetu. API generowania odpowiada 503 z komunikatem „dzienny limit AI wyczerpany, spróbuj po 01:00/02:00”; reszta aplikacji działa (testy).
+- [ ] Brak płatnego nadmiaru: bramka nie ma trybu fallback do innego dostawcy ani płatnego modelu; lista dozwolonych modeli w konfiguracji wyklucza modele wymagające płatnej metody rozliczeń (test).
 - [ ] Brak sekretów w repo (skan `git log -p` / gitleaks w CI) i brak danych kandydatów w logach (przegląd + test loggera).
 - [ ] Backup SQLite i plików CV (skrypt + harmonogram). **Odtworzenie sprawdzone** na czystym katalogu: liczba rekrutacji, aplikacji i plików zgodna z oryginałem (log w PR).
 - [ ] Polityka retencji: CV odrzuconych kandydatów usuwane po N dniach (N ustala właściciel), z testem zadania czyszczącego.
@@ -62,6 +64,6 @@ MVP jest gotowe, gdy **wszystkie** punkty są odhaczone i każdy ma dowód (link
 
 ## 9. Decyzje właściciela przed startem z prawdziwymi kandydatami
 
-- [ ] Limit kosztów modeli i wybrany model/dostawca.
+- [ ] Wybrany model Workers AI (darmowy, bez płatnej metody rozliczeń) i potwierdzenie, że dzienny przydział wystarcza na planowany wolumen CV.
 - [ ] Limity outreachu (dziennie, follow-upy), treści dozwolone do przekazania kandydatom.
 - [ ] Klauzula RODO, okres retencji, przegląd prawny (AI Act: rekrutacja jako system wysokiego ryzyka).

@@ -50,12 +50,14 @@
     },
     {
       "id": "MVP-04",
-      "title": "Bramka modeli z miesięcznym limitem kosztów",
-      "description": "Moduł lib/model-gateway.mjs: interfejs provider (fake deterministyczny + jeden prawdziwy dostawca przez fetch), ewidencja tokenów i kosztu w model_calls, cennik w konfiguracji, MODEL_MONTHLY_CAP_PLN. Po przekroczeniu limitu wywołania są blokowane, API generowania zwraca 503. Domyślnie w dev/CI provider=fake.",
+      "title": "Bramka modeli: Cloudflare Workers AI z twardym dziennym limitem",
+      "description": "Moduł lib/model-gateway.mjs: interfejs provider (fake deterministyczny + Cloudflare Workers AI przez REST API na koncie 2791466c5820cfd886aad95e0d3ef948, env CF_ACCOUNT_ID i CF_AI_TOKEN poza repo). Ewidencja tokenów i szacowanego zużycia neuronów w model_calls (stawki neuronów per model w konfiguracji). MODEL_DAILY_NEURON_CAP (domyślnie 9000 z darmowych 10 000/dobę, reset 00:00 UTC): wywołanie przekraczające limit nie jest wysyłane, błąd limitu z Cloudflare blokuje bramkę do resetu, API generowania zwraca 503. Lista dozwolonych modeli bez modeli wymagających płatnej metody rozliczeń. Żadnego fallbacku do innego dostawcy. Domyślnie w dev/CI provider=fake.",
       "acceptance": [
-        "Test przekroczenia limitu blokuje kolejne wywołania i zwraca 503.",
+        "Test: osiągnięcie MODEL_DAILY_NEURON_CAP blokuje kolejne wywołania i zwraca 503; po resecie doby UTC wywołania wracają.",
+        "Test: błąd limitu z Workers AI (nagrana odpowiedź) blokuje bramkę do resetu.",
+        "Test: model spoza listy dozwolonych jest odrzucany; w kodzie brak klientów płatnych API.",
         "CI nie wykonuje żadnych zapytań sieciowych do modeli (test z blokadą fetch).",
-        "Koszt per wywołanie zapisany w bazie."
+        "Zużycie neuronów per wywołanie zapisane w bazie."
       ],
       "dependsOn": ["MVP-01"],
       "tier": "planner",
@@ -127,10 +129,10 @@
     {
       "id": "MVP-10",
       "title": "Skrypt npm run eval:cv",
-      "description": "Porównanie wyników parsera z gold: dokładność kluczowych faktów (skills, role, okresy, języki), raport w eval/results/<data>.json. Tryb replay (nagrane odpowiedzi, w CI) i tryb live (ręczny, wymaga zgody i limitu kosztów).",
+      "description": "Porównanie wyników parsera z gold: dokładność kluczowych faktów (skills, role, okresy, języki), raport w eval/results/<data>.json. Tryb replay (nagrane odpowiedzi, w CI) i tryb live (ręczny, na Workers AI w darmowym przydziale, z bramką dziennego limitu).",
       "acceptance": [
         "Tryb replay w CI.",
-        "Raport zawiera dokładność per kategoria i koszt.",
+        "Raport zawiera dokładność per kategoria i zużycie neuronów.",
         "Próg 90% egzekwowany flagą --min=0.9."
       ],
       "dependsOn": ["MVP-08", "MVP-09"],
@@ -251,7 +253,7 @@
     {
       "id": "MVP-21",
       "title": "Paczka wdrożeniowa VPS z HTTPS",
-      "description": "Przygotuj (nie wdrażaj) konfigurację: nginx hireos-public kieruje /api/v1 i formularz aplikacji do Node na 127.0.0.1:4317, panel za logowaniem, /api/state niedostępne publicznie, rate limit, sekrety w /etc/hireos/env poza repo. Skrypt deploy z release + symlink + rollback. Wdrożenie wykonuje właściciel.",
+      "description": "Przygotuj (nie wdrażaj) konfigurację: nginx hireos-public kieruje /api/v1 i formularz aplikacji do Node na 127.0.0.1:4317, panel za logowaniem, /api/state niedostępne publicznie, rate limit, sekrety (w tym CF_ACCOUNT_ID i CF_AI_TOKEN z zakresem tylko Workers AI) w /etc/hireos/env poza repo. Skrypt deploy z release + symlink + rollback. Wdrożenie wykonuje właściciel.",
       "acceptance": [
         "Instrukcja w docs/vps-preview.md z lista kontrolną curl.",
         "Rollback opisany i przetestowany lokalnie na dwóch release."
