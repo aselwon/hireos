@@ -34,7 +34,7 @@
       ],
       "dependsOn": ["MVP-01"],
       "tier": "planner",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-03",
@@ -61,7 +61,7 @@
       ],
       "dependsOn": ["MVP-01"],
       "tier": "planner",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-05",
