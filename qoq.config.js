@@ -71,6 +71,7 @@ export default {
       'server.mjs',
       'hireos/dist/app.js',
       'hireos/dist/login.js',
+      'hireos/dist/apply.js',
       'tests/**/*.test.mjs',
       'scripts/*.mjs',
       'qoq.config.js',

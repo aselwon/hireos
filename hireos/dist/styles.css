@@ -25,6 +25,31 @@
 body {
   margin: 0;
 }
+.application {
+  width: min(100% - 32px, 720px);
+  margin: 64px auto;
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.application form {
+  display: grid;
+  gap: 12px;
+  margin-top: 32px;
+}
+.application input:not([type='checkbox']) {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.application button {
+  padding: 12px 18px;
+  color: white;
+  background: var(--brand);
+  border-radius: 8px;
+}
 button,
 input,
 select,
