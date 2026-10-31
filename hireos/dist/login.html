@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Logowanie — HireOS</title>
+    <script src="/login.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <h1>Logowanie rekrutera</h1>
+      <form>
+        <label for="password">Hasło</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          maxlength="1024"
+        />
+        <button type="submit">Zaloguj się</button>
+      </form>
+      <p role="status" id="status"></p>
+    </main>
+  </body>
+</html>
