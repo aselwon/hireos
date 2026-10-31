@@ -1,0 +1,6 @@
+interface:
+  display_name: "Proof"
+  short_description: "Verify behavior and retain inspected evidence"
+  default_prompt: "Use $proof to verify the requested behavior and report observed results, evidence and any verification gaps."
+policy:
+  allow_implicit_invocation: false
