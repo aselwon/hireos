@@ -54,7 +54,7 @@ Nowe pliki Markdown w `docs/` oraz JSON w `planning/` i katalogu głównym podle
 
 - Commitować, wypisywać w logach ani wklejać do PR sekretów (`.env*`, klucze API, tokeny, hasła). `.env*` jest w `.gitignore` i tak ma zostać.
 - Wdrażać na produkcję ani zmieniać VPS (`marek172.mikrus.xyz`), DNS, nginx, systemd ani kontenerów. Agent przygotowuje skrypt i instrukcję, wdrożenie wykonuje człowiek.
-- Wysyłać wiadomości do prawdziwych osób (LinkedIn, e-mail, SMS, GitHub). Outreach do kandydatów robi wyłącznie zewnętrzny wykonawca (Grok Bot) po zatwierdzeniu przez właściciela i tylko do kontrolowanego odbiorcy, dopóki DoD tego nie zmieni.
+- Wysyłać wiadomości do prawdziwych osób (LinkedIn, e-mail, SMS, GitHub). Outreach do kandydatów robi wyłącznie zewnętrzny wykonawca (Grok Bot) po zatwierdzeniu przez właściciela. DoD przed pierwszym kontaktem z prawdziwą osobą: pełny test przepływu na kontrolowanym odbiorcy (MVP-23) zaliczony, stop po odmowie, pauzie i przejęciu, kontrola duplikatów (brak podwójnych wiadomości) oraz klucz API wykonawcy z ograniczonym zakresem i możliwością odwołania. Harness nie wdraża HireOS na produkcję — wdrożenie wykonuje właściciel.
 - Dodawać do kodu ani wywoływać jakichkolwiek płatnych API (OpenAI, Anthropic, Google i inne pay-per-token), kupować kredytów, włączać płatnych planów ani płatnego nadmiaru (overage). Dotyczy to też modeli Workers AI wymagających płatnej metody rozliczeń.
 - Przekraczać darmowego dziennego przydziału Workers AI. Po osiągnięciu limitu bramka ma zatrzymać wywołania do resetu, nigdy przełączać na płatny tryb ani innego dostawcę.
 - Mergować własnych PR, force-pushować do `main`, wyłączać kontroli CI ani obniżać progów jakości lub ewaluacji, żeby test przeszedł.

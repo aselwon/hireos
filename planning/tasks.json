@@ -256,7 +256,8 @@
       "description": "Przygotuj (nie wdrażaj) konfigurację: nginx hireos-public kieruje /api/v1 i formularz aplikacji do Node na 127.0.0.1:4317, panel za logowaniem, /api/state niedostępne publicznie, rate limit, sekrety (w tym CF_ACCOUNT_ID i CF_AI_TOKEN z zakresem tylko Workers AI) w /etc/hireos/env poza repo. Skrypt deploy z release + symlink + rollback. Wdrożenie wykonuje właściciel.",
       "acceptance": [
         "Instrukcja w docs/vps-preview.md z lista kontrolną curl.",
-        "Rollback opisany i przetestowany lokalnie na dwóch release."
+        "Rollback opisany i przetestowany lokalnie na dwóch release.",
+        "Brak automatycznego wdrożenia produkcyjnego: skrypt uruchamia wyłącznie właściciel (harness nie wdraża HireOS)."
       ],
       "dependsOn": ["MVP-02", "MVP-14"],
       "tier": "planner",
@@ -278,7 +279,9 @@
       "acceptance": [
         "Raport testu w docs/verification.md.",
         "Brak podwójnych wiadomości.",
-        "Pauza i odmowa skuteczne przed następną wiadomością."
+        "Pauza i odmowa skuteczne przed następną wiadomością.",
+        "Klucz API wykonawcy ma zakres tylko do zadań outreach i jest odwoływalny (test: odwołany klucz → 401).",
+        "Brak kontaktu z prawdziwą osobą przed zaliczeniem tego testu na kontrolowanym odbiorcy (zapis w docs/verification.md)."
       ],
       "dependsOn": ["MVP-16", "MVP-17", "MVP-21"],
       "tier": "planner",
