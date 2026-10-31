@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "errors": [
+    { "code": 3036, "message": "You have exceeded your daily free allocation of neurons." }
+  ],
+  "result": null
+}
