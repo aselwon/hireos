@@ -188,7 +188,7 @@
       ],
       "dependsOn": ["MVP-02"],
       "tier": "planner",
-      "status": "todo"
+      "status": "review"
     },
     {
       "id": "MVP-15",
