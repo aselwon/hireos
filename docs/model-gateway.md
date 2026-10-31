@@ -24,7 +24,8 @@ weryfikacji sieciowej ani zmian konta.
 ## API
 
 `POST /api/generate`, `Content-Type: application/json`, wymagany nagłówek
-`Idempotency-Key` (1–128 znaków). Przykładowe syntetyczne body:
+`Idempotency-Key` (1–128 znaków) oraz sesja rekrutera albo klucz API o zakresie
+`admin` (`Authorization: Bearer …`, zob. `docs/auth.md`). Przykładowe syntetyczne body:
 
 ```json
 {

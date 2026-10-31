@@ -70,6 +70,7 @@ export default {
     entry: [
       'server.mjs',
       'hireos/dist/app.js',
+      'hireos/dist/login.js',
       'tests/**/*.test.mjs',
       'scripts/*.mjs',
       'qoq.config.js',

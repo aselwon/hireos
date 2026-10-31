@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 
-import { createRequestHandler } from '../lib/http-handler.mjs';
+import { createSessions, openKeys } from '../lib/auth.mjs';
+import { createHandler } from '../lib/http.mjs';
 import { openStore } from '../lib/store.mjs';
 
-async function post(handler, key) {
+async function post(handler, key, credential) {
   const req = Readable.from([JSON.stringify({ prompt: 'Demo', maxTokens: 1 })]);
   Object.assign(req, {
     url: '/api/generate',
@@ -14,6 +15,7 @@ async function post(handler, key) {
       host: 'localhost:4310',
       'content-type': 'application/json',
       'idempotency-key': key,
+      ...(credential ? { authorization: `Bearer ${credential}` } : {}),
     },
   });
   let status;
@@ -39,10 +41,19 @@ test('generation HTTP handler returns 503 after cap and 200 for cached retry wit
   });
   const store = openStore(':memory:', { env: { MODEL_DAILY_NEURON_CAP: '2' } });
   t.after(() => store.close());
-  const handler = createRequestHandler({ store, port: 4310, root: process.cwd() });
-  const first = await post(handler, 'first');
+  const keys = openKeys(':memory:');
+  t.after(() => keys.close());
+  const admin = keys.create('model-http-admin', 'admin');
+  const handler = createHandler({
+    store,
+    keys,
+    sessions: createSessions('model-http-test-password'),
+    port: 4310,
+  });
+  assert.equal((await post(handler, 'anonymous')).status, 401);
+  const first = await post(handler, 'first', admin);
   assert.equal(first.status, 200);
-  assert.equal((await post(handler, 'second')).status, 503);
-  assert.deepEqual(await post(handler, 'first'), first);
+  assert.equal((await post(handler, 'second', admin)).status, 503);
+  assert.deepEqual(await post(handler, 'first', admin), first);
   assert.equal(globalThis.fetch.mock.callCount(), 0);
 });
