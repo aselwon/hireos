@@ -206,3 +206,60 @@ test('HTTP chroni panel, stan i mutacje; sprawdza sesje, zakresy, odwołanie i o
   assert.equal((await request('/api/logout', post({}, auth))).status, 200);
   assert.equal((await request('/api/state', { headers: auth })).status, 401);
 });
+
+test('publiczny healthz ujawnia wyłącznie stan techniczny i zgłasza niedostępną bazę', async (t) => {
+  const { path } = fixture(t);
+  const keys = openKeys(path);
+  const store = openStore(path);
+  t.after(() => keys.close());
+  t.after(() => store.close());
+  const handler = createHandler({
+    store,
+    keys,
+    sessions: createSessions(password),
+    port: 14313,
+    revision: 'r-synthetic',
+  });
+  const request = async () => {
+    const req = Readable.from([]);
+    req.method = 'GET';
+    req.url = '/healthz';
+    req.headers = { host: '127.0.0.1:14313' };
+    let status;
+    let body;
+    const headers = new Map();
+    await handler(req, {
+      setHeader: (key, value) => headers.set(key.toLowerCase(), value),
+      writeHead(code) {
+        status = code;
+      },
+      end(value) {
+        body = value;
+      },
+    });
+    return { status, body: JSON.parse(body) };
+  };
+  const healthy = await request();
+  assert.equal(healthy.status, 200);
+  assert.deepEqual(healthy.body, {
+    status: 'ok',
+    revision: 'r-synthetic',
+    schemaVersion: 4,
+    db: 'ok',
+    aiCapReached: false,
+  });
+  assert.doesNotMatch(JSON.stringify(healthy.body), /candidate|email|\/|password|secret/i);
+  t.mock.method(store, 'healthStatus', () => {
+    throw new Error('database path and secret');
+  });
+  const unavailable = await request();
+  assert.equal(unavailable.status, 503);
+  assert.deepEqual(unavailable.body, {
+    status: 'unavailable',
+    revision: 'r-synthetic',
+    schemaVersion: null,
+    db: 'unavailable',
+    aiCapReached: null,
+  });
+  assert.doesNotMatch(JSON.stringify(unavailable.body), /database path|secret/i);
+});
