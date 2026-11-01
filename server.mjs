@@ -5,14 +5,17 @@ import { fileURLToPath } from 'node:url';
 
 import { createSessions, openKeys } from './lib/auth.mjs';
 import { createHandler } from './lib/http.mjs';
+import { createLogger } from './lib/logger.mjs';
 import { openStore } from './lib/store.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
+const logger = createLogger();
 await mkdir(resolve(root, 'data'), { recursive: true });
 const sessions = createSessions(process.env.HIREOS_RECRUITER_PASSWORD);
 delete process.env.HIREOS_RECRUITER_PASSWORD;
 const databasePath = process.env.HIREOS_DB || resolve(root, 'data/hireos.sqlite');
 const store = openStore(databasePath);
+await store.purgeRejectedCv();
 const keys = openKeys(databasePath);
 const port = Number(process.env.PORT || 4310);
 const server = http.createServer(
@@ -25,7 +28,7 @@ const server = http.createServer(
   })
 );
 server.listen(port, '127.0.0.1', () =>
-  process.stdout.write(`HireOS: http://localhost:${port} — lokalny prototyp; dane fikcyjne\n`)
+  logger.info('server.started', { url: `http://localhost:${port}`, mode: 'lokalny prototyp' })
 );
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () =>

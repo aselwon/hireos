@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
+      - name: Scan repository secrets
+        uses: gitleaks/gitleaks-action@v2
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
