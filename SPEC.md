@@ -43,3 +43,15 @@ Przepływ:
 - Koszty: **0 zł za modele**. Wszystkie wywołania modeli idą przez Cloudflare Workers AI na koncie `2791466c5820cfd886aad95e0d3ef948` w darmowym przydziale 10 000 neuronów/dobę (reset 00:00 UTC). Bramka liczy zużycie i zatrzymuje wywołania przed limitem (domyślnie `MODEL_DAILY_NEURON_CAP=9000`), nigdy nie przechodzi w płatny nadmiar. Dozwolone tylko modele dostępne bez płatnej metody rozliczeń. Praca deweloperska i CI: fake provider. Agenci kodujący: wyłącznie subskrypcja ChatGPT (Codex), bez płatnych API.
 - Zasady kontaktu dla outreachu (limity dzienne, liczba follow-upów, zakres informacji przekazywanych kandydatom) ustala właściciel przed testem z prawdziwym kandydatem.
 - Zgodność z RODO i AI Act (rekrutacja to system wysokiego ryzyka) wymaga przeglądu specjalisty przed użyciem z prawdziwymi kandydatami.
+
+## Etap 2 — produkcja i pierwszy przychód (MVP-25…MVP-55)
+
+Zatwierdzone przez właściciela 2026-11-01. Cel: HireOS działa produkcyjnie i zarabia, nie jako demo. Model przychodu: właściciel prowadzi płatne rekrutacje IT dla firm (zleceniodawców), a HireOS pozostaje jego narzędziem single tenant. „Billing klientów” spoza zakresu MVP oznacza rozliczenia SaaS; etap 2 dodaje wyłącznie rejestr zleceń i eksport danych do faktury, bez wystawiania faktur i bez płatności online.
+
+Twarde zasady etapu 2:
+
+- AI wyłącznie przez darmowy Workers AI w limicie `MODEL_DAILY_NEURON_CAP`; brak płatnych dostawców i fallbacków.
+- Żadnych płatnych usług bez wyraźnej zgody właściciela.
+- Kontakt z prawdziwymi kandydatami dopiero po zaliczonym teście na kontrolowanym odbiorcy (bramka w kodzie, MVP-40/41).
+- Brak automatycznego wdrożenia: zadania przygotowują skrypty i dokumentację, wdraża właściciel.
+- Zadania ze statusem `blocked` (MVP-30, 37, 41, 52, 55) to kroki człowieka; opis w `planning/blocked.md`.

@@ -1,6 +1,6 @@
 {
   "project": "HireOS MVP IT",
-  "updated": "2026-10-30",
+  "updated": "2026-11-01",
   "spec": "SPEC.md",
   "dod": "docs/mvp-dod.md",
   "archivedBacklog": "planning/backlog.json (poza zakresem MVP)",
@@ -295,6 +295,409 @@
       "dependsOn": ["MVP-19", "MVP-22"],
       "tier": "worker",
       "status": "done"
+    },
+    {
+      "id": "MVP-25",
+      "title": "Tryb produkcyjny: walidacja konfiguracji i wyłączenie ścieżek demo",
+      "description": "Przy NODE_ENV=production serwer musi startować tylko z poprawną konfiguracją i bez elementów demonstracyjnych. Dodaj moduł konfiguracji (lib/config.mjs) czytający i walidujący env (HIREOS_RECRUITER_PASSWORD, HIREOS_SECURE_COOKIE, RETENTION_DAYS, MODEL_*), który kończy start czytelnym błędem bez wypisywania wartości sekretów. W trybie produkcyjnym wyłącz /api/state, generyczne store.mutate dla akcji demo i serwowanie seed.js; komunikat startowy nie może mówić o 'lokalnym prototypie'.",
+      "acceptance": [
+        "Start z NODE_ENV=production bez hasła lub z MODEL_DAILY_NEURON_CAP > 9000 kończy się kodem != 0 i komunikatem PL bez wartości sekretów.",
+        "W trybie produkcyjnym /api/state i mutacje demo zwracają 404, seed.js nie jest serwowany; w trybie lokalnym zachowanie bez zmian.",
+        "Testy integracyjne obu trybów; npm run ci zielone."
+      ],
+      "dependsOn": [],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-26",
+      "title": "Endpoint /healthz i probe wdrożenia",
+      "description": "Dodaj publiczny GET /healthz bez danych osobowych: status, REVISION wydania, test zapytania do SQLite, wersja schematu, stan limitu Workers AI (wyczerpany tak/nie, bez kluczy). ops/deploy.sh ma sprawdzać /healthz zamiast /login i wypisać REVISION.",
+      "acceptance": [
+        "/healthz zwraca 200 z JSON {status, revision, schemaVersion, db, aiCapReached}; przy niedostępnej bazie 503.",
+        "Odpowiedź nie zawiera danych kandydatów, ścieżek ani sekretów (test).",
+        "ops/deploy.sh i docs/vps-preview.md używają /healthz."
+      ],
+      "dependsOn": ["MVP-25"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-27",
+      "title": "Panel tylko na API: usunięcie danych demo i localStorage z produkcji",
+      "description": "Panel rekrutera w trybie produkcyjnym korzysta wyłącznie z API Node/SQLite. Usuń zależność od seed.js/localStorage z ładowania panelu (seed zostaje tylko dla trybu lokalnego/testów, jeśli jest potrzebny), zaktualizuj docs/deployment.md, że publiczny demonstrator statyczny zostanie zastąpiony instancją produkcyjną przy wdrożeniu przez właściciela.",
+      "acceptance": [
+        "Panel po zalogowaniu działa na pustej bazie produkcyjnej bez seed.js (test e2e/integracyjny).",
+        "Brak odwołań do localStorage z danymi kandydatów w hireos/dist.",
+        "docs/deployment.md opisuje stan docelowy i rollback do demonstratora."
+      ],
+      "dependsOn": ["MVP-25"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-28",
+      "title": "Preflight i runbook pierwszego wdrożenia produkcyjnego (bez wdrażania)",
+      "description": "Przygotuj ops/preflight.sh (uruchamiany ręcznie przez właściciela na VPS): sprawdza obecność wymaganych zmiennych w /etc/hireos/env bez wypisywania wartości, uprawnienia /var/lib/hireos, wersję Node, wolne miejsce, świeży backup, migracje na kopii bazy (dry-run). Napisz docs/production-runbook.md: kolejność kroków, curl-checklista, rollback, kto co robi. Zakaz automatycznego wdrożenia: skrypt nic nie restartuje i nie łączy się z VPS z CI.",
+      "acceptance": [
+        "ops/preflight.sh ma testy (bats-free: test Node uruchamiający skrypt na katalogu tymczasowym) i nigdy nie wypisuje wartości env.",
+        "Runbook zawiera checklistę przed/po wdrożeniu i rollback; wyraźnie: wdraża tylko właściciel.",
+        "Żaden workflow CI ani skrypt harnessa nie wykonuje deployu."
+      ],
+      "dependsOn": ["MVP-26"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-29",
+      "title": "Monitoring i alerty bez płatnych usług",
+      "description": "Dodaj ops/hireos-monitor.{mjs,service,timer}: co 5 min sprawdza /healthz, wiek ostatniego backupu, wolne miejsce, osiągnięcie limitu neuronów i liczbę błędów 5xx z logów. Alert idzie przez konfigurowalną komendę ALERT_COMMAND (domyślnie tylko wpis do journald z prefiksem HIREOS_ALERT); kanał (np. e-mail, darmowy webhook) wybiera właściciel. Deduplikacja alertów (nie częściej niż raz na godzinę dla tego samego problemu). Bez płatnych usług monitoringu.",
+      "acceptance": [
+        "Testy jednostkowe progów i deduplikacji na sztucznych danych.",
+        "Brak ALERT_COMMAND = alert tylko w journald; komenda nie dostaje danych osobowych.",
+        "docs/production-runbook.md opisuje instalację timera (ręcznie przez właściciela)."
+      ],
+      "dependsOn": ["MVP-26"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-30",
+      "title": "Pierwsze wdrożenie produkcyjne (właściciel)",
+      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil wykonuje docs/production-runbook.md na VPS: tworzy /etc/hireos/env (hasło, MODEL_PROVIDER, token Workers AI ograniczony do AI), uruchamia preflight, deploy, backup timer i monitor, sprawdza curl-checklistę. Decyzja: czy domena niezla.bieda.it zostaje, czy inna.",
+      "acceptance": [
+        "Usługa działa pod docelową domeną z TLS, /healthz 200.",
+        "Backup timer i monitor aktywne, pierwszy backup odtworzony testowo.",
+        "Wynik wpisany do docs/production-runbook.md (data, REVISION) przez właściciela."
+      ],
+      "dependsOn": ["MVP-27", "MVP-28", "MVP-29", "MVP-44"],
+      "tier": "planner",
+      "status": "blocked"
+    },
+    {
+      "id": "MVP-31",
+      "title": "Pełna klauzula informacyjna RODO z wersjonowaniem",
+      "description": "Zastąp skrót 'Klauzula v1' pełną klauzulą informacyjną art. 13 RODO jako wersjonowany dokument (lib/legal/ lub docs/legal/ + publiczna strona /privacy/:version). Dane administratora (nazwa, adres, kontakt, IOD jeśli jest) z konfiguracji, nie zmyślone; brak danych = formularz aplikacji wyłączony w produkcji. Klauzula wymienia: cel, podstawę, okres retencji N z konfiguracji, odbiorców (w tym zleceniodawcę rekrutacji), prawa osoby, użycie AI z udziałem człowieka. Oddzielna, nieobowiązkowa zgoda na przyszłe rekrutacje. Treść oznaczona jako projekt do przeglądu prawnego.",
+      "acceptance": [
+        "Formularz /apply pokazuje link do pełnej klauzuli i zapisuje wersję oraz osobno zgodę na przyszłe rekrutacje.",
+        "Zmiana wersji klauzuli nie zmienia wersji zapisanych przy starych aplikacjach (test).",
+        "Bez danych administratora w konfiguracji produkcyjnej formularz zwraca komunikat o niedostępności (test)."
+      ],
+      "dependsOn": ["MVP-25"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-32",
+      "title": "Przejrzystość użycia AI wobec kandydatów",
+      "description": "Na formularzu aplikacji i w klauzuli dodaj jasną informację PL: CV jest analizowane przez system AI wspierający rekrutera, AI nie podejmuje decyzji i nie odrzuca automatycznie, decyzję podejmuje człowiek, kandydat może poprosić o wyjaśnienie i ludzką weryfikację (kontakt). Wiadomości odmowne i statusy nie mogą sugerować decyzji automatycznej.",
+      "acceptance": [
+        "Informacja widoczna przed wysłaniem formularza (test HTML/e2e).",
+        "Tekst wersjonowany razem z klauzulą (MVP-31).",
+        "Test, że żaden tekst dla kandydata nie zawiera sformułowań o automatycznej decyzji."
+      ],
+      "dependsOn": ["MVP-31"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-33",
+      "title": "Prawa osób: dostęp, usunięcie, sprzeciw wobec kontaktu",
+      "description": "Dodaj w panelu akcje dla kandydata: eksport wszystkich danych (JSON + CV) na żądanie z art. 15, trwałe usunięcie z art. 17 (dane, CV, raporty, zadania outreach; w audycie zostaje tylko zanonimizowany ślad żądania), oznaczenie do_not_contact po sprzeciwie. Rejestr żądań z datą wpłynięcia i terminem 30 dni.",
+      "acceptance": [
+        "Eksport zawiera wszystkie tabele powiązane z kandydatem (test na danych syntetycznych).",
+        "Usunięcie usuwa pliki CV i rekordy; audyt nie zawiera danych osobowych (test).",
+        "do_not_contact blokuje tworzenie i claim zadań outreach (test)."
+      ],
+      "dependsOn": ["MVP-31"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-34",
+      "title": "Retencja: pełny cykl i harmonogram",
+      "description": "Rozszerz retencję poza odrzucone CV: po N dniach od zamknięcia rekrutacji usuwaj dane kandydatów bez zgody na przyszłe rekrutacje; ze zgodą — po okresie z konfiguracji. Uruchamianie cykliczne (timer systemd lub wewnętrzny harmonogram raz na dobę), nie tylko przy starcie. Raport z każdego przebiegu w audycie (liczby, bez danych osobowych).",
+      "acceptance": [
+        "Testy z kontrolowanym zegarem dla wszystkich przypadków retencji.",
+        "Przebieg cykliczny działa bez restartu serwera.",
+        "N pochodzi z konfiguracji i jest tym samym N, który pokazuje klauzula."
+      ],
+      "dependsOn": ["MVP-31"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-35",
+      "title": "Dokumentacja AI Act i DPIA (projekt do przeglądu)",
+      "description": "Utwórz docs/compliance/: przeznaczenie systemu (rekrutacja = system wysokiego ryzyka, zał. III pkt 4), procedura nadzoru człowieka (kto, kiedy, jak może zignorować wynik AI), zakres i okres przechowywania logów (min. 6 mies. dla podmiotu stosującego), rejestr ryzyk (stronniczość, błędy parsera, halucynacje dowodów) z mitygacjami, opis danych ewaluacyjnych, instrukcja użytkowania dla rekrutera, projekt DPIA. Wszystko oznaczone 'projekt — wymaga przeglądu prawnego'.",
+      "acceptance": [
+        "Każdy dokument odwołuje się do konkretnych mechanizmów w kodzie (ścieżki plików).",
+        "Lista otwartych pytań do prawnika na końcu.",
+        "Brak deklaracji zgodności — tylko opis stanu."
+      ],
+      "dependsOn": [],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-36",
+      "title": "Rejestr zdarzeń AI i ślad nadzoru człowieka",
+      "description": "Upewnij się, że każde wywołanie modelu jest logowane z: id aplikacji, wersją promptu, modelem, czasem, neuronami, hashem wyniku; a decyzja rekrutera zapisuje, że widział raport AI i czy się z nim zgodził. Okres przechowywania logów AI konfigurowalny (domyślnie 180 dni) i niezależny od usuwania danych kandydata (logi bez treści CV). Eksport rejestru do CSV dla audytu.",
+      "acceptance": [
+        "Test: wywołanie modelu tworzy wpis bez treści CV i danych kontaktowych.",
+        "Decyzja bez otwarcia raportu jest odnotowana jako taka.",
+        "Eksport CSV dostępny tylko dla zalogowanego rekrutera."
+      ],
+      "dependsOn": ["MVP-33"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-37",
+      "title": "Przegląd prawny RODO i AI Act (właściciel)",
+      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil zleca/akceptuje przegląd: klauzula (MVP-31/32), retencja N, procedura praw osób (MVP-33), dokumentacja AI Act i DPIA (MVP-35), podstawa przekazywania danych zleceniodawcom. Może wymagać płatnego prawnika — decyzja Kamila.",
+      "acceptance": [
+        "Zatwierdzona wersja klauzuli i N wpisane do konfiguracji.",
+        "Lista poprawek z przeglądu rozpisana jako nowe zadania.",
+        "Status zmienia wyłącznie właściciel."
+      ],
+      "dependsOn": ["MVP-32", "MVP-34", "MVP-35"],
+      "tier": "planner",
+      "status": "blocked"
+    },
+    {
+      "id": "MVP-38",
+      "title": "Limity outreachu egzekwowane w API",
+      "description": "Dodaj ustawienia outreachu: dzienny limit nowych kontaktów (globalnie i na rekrutację), maks. liczba follow-upów na kandydata, minimalny odstęp między wiadomościami, godziny wysyłki (strefa Europe/Warsaw). Domyślnie limit 0 = outreach wyłączony, dopóki właściciel nie ustawi wartości. Claim w /api/v1/tasks odmawia ponad limit z czytelnym kodem błędu.",
+      "acceptance": [
+        "Testy z kontrolowanym zegarem: limit dzienny, follow-upy, godziny, odstęp.",
+        "Domyślna konfiguracja nie pozwala na żaden claim.",
+        "Zmiany limitów zapisują się w audycie."
+      ],
+      "dependsOn": ["MVP-25"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-39",
+      "title": "Rezygnacja z kontaktu (opt-out) w każdej wiadomości",
+      "description": "Każde zadanie outreach zawiera publiczny, jednorazowy link rezygnacji (/opt-out/:token) i obowiązkową stopkę PL do wiadomości. Wejście w link ustawia do_not_contact, anuluje otwarte zadania i pokazuje potwierdzenie; nie wymaga logowania ani podawania danych. Executor nie może dostać zadania bez stopki.",
+      "acceptance": [
+        "Test: opt-out anuluje otwarte zadania i blokuje nowe.",
+        "Token nie pozwala odczytać danych kandydata.",
+        "Payload zadania w /api/v1/tasks zawiera stopkę i URL (aktualizacja docs/worker-api.md)."
+      ],
+      "dependsOn": ["MVP-33", "MVP-38"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-40",
+      "title": "Twarda bramka testu kontrolnego przed prawdziwymi kandydatami",
+      "description": "Dodaj flagę systemową outreach_live=false. Dopóki właściciel nie zapisze w panelu zaliczonego testu kontrolnego (data, id raportu, kto), claim jest możliwy wyłącznie dla zadań oznaczonych control_recipient=true, których odbiorca jest na allowliście adresów testowych z konfiguracji. Włączenie outreach_live wymaga hasła rekrutera i jest audytowane; agent ani klucz API nie może go włączyć.",
+      "acceptance": [
+        "Test: przed bramką claim zadania dla zwykłego kandydata zwraca 403 z kodem control_test_required.",
+        "Klucz API nie może zmienić outreach_live (test).",
+        "docs/verification.md opisuje zapis wyniku testu."
+      ],
+      "dependsOn": ["MVP-38"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-41",
+      "title": "Test kontrolny outreachu na produkcji (właściciel)",
+      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil przeprowadza scenariusz z docs/verification.md (MVP-23) na instancji produkcyjnej z kontrolowanym odbiorcą: claim, wysyłka, odpowiedź, odmowa, pauza, przejęcie, opt-out, limity. Wynik zapisuje w panelu (MVP-40) i w raporcie. Dopiero potem prawdziwi kandydaci.",
+      "acceptance": [
+        "Raport właściciela uzupełniony w docs/verification.md.",
+        "outreach_live włączone ręcznie przez właściciela tylko po zaliczeniu.",
+        "Ustalone przez Kamila wartości limitów outreachu."
+      ],
+      "dependsOn": ["MVP-30", "MVP-37", "MVP-39", "MVP-40"],
+      "tier": "planner",
+      "status": "blocked"
+    },
+    {
+      "id": "MVP-42",
+      "title": "Panel: zadania outreach",
+      "description": "Widok w panelu: tworzenie zadania outreach dla kandydata (z zatwierdzonymi zasadami kontaktu), lista zadań ze stanem, akcje pauza/wznów/przejęcie/anuluj, widok wykorzystania limitów dziennych i stanu bramki testu kontrolnego. Polski UI.",
+      "acceptance": [
+        "Test e2e: utworzenie, pauza, przejęcie zadania.",
+        "Widoczny komunikat, gdy outreach_live=false.",
+        "Kandydat z do_not_contact nie ma akcji kontaktu."
+      ],
+      "dependsOn": ["MVP-40"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-43",
+      "title": "Panel: ustawienia i klucze API",
+      "description": "Widok ustawień: tworzenie klucza API z zakresem (sekret pokazany raz), lista i odwołanie kluczy, edycja limitów outreachu, podgląd retencji N i wersji klauzuli, licznik zużycia neuronów Workers AI dziś vs limit. Bez wyświetlania istniejących sekretów.",
+      "acceptance": [
+        "Test: sekret klucza zwracany tylko przy utworzeniu.",
+        "Odwołany klucz natychmiast dostaje 401.",
+        "Licznik neuronów zgodny z model_calls (test)."
+      ],
+      "dependsOn": ["MVP-38"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-44",
+      "title": "Kolejka przetwarzania CV w limicie darmowego Workers AI",
+      "description": "Po wpłynięciu aplikacji parsowanie i raport mają trafiać do trwałej kolejki w SQLite przetwarzanej w tle. Przy osiągnięciu MODEL_DAILY_NEURON_CAP zadania czekają do następnej doby (UTC, zgodnie z rozliczeniem Workers AI) zamiast błędu; w panelu widać stan 'w kolejce'. Tylko darmowe modele Workers AI; żadnego fallbacku do płatnego dostawcy.",
+      "acceptance": [
+        "Test: przekroczenie limitu przenosi pracę na kolejną dobę bez utraty zadań.",
+        "Restart serwera nie gubi kolejki.",
+        "Brak jakiegokolwiek dostawcy poza Workers AI/fake w kodzie (test konfiguracji)."
+      ],
+      "dependsOn": ["MVP-25"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-45",
+      "title": "Polski UI i dostępność panelu oraz formularza",
+      "description": "Przegląd i poprawa UI: wszystkie teksty po polsku, spójne komunikaty błędów, stany puste i ładowania, formularz aplikacji użyteczny na telefonie, podstawowa dostępność (etykiety, kontrast, focus, obsługa klawiaturą).",
+      "acceptance": [
+        "Brak angielskich tekstów widocznych dla użytkownika (test skanujący dist).",
+        "Formularz /apply przechodzi test na szerokości 375 px.",
+        "Kontrolki formularzy mają etykiety (test)."
+      ],
+      "dependsOn": ["MVP-27", "MVP-32"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-46",
+      "title": "Zleceniodawcy: klienci firmowi i powiązanie z rekrutacjami",
+      "description": "Model przychodu etapu 2: Kamil prowadzi rekrutacje IT dla firm, HireOS jest jego narzędziem (single tenant). Dodaj tabelę clients (nazwa, NIP, kontakt, warunki: model rozliczenia success fee %/stała opłata, kwota/procent, zaliczka) i brief.client_id. Migracja, API i widok w panelu. Wartości cenowe wpisuje właściciel.",
+      "acceptance": [
+        "Migracja 00x z testem na istniejącej bazie.",
+        "Rekrutację można przypisać do klienta; lista klientów w panelu.",
+        "Dane testowe wyłącznie syntetyczne."
+      ],
+      "dependsOn": ["MVP-25"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-47",
+      "title": "Shortlista dla klienta przez bezpieczny link",
+      "description": "Rekruter wybiera kandydatów i udostępnia klientowi shortlistę przez link z tokenem (wygasa, odwoływalny, log dostępu). Zakres danych minimalny i konfigurowalny; tylko kandydaci, których klauzula obejmuje przekazanie danych zleceniodawcy. Bez dostępu do panelu i surowych CV, chyba że rekruter je dołączy.",
+      "acceptance": [
+        "Test: wygasły/odwołany token zwraca 404.",
+        "Kandydat bez odpowiedniej wersji zgody nie może trafić na shortlistę.",
+        "Każde otwarcie linku jest audytowane."
+      ],
+      "dependsOn": ["MVP-31", "MVP-46"],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-48",
+      "title": "Rozliczenia zleceń i eksport danych do faktury",
+      "description": "Rejestr zdarzeń rozliczeniowych per klient/rekrutacja: zaliczka, zatrudnienie kandydata (placement) z datą i wynagrodzeniem, należna kwota wg warunków klienta, status (do zafakturowania/zafakturowane/opłacone). Eksport CSV z danymi do faktury. HireOS nie wystawia faktur i nie integruje się z płatnym narzędziem bez decyzji właściciela.",
+      "acceptance": [
+        "Test wyliczenia success fee i stałej opłaty.",
+        "Eksport CSV z poprawnymi kwotami (grosze, bez błędów zaokrągleń).",
+        "Zmiana statusu audytowana."
+      ],
+      "dependsOn": ["MVP-46"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-49",
+      "title": "Strona sprzedażowa i formularz zapytań od firm",
+      "description": "Publiczna strona główna PL dla firm: oferta rekrutacji IT (AI wspiera, człowiek decyduje), proces, korzyści, cennik czytany z konfiguracji (bez cen = sekcja 'wycena indywidualna'), FAQ, polityka prywatności. Formularz zapytania (firma, kontakt, stanowisko, zgoda) zapisywany jako lead w SQLite; honeypot i limit zapytań. Bez zewnętrznych skryptów śledzących.",
+      "acceptance": [
+        "Strona przechodzi test bez sieci zewnętrznej (brak zewnętrznych zasobów).",
+        "Lead zapisany z wersją zgody; limit zapytań działa (test).",
+        "Ceny nie są zaszyte w kodzie."
+      ],
+      "dependsOn": ["MVP-31"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-50",
+      "title": "Leady w panelu i konwersja w klienta",
+      "description": "Lista leadów z formularza w panelu: status (nowy, w kontakcie, oferta, wygrany, przegrany), notatki, konwersja w klienta (MVP-46) jednym przyciskiem. Retencja leadów nieprzekonwertowanych konfigurowalna.",
+      "acceptance": [
+        "Test konwersji lead → klient.",
+        "Retencja leadów objęta harmonogramem z MVP-34.",
+        "Polski UI."
+      ],
+      "dependsOn": ["MVP-46", "MVP-49", "MVP-34"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-51",
+      "title": "Szablony oferty, umowy i powierzenia danych (projekty)",
+      "description": "docs/sales/: szablon oferty dla firmy, projekt umowy o świadczenie usług rekrutacyjnych (zakres, wynagrodzenie, gwarancja wymiany kandydata, poufność), ustalenie roli w RODO (Kamil jako administrator kandydatów vs podmiot przetwarzający) z projektem odpowiedniej umowy, checklista onboardingu klienta. Oznaczone 'projekt do przeglądu prawnego'; bez cen.",
+      "acceptance": [
+        "Wszystkie miejsca do decyzji oznaczone [DECYZJA WŁAŚCICIELA].",
+        "Checklista onboardingu odwołuje się do funkcji z MVP-46/47/48.",
+        "Brak danych osobowych w repo."
+      ],
+      "dependsOn": [],
+      "tier": "planner",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-52",
+      "title": "Decyzje biznesowe przed sprzedażą (właściciel)",
+      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil decyduje: cennik (success fee %/stała/zaliczka), forma działalności i dane administratora/sprzedawcy, narzędzie do faktur (płatne wymaga jego OK), domena i adres kontaktowy, akceptacja szablonów z MVP-51 po przeglądzie prawnym.",
+      "acceptance": [
+        "Cennik w konfiguracji produkcyjnej.",
+        "Dane administratora w konfiguracji (odblokowują formularz z MVP-31).",
+        "Zatwierdzone szablony umów."
+      ],
+      "dependsOn": ["MVP-51"],
+      "tier": "planner",
+      "status": "blocked"
+    },
+    {
+      "id": "MVP-53",
+      "title": "Twardnienie bezpieczeństwa aplikacji",
+      "description": "Limity w Node niezależne od nginx dla /api/login, /apply i formularza leadów; blokada po serii nieudanych logowań; rotacja sesji po logowaniu; CLI zmiany hasła (scripts/); nagłówki bezpieczeństwa i test, że ścieżki prywatne zwracają 401/403 bez sesji; npm audit w CI na poziomie high.",
+      "acceptance": [
+        "Testy limitów i blokady logowania.",
+        "Test macierzy ścieżek publicznych vs prywatnych.",
+        "CI zawiera audyt zależności."
+      ],
+      "dependsOn": ["MVP-25"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-54",
+      "title": "Szyfrowany backup poza VPS i test odtworzenia",
+      "description": "Rozszerz ops/backup.mjs o szyfrowanie (node:crypto, klucz z pliku poza repo) i opcjonalną kopię do celu wskazanego przez właściciela (katalog/rsync; darmowy, bez nowego płatnego dostawcy). Skrypt testu odtworzenia sprawdza integralność bazy i liczbę CV. Monitor (MVP-29) alarmuje, gdy kopia zewnętrzna jest starsza niż 26 h.",
+      "acceptance": [
+        "Test szyfrowania i odtworzenia na danych syntetycznych.",
+        "Brak celu zewnętrznego = tylko kopia lokalna i ostrzeżenie w logu.",
+        "Instrukcja w runbooku; wybór celu oznaczony jako decyzja właściciela."
+      ],
+      "dependsOn": ["MVP-29"],
+      "tier": "worker",
+      "status": "todo"
+    },
+    {
+      "id": "MVP-55",
+      "title": "Onboarding pierwszego klienta (właściciel)",
+      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Po wdrożeniu, przeglądzie prawnym, teście kontrolnym i decyzjach biznesowych Kamil podpisuje umowę z pierwszą firmą, zakłada klienta i rekrutację, publikuje ogłoszenie, przeprowadza rekrutację z prawdziwymi kandydatami i wystawia pierwszą fakturę. Wnioski rozpisuje jako nowe zadania.",
+      "acceptance": [
+        "Pierwsza płatna rekrutacja w systemie.",
+        "Pierwsze zdarzenie rozliczeniowe ze statusem 'zafakturowane'.",
+        "Lista poprawek z pierwszego klienta w planning/."
+      ],
+      "dependsOn": ["MVP-30", "MVP-37", "MVP-41", "MVP-47", "MVP-48", "MVP-50", "MVP-52"],
+      "tier": "planner",
+      "status": "blocked"
     }
   ]
 }

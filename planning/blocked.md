@@ -10,3 +10,43 @@ Agent dopisuje tu wpis po 3 nieudanych próbach CI albo przy blokadzie wymagają
 - Hipoteza:
 - Pytanie do właściciela:
 ```
+
+## MVP-30 — 2026-11-01
+
+- Gałąź / PR: brak (krok człowieka, zadanie ze statusem blocked od utworzenia)
+- Co próbowano: nic — agent nie wykonuje tego zadania (Pierwsze wdrożenie produkcyjne).
+- Ostatni błąd (bez sekretów): brak
+- Hipoteza: wymaga decyzji lub działania właściciela.
+- Pytanie do właściciela: Wykonać docs/production-runbook.md na VPS po MVP-27/28/29/44: /etc/hireos/env (hasło, token Workers AI ograniczony do AI), preflight, deploy, backup i monitor. Która domena docelowa (niezla.bieda.it czy inna)?
+
+## MVP-37 — 2026-11-01
+
+- Gałąź / PR: brak (krok człowieka, zadanie ze statusem blocked od utworzenia)
+- Co próbowano: nic — agent nie wykonuje tego zadania (Przegląd prawny RODO i AI Act).
+- Ostatni błąd (bez sekretów): brak
+- Hipoteza: wymaga decyzji lub działania właściciela.
+- Pytanie do właściciela: Zatwierdzić klauzulę i informację o AI (MVP-31/32), okres retencji N, procedurę praw osób (MVP-33), dokumentację AI Act i DPIA (MVP-35), podstawę przekazania danych zleceniodawcom. Czy zlecić płatnego prawnika (koszt = decyzja właściciela)?
+
+## MVP-41 — 2026-11-01
+
+- Gałąź / PR: brak (krok człowieka, zadanie ze statusem blocked od utworzenia)
+- Co próbowano: nic — agent nie wykonuje tego zadania (Test kontrolny outreachu na produkcji).
+- Ostatni błąd (bez sekretów): brak
+- Hipoteza: wymaga decyzji lub działania właściciela.
+- Pytanie do właściciela: Przeprowadzić scenariusz MVP-23 z kontrolowanym odbiorcą, ustalić wartości limitów outreachu, zapisać wynik w panelu i ręcznie włączyć outreach_live. Bez tego żaden prawdziwy kandydat nie dostanie wiadomości.
+
+## MVP-52 — 2026-11-01
+
+- Gałąź / PR: brak (krok człowieka, zadanie ze statusem blocked od utworzenia)
+- Co próbowano: nic — agent nie wykonuje tego zadania (Decyzje biznesowe przed sprzedażą).
+- Ostatni błąd (bez sekretów): brak
+- Hipoteza: wymaga decyzji lub działania właściciela.
+- Pytanie do właściciela: Cennik (success fee %/stała/zaliczka), forma działalności i dane administratora/sprzedawcy, narzędzie do faktur (płatne wymaga zgody), adres kontaktowy, akceptacja szablonów umów z MVP-51.
+
+## MVP-55 — 2026-11-01
+
+- Gałąź / PR: brak (krok człowieka, zadanie ze statusem blocked od utworzenia)
+- Co próbowano: nic — agent nie wykonuje tego zadania (Onboarding pierwszego klienta).
+- Ostatni błąd (bez sekretów): brak
+- Hipoteza: wymaga decyzji lub działania właściciela.
+- Pytanie do właściciela: Po MVP-30/37/41/52: umowa z pierwszą firmą, rekrutacja z prawdziwymi kandydatami, pierwsza faktura.
