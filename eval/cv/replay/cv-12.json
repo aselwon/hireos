@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "Python",
+      "quote": "Technology: Python",
+      "uncertain": false
+    },
+    {
+      "value": "SQL",
+      "quote": "Technology: SQL",
+      "uncertain": false
+    },
+    {
+      "value": "Airflow",
+      "quote": "Technology: Airflow",
+      "uncertain": false
+    },
+    {
+      "value": "Spark",
+      "quote": "Only starting to learn: Spark",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo DATA Lab 12-1",
+        "role": "Data Engineer",
+        "from": "2017-03",
+        "to": "2019-08",
+        "technologies": ["Python"]
+      },
+      "quote": "Company: Demo DATA Lab 12-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo DATA Lab 12-2",
+        "role": "Data Engineer",
+        "from": "2019-09",
+        "to": null,
+        "technologies": ["SQL"]
+      },
+      "quote": "Company: Demo DATA Lab 12-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "BSc Computer Science",
+      "quote": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Institution: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Language: English",
+      "uncertain": false
+    },
+    {
+      "value": "B2",
+      "quote": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}

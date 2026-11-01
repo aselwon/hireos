@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "Kotlin",
+      "quote": "Technology: Kotlin",
+      "uncertain": false
+    },
+    {
+      "value": "Android",
+      "quote": "Technology: Android",
+      "uncertain": false
+    },
+    {
+      "value": "SQLite",
+      "quote": "Technology: SQLite",
+      "uncertain": false
+    },
+    {
+      "value": "Swift",
+      "quote": "Only starting to learn: Swift",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo MOBILE Lab 10-1",
+        "role": "Mobile Developer",
+        "from": "2017-03",
+        "to": "2019-08",
+        "technologies": ["Kotlin"]
+      },
+      "quote": "Company: Demo MOBILE Lab 10-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo MOBILE Lab 10-2",
+        "role": "Mobile Developer",
+        "from": "2019-09",
+        "to": null,
+        "technologies": ["Android"]
+      },
+      "quote": "Company: Demo MOBILE Lab 10-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "BSc Computer Science",
+      "quote": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Institution: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Language: English",
+      "uncertain": false
+    },
+    {
+      "value": "B2",
+      "quote": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}

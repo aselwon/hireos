@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "Kotlin",
+      "quote": "Technologia: Kotlin",
+      "uncertain": false
+    },
+    {
+      "value": "Android",
+      "quote": "Technologia: Android",
+      "uncertain": false
+    },
+    {
+      "value": "SQLite",
+      "quote": "Technologia: SQLite",
+      "uncertain": false
+    },
+    {
+      "value": "Swift",
+      "quote": "Dopiero uczę się: Swift",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo MOBILE Lab 17-1",
+        "role": "Mobile Developer",
+        "from": "2017-03",
+        "to": "2019-08",
+        "technologies": ["Kotlin"]
+      },
+      "quote": "Firma: Demo MOBILE Lab 17-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo MOBILE Lab 17-2",
+        "role": "Mobile Developer",
+        "from": "2019-09",
+        "to": null,
+        "technologies": ["Android"]
+      },
+      "quote": "Firma: Demo MOBILE Lab 17-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "Inżynier informatyki",
+      "quote": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "value": "C1",
+      "quote": "CEFR: C1",
+      "uncertain": false
+    }
+  ]
+}

@@ -1,0 +1,560 @@
+{
+  "schemaVersion": 1,
+  "mode": "replay",
+  "generatedAt": "2026-11-01T13:24:39.525Z",
+  "minimumAccuracy": 0.9,
+  "categories": {
+    "skills": {
+      "correct": 63,
+      "total": 63,
+      "accuracy": 1
+    },
+    "roles": {
+      "correct": 42,
+      "total": 42,
+      "accuracy": 1
+    },
+    "periods": {
+      "correct": 84,
+      "total": 84,
+      "accuracy": 1
+    },
+    "languages": {
+      "correct": 42,
+      "total": 42,
+      "accuracy": 1
+    }
+  },
+  "neurons": {
+    "estimated": 0,
+    "actual": null
+  },
+  "results": [
+    {
+      "id": "cv-01",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-02",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-03",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-04",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-05",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-06",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-07",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-08",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-09",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-10",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-11",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-12",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-13",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-14",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-15",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-16",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-17",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-18",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-19",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-20",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    },
+    {
+      "id": "cv-21",
+      "categories": {
+        "skills": {
+          "correct": 3,
+          "total": 3,
+          "accuracy": 1
+        },
+        "roles": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        },
+        "periods": {
+          "correct": 4,
+          "total": 4,
+          "accuracy": 1
+        },
+        "languages": {
+          "correct": 2,
+          "total": 2,
+          "accuracy": 1
+        }
+      }
+    }
+  ],
+  "passed": true
+}

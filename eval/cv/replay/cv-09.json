@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "TypeScript",
+      "quote": "Technologia: TypeScript",
+      "uncertain": false
+    },
+    {
+      "value": "React",
+      "quote": "Technologia: React",
+      "uncertain": false
+    },
+    {
+      "value": "CSS",
+      "quote": "Technologia: CSS",
+      "uncertain": false
+    },
+    {
+      "value": "Vue",
+      "quote": "Dopiero uczę się: Vue",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo FRONTEND Lab 9-1",
+        "role": "Frontend Developer",
+        "from": "2017-03",
+        "to": "2019-08",
+        "technologies": ["TypeScript"]
+      },
+      "quote": "Firma: Demo FRONTEND Lab 9-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo FRONTEND Lab 9-2",
+        "role": "Frontend Developer",
+        "from": "2019-09",
+        "to": null,
+        "technologies": ["React"]
+      },
+      "quote": "Firma: Demo FRONTEND Lab 9-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "Inżynier informatyki",
+      "quote": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "value": "B2",
+      "quote": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}
