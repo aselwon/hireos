@@ -239,7 +239,7 @@
       "acceptance": ["Test przechodzi w CI w < 60 s.", "Brak wywołań sieciowych poza localhost."],
       "dependsOn": ["MVP-13"],
       "tier": "worker",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-20",
