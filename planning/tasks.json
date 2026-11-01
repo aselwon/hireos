@@ -197,7 +197,7 @@
       "acceptance": ["Testy przejść stanów, w tym próba claim zadania unresolved → odmowa."],
       "dependsOn": ["MVP-14"],
       "tier": "worker",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-16",
