@@ -14,6 +14,10 @@ Nie zakładamy, że Grok Bot oznacza xAI. Model generujący tekst, rutyna, zdaln
 
 Docelowym celem jest publiczny VPS z HTTPS i API zabezpieczonym ograniczonym, rotowalnym kluczem. API udostępnia uwierzytelnioną kolejkę z leasingiem oraz identyfikatorem zadania. System zapisuje audyt, stan próby i wynik w sposób pozwalający odtworzyć przebieg oraz skierować niepewne przypadki do ręcznej interwencji.
 
+Kontrakt zaimplementowanego API, endpointy, pola, stany i kody HTTP opisuje
+[Worker API](worker-api.md). Dokument ten opisuje wymagania uruchomienia kanału
+i kontrolowanego testu; nie stanowi potwierdzenia gotowości produkcyjnej.
+
 Kolejność jest obowiązkowa:
 
 1. HTTPS, API, ograniczony/rotowalny klucz, kolejka z leasingiem, id zadania i audyt.
@@ -42,10 +46,14 @@ Domyślna deklarowana częstotliwość to około 5 minut; nie jest to gwarancja 
 
 Timeout wysyłki oznacza wynik `unresolved`, a nie zgodę na retry. Nie wolno wykonywać ślepego retry.
 
-Każda próba kończy się jednym z jawnych wyników:
+Worker API przyjmuje wyniki `sent`, `replied`, `needs_intervention`, `failed`,
+`unresolved` i `refused`. Po wyniku `unresolved` ręczne rozstrzygnięcie raportuje
+`verified_not_sent` (zadanie wraca do kolejki) albo `verified_sent` (zadanie
+zamyka się jako `sent`). Są to wyniki weryfikacji, a nie automatyczne ponowienie.
+Każda próba kontaktu powinna mieć jeden z jawnych rezultatów operacyjnych:
 
 - `verified_sent` — potwierdzona wysyłka, z dowodem platformowym lub id, jeśli jest dostępne, oraz czasem;
-- `verified_not_sent_retryable` — sprawdzono właściwy wątek, nie znaleziono wiadomości, zapisano powód i można bezpiecznie zaplanować ponowienie;
+- `verified_not_sent_retryable` — po sprawdzeniu właściwego wątku można bezpiecznie zaplanować ponowienie; w Worker API raportuje się to jako `verified_not_sent` z opisem sprawdzenia;
 - `unresolved` — nie da się ustalić stanu; wymagana jest ręczna interwencja.
 
 Sam brak widocznej wiadomości nie zawsze dowodzi niewysłania. Po `unresolved` nigdy nie wykonujemy automatycznego retry. Właściwy wątek, zakres sprawdzenia, dowód, czas, błąd i decyzja operatora trafiają do audytu.
