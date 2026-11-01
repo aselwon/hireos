@@ -12,22 +12,22 @@
       <p>HireOS · rekrutacja</p>
       <h1 id="title">Aplikacja</h1>
       <article id="advertisement"></article>
-      <form id="application-form">
+      <form id="application-form" aria-busy="false">
         <label for="name">Imię i nazwisko</label>
         <input id="name" name="name" required maxlength="160" autocomplete="name" />
         <label for="email">Adres e-mail</label>
         <input id="email" name="email" type="email" required maxlength="254" autocomplete="email" />
         <label for="cv">CV w formacie PDF (maks. 10 MB)</label>
         <input id="cv" name="cv" type="file" accept="application/pdf,.pdf" required />
-        <p>
+        <p id="privacy-explanation">
           Twoje CV analizuje system AI wspierający rekrutera. AI nie podejmuje decyzji ani nie
           odrzuca kandydatów automatycznie — decyzję podejmuje człowiek. Możesz poprosić o
           wyjaśnienie i weryfikację przez człowieka, kontaktując się pod adresem wskazanym w
           <a href="/privacy/{{privacyVersion}}">klauzuli informacyjnej</a>.
         </p>
-        <label
-          ><input name="consent" type="checkbox" required /> Zgadzam się na przetwarzanie danych w
-          celu przeprowadzenia rekrutacji.</label
+        <label for="consent">
+          <input id="consent" name="consent" type="checkbox" required /> Zgadzam się na
+          przetwarzanie danych w celu przeprowadzenia rekrutacji.</label
         >
         <p>
           <a href="/privacy/{{privacyVersion}}"
@@ -36,10 +36,10 @@
           >
         </p>
         <input type="hidden" name="consentVersion" value="{{privacyVersion}}" />
-        <label
-          ><input name="futureRecruitmentConsent" type="checkbox" /> Zgadzam się na przetwarzanie
-          moich danych na potrzeby przyszłych rekrutacji (opcjonalnie). Zgodę mogę wycofać w
-          dowolnym momencie.</label
+        <label for="futureRecruitmentConsent">
+          <input id="futureRecruitmentConsent" name="futureRecruitmentConsent" type="checkbox" />
+          Zgadzam się na przetwarzanie moich danych na potrzeby przyszłych rekrutacji (opcjonalnie).
+          Zgodę mogę wycofać w dowolnym momencie.</label
         >
         <button type="submit">Wyślij aplikację</button>
       </form>

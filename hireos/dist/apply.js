@@ -23,6 +23,7 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
   const button = form.querySelector('button');
   button.disabled = true;
+  form.setAttribute('aria-busy', 'true');
   status.textContent = 'Wysyłanie…';
   try {
     const data = new FormData();
@@ -50,5 +51,6 @@ form.addEventListener('submit', async (event) => {
     status.textContent = error.message;
   } finally {
     button.disabled = false;
+    form.setAttribute('aria-busy', 'false');
   }
 });
