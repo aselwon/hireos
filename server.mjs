@@ -4,15 +4,17 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createSessions, openKeys } from './lib/auth.mjs';
+import { loadConfig } from './lib/config.mjs';
 import { createHandler } from './lib/http.mjs';
 import { createLogger } from './lib/logger.mjs';
 import { openStore } from './lib/store.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
+const config = loadConfig();
 const logger = createLogger();
 const dataDir = process.env.HIREOS_DATA_DIR || resolve(root, 'data');
 await mkdir(dataDir, { recursive: true });
-const sessions = createSessions(process.env.HIREOS_RECRUITER_PASSWORD);
+const sessions = createSessions(config.password);
 delete process.env.HIREOS_RECRUITER_PASSWORD;
 const databasePath = process.env.HIREOS_DB || resolve(dataDir, 'hireos.sqlite');
 const store = openStore(databasePath);
@@ -26,11 +28,15 @@ const server = http.createServer(
     sessions,
     port,
     dataDir,
-    secureCookie: process.env.HIREOS_SECURE_COOKIE === '1',
+    secureCookie: config.secureCookie,
+    production: config.production,
   })
 );
 server.listen(port, '127.0.0.1', () =>
-  logger.info('server.started', { url: `http://localhost:${port}`, mode: 'lokalny prototyp' })
+  logger.info('server.started', {
+    url: `http://localhost:${port}`,
+    mode: config.production ? 'produkcja' : 'lokalny prototyp',
+  })
 );
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () =>
