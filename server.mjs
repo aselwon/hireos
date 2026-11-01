@@ -17,7 +17,7 @@ await mkdir(dataDir, { recursive: true });
 const sessions = createSessions(config.password);
 delete process.env.HIREOS_RECRUITER_PASSWORD;
 const databasePath = process.env.HIREOS_DB || resolve(dataDir, 'hireos.sqlite');
-const store = openStore(databasePath);
+const store = openStore(databasePath, undefined, { seedDemo: !config.production });
 await store.purgeRejectedCv();
 const keys = openKeys(databasePath);
 const port = Number(process.env.PORT || 4310);
