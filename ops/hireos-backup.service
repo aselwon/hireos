@@ -1,0 +1,17 @@
+[Unit]
+Description=HireOS SQLite and CV backup
+
+[Service]
+Type=oneshot
+User=hireos
+Group=hireos
+WorkingDirectory=/opt/hireos/current
+Environment=HIREOS_DB=/var/lib/hireos/preview.sqlite
+Environment=HIREOS_DATA_DIR=/var/lib/hireos
+UMask=0077
+ExecStart=/usr/bin/node --experimental-sqlite /opt/hireos/current/ops/backup.mjs backup --keep 14
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/hireos

@@ -64,6 +64,61 @@ Właściciel instaluje jednostkę w `/etc/systemd/system/hireos-preview.service`
 i wykonuje `systemctl daemon-reload`. Sekrety są czytane przez systemd, nie nginx.
 Nie należy montować env ani katalogu danych do kontenera publicznego.
 
+## Backup i odtworzenie (MVP-22)
+
+Backup obejmuje spójny snapshot SQLite utworzony przez `node:sqlite` backup API,
+katalog `/var/lib/hireos/cv` oraz manifest z licznością rekordów i plików. Jednostki
+[backup service](../ops/hireos-backup.service) i [timer](../ops/hireos-backup.timer)
+wykonują go codziennie z rotacją do 14 kopii. Katalog kopii domyślnie znajduje się
+w `/var/lib/hireos/backups`; powinien pozostać w chronionym katalogu danych (0700).
+Do kopii należy zapewnić dodatkową, odseparowaną kopię poza VPS.
+
+Właściciel kopiuje oba pliki jednostek do `/etc/systemd/system/`, po czym uruchamia:
+
+```sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now hireos-backup.timer
+sudo systemctl start hireos-backup.service
+sudo systemctl status hireos-backup.service
+sudo systemctl list-timers hireos-backup.timer
+```
+
+SQLite ma spójny snapshot, ale kopia CV nie jest atomowa względem bazy.
+Dla wspólnego punktu odtworzenia bazy i CV właściciel zatrzymuje aplikację na czas
+ręcznej kopii. Timer nie zatrzymuje aplikacji; jego kopie mogą zawierać CV z innej
+chwili niż snapshot bazy. Sama zgodność liczności nie dowodzi spójności relacji.
+
+Ręczny backup (jawne ścieżki, bez sekretów):
+
+```sh
+sudo -u hireos /usr/bin/node --experimental-sqlite \
+  /opt/hireos/current/ops/backup.mjs backup --keep 14 \
+  --db /var/lib/hireos/preview.sqlite --data-dir /var/lib/hireos
+```
+
+Skrypt odtwarzania przyjmuje wyłącznie pusty katalog danych i nieistniejący plik bazy. Właściciel najpierw
+zatrzymuje aplikację i wybiera pustą lokalizację; następnie wskazuje kopię oraz
+osobne ścieżki bazy i danych. Skrypt porównuje liczności wszystkich tabel oraz
+CV po odtworzeniu i kończy się błędem, jeśli wartości się różnią. Po błędzie
+nie uruchamiaj odtworzonej bazy; usuń tylko utworzony cel i ponów z poprawną kopią.
+Rotacja obejmuje katalogi hireos z datą w nazwie; własne nazwy nie są rotowane.
+
+```sh
+sudo systemctl stop hireos-preview
+sudo install -d -o hireos -g hireos -m 0700 /var/lib/hireos-restore
+sudo -u hireos /usr/bin/node --experimental-sqlite \
+  /opt/hireos/current/ops/backup.mjs restore \
+  --from /var/lib/hireos/backups/hireos-YYYY-MM-DDTHH-MM-SS.mmmZ \
+  --db /var/lib/hireos-restore/preview.sqlite \
+  --data-dir /var/lib/hireos-restore
+```
+
+Po sprawdzeniu wyniku właściciel planuje przełączenie odtworzonej bazy i katalogu
+CV, a następnie uruchamia usługę i wykonuje checklistę curl poniżej. Nie nadpisuj
+działającej bazy w miejscu. Lokalny test `npm test` sprawdza backup i restore na
+syntetycznej bazie oraz potwierdza odmowę odtworzenia do zajętego celu; nie sprawdza
+działania timerów na VPS ani przechowywania kopii poza serwerem.
+
 ## Release i rollback — wyłącznie właściciel
 
 Przed każdą zmianą: zielone CI, zapis SHA, kontrola migracji i spójna kopia

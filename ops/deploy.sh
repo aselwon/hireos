@@ -22,7 +22,7 @@ if [[ $action == deploy ]]; then
     source=$(realpath -e -- "$5")
     mkdir -- "$staging"
     # Jawna lista runtime: bez sekretów, bazy, node_modules i konfiguracji operatora.
-    for item in server.mjs lib hireos/dist package.json; do
+    for item in server.mjs lib hireos/dist package.json ops/backup.mjs; do
         [[ -e $source/$item ]] || exit 1
         [[ -z $(find "$source/$item" -type l -print -quit) ]] || exit 1
         mkdir -p -- "$(dirname "$staging/$item")"

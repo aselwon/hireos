@@ -11,11 +11,18 @@ test('release A → B → A: atomowy wybór kodu, trwałe dane i błędy operato
   const root = join(dir, 'installation');
   const source = join(dir, 'source');
   const bin = join(dir, 'bin');
-  for (const path of [root, bin, join(source, 'lib'), join(source, 'hireos/dist')]) {
+  for (const path of [
+    root,
+    bin,
+    join(source, 'lib'),
+    join(source, 'ops'),
+    join(source, 'hireos/dist'),
+  ]) {
     mkdirSync(path, { recursive: true });
   }
   writeFileSync(join(root, 'persistent.sqlite'), 'synthetic database');
   writeFileSync(join(source, 'package.json'), '{}');
+  writeFileSync(join(source, 'ops/backup.mjs'), '// synthetic backup');
   writeFileSync(join(source, 'lib/runtime.mjs'), '// synthetic');
   writeFileSync(join(source, 'hireos/dist/index.html'), 'synthetic');
   writeFileSync(join(source, '.env'), 'synthetic-excluded');
@@ -38,6 +45,7 @@ test('release A → B → A: atomowy wybór kodu, trwałe dane i błędy operato
   assert.equal(run([root, 'deploy', 'A', source]).status, 2);
   assert.equal(deploy('../escape').status, 2);
   assert.equal(deploy('A').status, 0);
+  assert.equal(readFileSync(join(root, 'current/ops/backup.mjs'), 'utf8'), '// synthetic backup');
   writeFileSync(join(source, 'server.mjs'), 'release B');
   assert.equal(deploy('B').status, 0);
   assert.equal(readFileSync(join(root, 'current/server.mjs'), 'utf8'), 'release B');
