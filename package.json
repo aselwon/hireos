@@ -10,7 +10,7 @@
     "quality:prepare": "qoq --warmup",
     "quality:check": "qoq --check --json",
     "quality:fix": "qoq --fix",
-    "ci": "npm run quality:check && npm run check && npm test",
+    "ci": "npm run quality:check && npm run check && npm test && npm audit --audit-level=high",
     "eval:generate": "node scripts/generate-cv-eval.mjs",
     "eval:cv": "node scripts/eval-cv.mjs"
   },
