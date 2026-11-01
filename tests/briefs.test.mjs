@@ -68,6 +68,9 @@ test('API briefów waliduje dane, zapisuje je, odczytuje i obsługuje idempotenc
     created.body.brief.id
   );
   assert.equal((await request('/api/v1/briefs', 'GET')).body.briefs.length, 1);
+  const applications = await request(`/api/v1/briefs/${created.body.brief.id}/applications`, 'GET');
+  assert.equal(applications.status, 200);
+  assert.deepEqual(applications.body.applications, []);
   assert.equal(store.listBriefs()[0].salary_max, 25000);
   const invalidTitle = await request(
     '/api/v1/briefs',

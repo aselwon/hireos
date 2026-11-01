@@ -175,7 +175,7 @@
       ],
       "dependsOn": ["MVP-05", "MVP-06", "MVP-12"],
       "tier": "worker",
-      "status": "todo"
+      "status": "review"
     },
     {
       "id": "MVP-14",
