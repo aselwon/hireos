@@ -155,6 +155,52 @@ test('wyniki są trwałe i idempotentne, konflikt nie tworzy drugiej próby', as
   }
 });
 
+test('unresolved blokuje claim do weryfikacji; verified_not_sent ponawia, verified_sent zamyka', async (t) => {
+  const { request, db } = fixture(t);
+  for (const finalResult of ['verified_not_sent', 'verified_sent']) {
+    await request('admin', '', payload);
+    const {
+      body: { task },
+    } = await request('worker-a', '/claim', {});
+    assert.equal(
+      (
+        await request(
+          'worker-a',
+          `/${task.task_id}/result`,
+          report(task, 'unresolved'),
+          `unresolved-${finalResult}`
+        )
+      ).body.task.status,
+      'unresolved'
+    );
+    assert.equal(
+      (await request('worker-b', '/claim', {}, `blocked-${finalResult}`)).body.task,
+      null
+    );
+    const verification = await request(
+      'worker-a',
+      `/${task.task_id}/result`,
+      report(task, finalResult),
+      finalResult
+    );
+    assert.equal(verification.status, 200);
+    assert.equal(
+      verification.body.task.status,
+      finalResult === 'verified_not_sent' ? 'queued' : 'sent'
+    );
+    if (finalResult === 'verified_not_sent') {
+      const retry = await request('worker-b', '/claim', {}, `retry-${finalResult}`);
+      assert.equal(retry.body.task.task_id, task.task_id);
+    } else {
+      assert.equal(
+        (await request('worker-b', '/claim', {}, `retry-${finalResult}`)).body.task,
+        null
+      );
+    }
+  }
+  assert.equal(db.prepare('SELECT count(*) AS n FROM task_attempts').get().n, 4);
+});
+
 test('zakresy, własność, podszywanie się i odwołany klucz nie omijają autoryzacji', async (t) => {
   const { request, keys } = fixture(t);
   assert.equal((await request('worker-a', '', payload)).status, 403);
