@@ -270,7 +270,7 @@
       "acceptance": ["Test restore lokalnie: liczby zgodne.", "Instrukcja w docs/vps-preview.md."],
       "dependsOn": ["MVP-21"],
       "tier": "worker",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-23",
