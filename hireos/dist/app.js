@@ -67,7 +67,7 @@ function shell(content) {
     : '';
   const pageTitle =
     state.view === 'jobs' ? 'Rekrutacje' : escapeHtml(state.brief?.title || 'Aplikacje');
-  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}</nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Lokalny panel</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
+  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}</nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
 }
 function alertBox(message, kind = 'error') {
   return `<div class="notice ${kind}" role="${kind === 'error' ? 'alert' : 'status'}">${escapeHtml(message)}</div>`;
