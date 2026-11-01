@@ -65,3 +65,16 @@ GitHub PUT /repos/aselwon/hireos/pulls/39/merge: 405 Pull Request has merge conf
 
 - Hipoteza: merge odrzucany (konflikt, ochrona gałęzi albo zmiana bazy).
 - Pytanie do właściciela: zmergować/poprawić PR ręcznie albo przywrócić `MVP-34` do `todo`.
+
+## MVP-45 — 2026-11-01
+
+- Gałąź / PR: https://github.com/aselwon/hireos/pull/43 (otwarty, NIE zmergowany)
+- Co próbowano: harness auto-merge, 3 próba/y
+- Ostatni błąd (bez sekretów):
+
+```text
+GitHub PUT /repos/aselwon/hireos/pulls/43/merge: 405 Pull Request has merge conflicts
+```
+
+- Hipoteza: merge odrzucany (konflikt, ochrona gałęzi albo zmiana bazy).
+- Pytanie do właściciela: zmergować/poprawić PR ręcznie albo przywrócić `MVP-45` do `todo`.

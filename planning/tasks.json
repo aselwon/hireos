@@ -567,7 +567,7 @@
       ],
       "dependsOn": ["MVP-27", "MVP-32"],
       "tier": "worker",
-      "status": "todo"
+      "status": "blocked"
     },
     {
       "id": "MVP-46",
