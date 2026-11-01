@@ -1227,3 +1227,8 @@ textarea {
     flex-direction: column;
   }
 }
+
+.client-panel {
+  padding: 21px 22px;
+  overflow-wrap: anywhere;
+}

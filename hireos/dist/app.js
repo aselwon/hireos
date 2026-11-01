@@ -1,6 +1,9 @@
+import { clientSelect, clientsPage, submitClientForm } from './clients.js';
+
 const app = document.querySelector('#app');
 const state = {
   briefs: [],
+  clients: [],
   brief: null,
   applications: [],
   view: 'jobs',
@@ -35,6 +38,7 @@ async function loadBriefs() {
   render();
   try {
     state.briefs = (await request('/api/v1/briefs')).briefs;
+    state.clients = (await request('/api/v1/clients')).clients;
   } catch (error) {
     state.error = error.message;
   } finally {
@@ -65,9 +69,9 @@ function shell(content) {
   const applicationsNav = state.brief
     ? `<button data-action="applications" aria-current="${navCurrent}">Aplikacje <span class="count">${state.applications.length}</span></button>`
     : '';
-  const pageTitle =
-    state.view === 'jobs' ? 'Rekrutacje' : escapeHtml(state.brief?.title || 'Aplikacje');
-  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}</nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
+  const pageTitles = { jobs: 'Rekrutacje', clients: 'Klienci' };
+  const pageTitle = pageTitles[state.view] || escapeHtml(state.brief?.title || 'Aplikacje');
+  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
 }
 function alertBox(message, kind = 'error') {
   return `<div class="notice ${kind}" role="${kind === 'error' ? 'alert' : 'status'}">${escapeHtml(message)}</div>`;
@@ -97,7 +101,7 @@ function briefForm() {
   const addButton = editing
     ? '<button class="button secondary small" type="button" data-action="add-requirement">Dodaj wymaganie</button>'
     : '';
-  return `<section class="page-heading"><div><div class="eyebrow">${status}</div><h1>${escapeHtml(b.title)}</h1><p>${escapeHtml((b.stack || []).join(' · '))} · ${escapeHtml(b.seniority)}</p></div><button class="button secondary" data-action="applications">Aplikacje (${state.applications.length})</button></section>${error}<section class="panel"><div class="panel-head"><div><h2>Ogłoszenie i macierz wymagań</h2><p>Przejrzyj treść przed zatwierdzeniem.</p></div></div><form id="content-form"><label class="field">Treść ogłoszenia<textarea name="advertisement" required rows="8">${escapeHtml(b.advertisement || '')}</textarea></label><div class="panel-head"><h3>Wymagania</h3>${addButton}</div><div id="requirements">${requirements}</div>${actions}</form></section>${applicationList()}`;
+  return `<section class="page-heading"><div><div class="eyebrow">${status}</div><h1>${escapeHtml(b.title)}</h1><p>${escapeHtml((b.stack || []).join(' · '))} · ${escapeHtml(b.seniority)}</p></div><button class="button secondary" data-action="applications">Aplikacje (${state.applications.length})</button></section>${error}<section class="panel client-panel"><h2>Klient rekrutacji</h2><form id="assignment-form">${clientSelect(state.clients, b.client_id, escapeHtml)}<button class="button secondary" type="submit">Zapisz przypisanie</button><p role="status" id="assignment-message"></p></form></section><section class="panel"><div class="panel-head"><div><h2>Ogłoszenie i macierz wymagań</h2><p>Przejrzyj treść przed zatwierdzeniem.</p></div></div><form id="content-form"><label class="field">Treść ogłoszenia<textarea name="advertisement" required rows="8">${escapeHtml(b.advertisement || '')}</textarea></label><div class="panel-head"><h3>Wymagania</h3>${addButton}</div><div id="requirements">${requirements}</div>${actions}</form></section>${applicationList()}`;
 }
 function requirementRow(r) {
   const options = [1, 2, 3]
@@ -178,6 +182,8 @@ function render() {
   let content = jobsPage();
   if (state.loading) {
     content = alertBox('Ładowanie danych…', 'loading');
+  } else if (state.view === 'clients') {
+    content = (state.error ? alertBox(state.error) : '') + clientsPage(state.clients, escapeHtml);
   } else if (state.view === 'brief') {
     content = briefForm();
   } else if (state.view === 'applications') {
@@ -244,6 +250,10 @@ document.addEventListener('click', async (event) => {
         state.brief = null;
         await loadBriefs();
         break;
+      case 'clients':
+        state.view = 'clients';
+        await loadBriefs();
+        break;
       case 'new':
         newBriefDialog();
         break;
@@ -306,6 +316,31 @@ document.addEventListener('click', async (event) => {
   }
 });
 document.addEventListener('submit', async (event) => {
+  if (event.target.id === 'client-form') {
+    await submitClientForm(event, request, loadBriefs);
+  }
+  if (event.target.id === 'assignment-form') {
+    event.preventDefault();
+    const form = event.target;
+    const briefId = state.brief.id;
+    const clientId = new FormData(form).get('clientId') || null;
+    const button = form.querySelector('[type=submit]');
+    button.disabled = true;
+    try {
+      await request(`/api/v1/briefs/${briefId}/client`, {
+        method: 'PUT',
+        body: JSON.stringify({ clientId }),
+      });
+      if (state.brief?.id === briefId) {
+        state.brief.client_id = clientId;
+      }
+      form.querySelector('#assignment-message').textContent = 'Przypisanie zapisane.';
+    } catch (error) {
+      form.querySelector('#assignment-message').textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  }
   if (event.target.id === 'brief-form') {
     event.preventDefault();
     const data = new FormData(event.target);
