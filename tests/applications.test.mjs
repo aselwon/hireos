@@ -47,7 +47,7 @@ test('public application saves a validated PDF once and keeps its file private',
   );
   store.approveBrief(brief.id, 'approve-apply');
   const boundary = 'hireos-test-boundary';
-  const pdf = Buffer.from('%PDF-1.7\nsynthetic CV');
+  const pdf = readFileSync(new URL('./fixtures/text-cv.pdf', import.meta.url));
   const multipart = (file = pdf, consent = true) =>
     Buffer.concat([
       Buffer.from(
@@ -92,6 +92,9 @@ test('public application saves a validated PDF once and keeps its file private',
 
   const first = await request();
   assert.equal(first.status, 201, JSON.stringify(first.body));
+  const cv = store.getCvFile(first.body.application.id);
+  assert.equal(cv.status, 'extracted');
+  assert.match(cv.extracted_text, /Stanowisko: Backend Developer/);
   const repeated = await request();
   assert.equal(repeated.body.application.id, first.body.application.id);
   assert.equal(readdirSync(join(directory, 'cv')).length, 1);
@@ -114,5 +117,17 @@ test('public application saves a validated PDF once and keeps its file private',
     413
   );
   assert.equal((await request({ body: multipart(pdf, false), key: 'no-consent' })).status, 400);
+  const scanned = await request({
+    body: multipart(readFileSync(new URL('./fixtures/scanned-cv.pdf', import.meta.url))),
+    key: 'scanned-application',
+  });
+  assert.equal(scanned.status, 201);
+  assert.deepEqual(
+    { ...store.getCvFile(scanned.body.application.id) },
+    {
+      extracted_text: null,
+      status: 'needs_manual_review',
+    }
+  );
   assert.equal((await request({ key: 'application-key', body: multipart(pdf, true) })).status, 201);
 });
