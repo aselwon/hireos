@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "Linux",
+      "quote": "Technology: Linux",
+      "uncertain": false
+    },
+    {
+      "value": "Docker",
+      "quote": "Technology: Docker",
+      "uncertain": false
+    },
+    {
+      "value": "Terraform",
+      "quote": "Technology: Terraform",
+      "uncertain": false
+    },
+    {
+      "value": "Kubernetes",
+      "quote": "Only starting to learn: Kubernetes",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo DEVOPS Lab 4-1",
+        "role": "DevOps Engineer",
+        "from": "2024-01",
+        "to": "2024-06",
+        "technologies": ["Linux"]
+      },
+      "quote": "Company: Demo DEVOPS Lab 4-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo DEVOPS Lab 4-2",
+        "role": "DevOps Engineer",
+        "from": "2025-09",
+        "to": null,
+        "technologies": ["Docker"]
+      },
+      "quote": "Company: Demo DEVOPS Lab 4-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "BSc Computer Science",
+      "quote": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Institution: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Language: English",
+      "uncertain": false
+    },
+    {
+      "value": "B1",
+      "quote": "CEFR: B1",
+      "uncertain": false
+    }
+  ]
+}

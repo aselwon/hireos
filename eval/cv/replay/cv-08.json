@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "Java",
+      "quote": "Technology: Java",
+      "uncertain": false
+    },
+    {
+      "value": "Spring",
+      "quote": "Technology: Spring",
+      "uncertain": false
+    },
+    {
+      "value": "PostgreSQL",
+      "quote": "Technology: PostgreSQL",
+      "uncertain": false
+    },
+    {
+      "value": "Kotlin",
+      "quote": "Only starting to learn: Kotlin",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo BACKEND Lab 8-1",
+        "role": "Backend Developer",
+        "from": "2017-03",
+        "to": "2019-08",
+        "technologies": ["Java"]
+      },
+      "quote": "Company: Demo BACKEND Lab 8-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo BACKEND Lab 8-2",
+        "role": "Backend Developer",
+        "from": "2019-09",
+        "to": null,
+        "technologies": ["Spring"]
+      },
+      "quote": "Company: Demo BACKEND Lab 8-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "BSc Computer Science",
+      "quote": "Degree: BSc Computer Science",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Institution: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Language: English",
+      "uncertain": false
+    },
+    {
+      "value": "B2",
+      "quote": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}

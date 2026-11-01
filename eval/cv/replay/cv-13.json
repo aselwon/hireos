@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "Playwright",
+      "quote": "Technologia: Playwright",
+      "uncertain": false
+    },
+    {
+      "value": "TypeScript",
+      "quote": "Technologia: TypeScript",
+      "uncertain": false
+    },
+    {
+      "value": "Git",
+      "quote": "Technologia: Git",
+      "uncertain": false
+    },
+    {
+      "value": "Cypress",
+      "quote": "Dopiero uczę się: Cypress",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo QA Lab 13-1",
+        "role": "QA Engineer",
+        "from": "2017-03",
+        "to": "2019-08",
+        "technologies": ["Playwright"]
+      },
+      "quote": "Firma: Demo QA Lab 13-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo QA Lab 13-2",
+        "role": "QA Engineer",
+        "from": "2019-09",
+        "to": null,
+        "technologies": ["TypeScript"]
+      },
+      "quote": "Firma: Demo QA Lab 13-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "Inżynier informatyki",
+      "quote": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "value": "B2",
+      "quote": "CEFR: B2",
+      "uncertain": false
+    }
+  ]
+}

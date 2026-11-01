@@ -9,7 +9,9 @@ import { generateCvEval } from '../scripts/generate-cv-eval.mjs';
 const corpus = new URL('../eval/cv/', import.meta.url);
 
 test('corpus contains paired synthetic CVs covering IT roles, seniority, languages and difficult layouts', async () => {
-  const files = await readdir(corpus);
+  const files = (await readdir(corpus)).filter(
+    (name) => name.endsWith('.json') || name.endsWith('.pdf')
+  );
   const jsons = files.filter((name) => name.endsWith('.json'));
   assert.ok(jsons.length >= 20);
   assert.equal(files.length, jsons.length * 2);
@@ -64,7 +66,9 @@ test('generation is byte-identical across repeated runs and matches the committe
   const directory = await mkdtemp(join(tmpdir(), 'hireos-cv-eval-'));
   try {
     await generateCvEval(directory);
-    const names = (await readdir(corpus)).sort();
+    const names = (await readdir(corpus))
+      .filter((name) => name.endsWith('.json') || name.endsWith('.pdf'))
+      .sort();
     assert.deepEqual((await readdir(directory)).sort(), names);
     const first = new Map();
     for (const name of names) {

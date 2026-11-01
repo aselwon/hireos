@@ -1,0 +1,72 @@
+{
+  "skills": [
+    {
+      "value": "Python",
+      "quote": "Technologia: Python",
+      "uncertain": false
+    },
+    {
+      "value": "Linux",
+      "quote": "Technologia: Linux",
+      "uncertain": false
+    },
+    {
+      "value": "OWASP",
+      "quote": "Technologia: OWASP",
+      "uncertain": false
+    },
+    {
+      "value": "Rust",
+      "quote": "Dopiero uczę się: Rust",
+      "uncertain": true
+    }
+  ],
+  "experience": [
+    {
+      "value": {
+        "company": "Demo SECURITY Lab 7-1",
+        "role": "Security Engineer",
+        "from": "2024-01",
+        "to": "2024-06",
+        "technologies": ["Python"]
+      },
+      "quote": "Firma: Demo SECURITY Lab 7-1",
+      "uncertain": false
+    },
+    {
+      "value": {
+        "company": "Demo SECURITY Lab 7-2",
+        "role": "Security Engineer",
+        "from": "2025-09",
+        "to": null,
+        "technologies": ["Linux"]
+      },
+      "quote": "Firma: Demo SECURITY Lab 7-2",
+      "uncertain": false
+    }
+  ],
+  "education": [
+    {
+      "value": "Inżynier informatyki",
+      "quote": "Dyplom: Inżynier informatyki",
+      "uncertain": false
+    },
+    {
+      "value": "Demo Technical Academy",
+      "quote": "Uczelnia: Demo Technical Academy",
+      "uncertain": false
+    }
+  ],
+  "languages": [
+    {
+      "value": "English",
+      "quote": "Język: angielski",
+      "uncertain": false
+    },
+    {
+      "value": "B1",
+      "quote": "CEFR: B1",
+      "uncertain": false
+    }
+  ]
+}
