@@ -285,7 +285,7 @@
       ],
       "dependsOn": ["MVP-16", "MVP-17", "MVP-21"],
       "tier": "planner",
-      "status": "todo"
+      "status": "blocked"
     },
     {
       "id": "MVP-24",
