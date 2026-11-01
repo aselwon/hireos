@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily HireOS backup timer
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=15m
+Unit=hireos-backup.service
+
+[Install]
+WantedBy=timers.target

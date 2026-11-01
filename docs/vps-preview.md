@@ -144,3 +144,45 @@ curl -i "$base/api/login" -H "Origin: $base" \
 
 Zielone lokalne CI nie zastępuje tych kontroli. Kontakt z prawdziwym kandydatem
 pozostaje zablokowany do spełnienia MVP-23 i przeglądu właściciela.
+
+## Backup i odtworzenie
+
+Backup obejmuje spójny snapshot SQLite wykonany przez `node:sqlite` backup API,
+katalog `/var/lib/hireos/cv` oraz manifest z licznościami wszystkich tabel i
+plików CV. Timer tworzy kopię codziennie, zachowuje 14 najnowszych kopii, a
+systemd uruchamia zadanie jako `hireos`. Przed włączeniem usługi właściciel
+tworzy `/var/backups/hireos` z prawami `hireos:hireos` i trybem 0700; kopie
+zawierają dane kandydatów i muszą być chronione jak baza produkcyjna.
+
+Zainstaluj obie jednostki i włącz timer (ręcznie przez właściciela):
+
+```sh
+sudo install -m 0644 ops/hireos-backup.service /etc/systemd/system/
+sudo install -m 0644 ops/hireos-backup.timer /etc/systemd/system/
+sudo install -d -o hireos -g hireos -m 0700 /var/backups/hireos
+sudo systemctl daemon-reload
+sudo systemctl enable --now hireos-backup.timer
+sudo systemctl start hireos-backup.service
+sudo systemctl status hireos-backup.service
+sudo systemctl list-timers hireos-backup.timer
+```
+
+Ręczny backup tworzy nowy katalog wersjonowany czasem w `/var/backups/hireos`;
+ustaw `HIREOS_BACKUP_RETENTION` w jednostce, jeśli liczba 14 kopii ma być inna.
+Odtworzenie zawsze wymaga pustego katalogu docelowego i nie nadpisuje danych.
+Poniższy przykład jest próbą do oddzielnego katalogu, nie odtwarza danych usługi:
+
+```sh
+sudo -u hireos /usr/bin/node --experimental-sqlite \
+  /opt/hireos/current/ops/backup.mjs restore \
+  /var/backups/hireos/backup-YYYY-MM-DDTHH-MM-SS-sssZ \
+  /var/lib/hireos-restore-check
+```
+
+Skrypt sprawdza liczbę rekordów w każdej tabeli z manifestem oraz liczbę plików
+CV po odtworzeniu. Przy właściwym odtworzeniu właściciel najpierw zatrzymuje
+`hireos-preview`, zachowuje obecną bazę i katalog CV, odtwarza do nowego pustego
+katalogu, sprawdza wynik, a dopiero potem ręcznie przenosi dane na miejsce,
+przywraca właściciela `hireos:hireos` i uruchamia usługę. Test lokalny:
+`node --experimental-sqlite --test tests/backup.test.mjs`; nie sprawdza on
+uprawnień VPS, uruchomienia systemd ani zewnętrznego nośnika kopii.
