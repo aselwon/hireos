@@ -294,7 +294,7 @@
       "acceptance": ["Prettier/qoq OK.", "Linki działają."],
       "dependsOn": ["MVP-19", "MVP-22"],
       "tier": "worker",
-      "status": "review"
+      "status": "done"
     }
   ]
 }
