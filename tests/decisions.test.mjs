@@ -126,6 +126,59 @@ test('decyzja człowieka atomowo zapisuje decyzję, etap i pełny audit log', (t
   assert.equal(db.prepare('SELECT count(*) AS count FROM audit_events').get().count, 1);
 });
 
+test('decyzja zapisuje, czy raport AI był otwarty oraz zgodność rekrutera', (t) => {
+  const { db, decide } = setup(t);
+  const unopened = decide(
+    'app',
+    { outcome: 'approved', reason: 'Ocena własna.', agreedWithAi: false },
+    'decision-unopened',
+    'recruiter'
+  );
+  assert.equal(unopened.aiReportSeen, false);
+  assert.equal(unopened.agreedWithAi, false);
+  const row = db.prepare('SELECT ai_report_seen, agreed_with_ai FROM decisions').get();
+  assert.equal(row.ai_report_seen, 0);
+  assert.equal(row.agreed_with_ai, 0);
+});
+
+test('eksport CSV rejestru AI wymaga zalogowanego rekrutera', async (t) => {
+  const { decide } = setup(t);
+  const handler = createHandler({
+    store: { decide, exportAiAudit: () => 'application_id,result_hash' },
+    keys: { authenticate: (token) => (token === 'admin' ? { id: 'r1', scope: 'admin' } : null) },
+    sessions: { valid: () => false },
+    port: 4310,
+  });
+  async function get(authorization) {
+    const req = Readable.from([]);
+    Object.assign(req, {
+      url: '/api/v1/audit/ai.csv',
+      method: 'GET',
+      headers: { host: 'localhost:4310', ...(authorization ? { authorization } : {}) },
+    });
+    const response = {};
+    await handler(req, {
+      setHeader(name, value) {
+        assert.ok(name);
+        assert.ok(value);
+      },
+      writeHead(status, headers) {
+        response.status = status;
+        response.headers = headers;
+      },
+      end(body) {
+        response.body = body;
+      },
+    });
+    return response;
+  }
+  assert.equal((await get()).status, 401);
+  const response = await get('Bearer admin');
+  assert.equal(response.status, 200);
+  assert.match(response.headers['Content-Type'], /text\/csv/);
+  assert.equal(response.body, 'application_id,result_hash');
+});
+
 test('strażnik: tylko moduł decyzji rekrutera zmienia etap aplikacji', () => {
   for (const file of readdirSync(new URL('../lib/', import.meta.url)).filter((name) =>
     name.endsWith('.mjs')

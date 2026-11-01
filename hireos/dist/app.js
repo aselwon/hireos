@@ -221,7 +221,7 @@ async function submitDataRights(event) {
   }
 }
 function decisionPanel() {
-  return '<section class="panel"><div class="panel-head"><div><h2>Decyzja rekrutera</h2><p>Każda decyzja wymaga uzasadnienia.</p></div></div><form id="decision-form"><label class="field">Uzasadnienie<textarea name="reason" required minlength="1" maxlength="2000" rows="3"></textarea></label><div class="actions"><button class="button" name="outcome" value="approved">Zatwierdź kandydata</button><button class="button danger" name="outcome" value="rejected">Odrzuć kandydata</button></div></form></section>';
+  return '<section class="panel"><div class="panel-head"><div><h2>Decyzja rekrutera</h2><p>Każda decyzja wymaga uzasadnienia.</p></div></div><form id="decision-form"><label class="field">Czy zgadzasz się z raportem AI?<select name="agreedWithAi" required><option value="">Wybierz ocenę</option><option value="true">Tak</option><option value="false">Nie</option></select></label><label class="field">Uzasadnienie<textarea name="reason" required minlength="1" maxlength="2000" rows="3"></textarea></label><div class="actions"><button class="button" name="outcome" value="approved">Zatwierdź kandydata</button><button class="button danger" name="outcome" value="rejected">Odrzuć kandydata</button></div></form></section>';
 }
 function requirementEvidence(item) {
   const labels = { met: 'Spełnione', missing: 'Brak dowodu', uncertain: 'Niepewne' };
@@ -321,6 +321,11 @@ document.addEventListener('click', async (event) => {
         break;
       case 'report':
         state.application = state.applications.find((item) => item.id === button.dataset.id);
+        if (state.application.report) {
+          state.application.report = await request(
+            `/api/v1/applications/${state.application.id}/screening`
+          );
+        }
         state.dataRequests = (
           await request(`/api/v1/applications/${state.application.id}/data-rights`)
         ).requests;
@@ -423,11 +428,16 @@ document.addEventListener('submit', async (event) => {
   if (event.target.id === 'decision-form') {
     event.preventDefault();
     const { submitter } = event;
-    const reason = new FormData(event.target).get('reason');
+    const form = new FormData(event.target);
+    const reason = form.get('reason');
     try {
       await request(`/api/v1/applications/${state.application.id}/decision`, {
         method: 'POST',
-        body: JSON.stringify({ outcome: submitter.value, reason }),
+        body: JSON.stringify({
+          outcome: submitter.value,
+          reason,
+          agreedWithAi: form.get('agreedWithAi') === 'true',
+        }),
       });
       state.error = 'Decyzja została zapisana.';
       await openBrief(state.brief.id);

@@ -36,6 +36,11 @@ test('fake never fetches; exact cap, idempotency and UTC reset', async (t) => {
   const gateway = createModelGateway(db, { env: { MODEL_DAILY_NEURON_CAP: '2' }, now: () => date });
   const first = await gateway.generate(input, 'one');
   assert.equal(first.estimatedNeurons, 2);
+  const ledger = db.prepare("SELECT * FROM model_calls WHERE idempotency_key='one'").get();
+  assert.equal(ledger.response_json, null);
+  assert.equal(ledger.result_hash.length, 64);
+  assert.equal(ledger.prompt_version, '1');
+  assert.equal(ledger.application_id, null);
   assert.deepEqual(await gateway.generate(input, 'one'), first);
   await assert.rejects(gateway.generate({ ...input, prompt: 'Inne' }, 'one'), { status: 409 });
   await assert.rejects(gateway.generate(input, 'two'), { status: 503 });
