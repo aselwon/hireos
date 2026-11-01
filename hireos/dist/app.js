@@ -115,7 +115,13 @@ function applicationList() {
   return `<section class="panel"><div class="panel-head"><div><h2>Aplikacje · ${state.applications.length}</h2><p>Status CV i niepewne fakty są widoczne przed oceną.</p></div></div>${content}</section>`;
 }
 function applicationStatus(application) {
-  if (application.cvStatus === 'needs_manual_review') {
+  if (application.processingStatus === 'queued') {
+    return '<span class="tag gray">W kolejce</span>';
+  }
+  if (
+    application.processingStatus === 'needs_manual_review' ||
+    application.cvStatus === 'needs_manual_review'
+  ) {
     return '<span class="tag amber">Wymaga ręcznego przeglądu</span>';
   }
   if (application.uncertain) {
@@ -143,13 +149,17 @@ function reportPage() {
   const uncertain = a.uncertain
     ? alertBox('Profil zawiera niepewne fakty. Sprawdź cytaty przed decyzją.', 'warning')
     : '';
-  const reportAction = report
-    ? ''
-    : '<button class="button" data-action="screening">Utwórz raport</button>';
+  const reportAction =
+    report || a.processingStatus === 'queued'
+      ? ''
+      : '<button class="button" data-action="screening">Utwórz raport</button>';
   const reportBody = report ? quoteItems : emptyReport(a);
   return `<section class="page-heading"><div><div class="eyebrow">RAPORT SCREENINGOWY</div><h1>${escapeHtml(a.name)}</h1><p>${escapeHtml(a.email)} · ${escapeHtml(state.brief.title)}</p></div><button class="button secondary" data-action="applications">Wróć do aplikacji</button></section>${error}${manualReview}${uncertain}<section class="panel"><div class="panel-head"><div><h2>Wymaganie → dowody</h2><p>Brak dowodu nie oznacza braku kompetencji.</p></div>${reportAction}</div>${reportBody}</section>${decisionPanel()}`;
 }
 function emptyReport(application) {
+  if (application.processingStatus === 'queued') {
+    return '<div class="empty">W kolejce — profil i raport powstaną automatycznie. Po wyczerpaniu limitu AI praca zostanie wznowiona po 00:00 UTC. Wróć do aplikacji, aby odświeżyć status.</div>';
+  }
   const message = application.profile
     ? 'Raport nie został jeszcze utworzony.'
     : 'Profil CV nie jest jeszcze dostępny.';
