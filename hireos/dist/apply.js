@@ -28,7 +28,11 @@ form.addEventListener('submit', async (event) => {
     const data = new FormData();
     data.set('name', form.elements.name.value);
     data.set('email', form.elements.email.value);
-    data.set('consentVersion', 'v1');
+    data.set('consentVersion', form.elements.consentVersion.value);
+    data.set(
+      'futureRecruitmentConsent',
+      form.elements.futureRecruitmentConsent.checked ? 'yes' : ''
+    );
     data.set('consent', form.elements.consent.checked ? 'yes' : '');
     data.set('cv', form.elements.cv.files[0]);
     const response = await fetch(`/api/v1/briefs/${encodeURIComponent(id)}/applications`, {

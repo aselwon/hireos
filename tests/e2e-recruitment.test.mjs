@@ -164,7 +164,7 @@ test(
     const pdf = readFileSync(new URL('./fixtures/text-cv.pdf', import.meta.url));
     const multipart = Buffer.concat([
       Buffer.from(
-        `--${boundary}\r\nContent-Disposition: form-data; name="name"\r\n\r\nOsoba Testowa\r\n--${boundary}\r\nContent-Disposition: form-data; name="email"\r\n\r\ntest@example.test\r\n--${boundary}\r\nContent-Disposition: form-data; name="consentVersion"\r\n\r\nv1\r\n--${boundary}\r\nContent-Disposition: form-data; name="consent"\r\n\r\nyes\r\n--${boundary}\r\nContent-Disposition: form-data; name="cv"; filename="cv.pdf"\r\nContent-Type: application/pdf\r\n\r\n`
+        `--${boundary}\r\nContent-Disposition: form-data; name="name"\r\n\r\nOsoba Testowa\r\n--${boundary}\r\nContent-Disposition: form-data; name="email"\r\n\r\ntest@example.test\r\n--${boundary}\r\nContent-Disposition: form-data; name="consentVersion"\r\n\r\nv2\r\n--${boundary}\r\nContent-Disposition: form-data; name="consent"\r\n\r\nyes\r\n--${boundary}\r\nContent-Disposition: form-data; name="cv"; filename="cv.pdf"\r\nContent-Type: application/pdf\r\n\r\n`
       ),
       pdf,
       Buffer.from(`\r\n--${boundary}--\r\n`),
