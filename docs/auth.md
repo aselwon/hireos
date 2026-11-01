@@ -1,10 +1,20 @@
 # Logowanie i klucze API (MVP-02)
 
-Serwer wymaga zmiennej środowiskowej `HIREOS_RECRUITER_PASSWORD` (12–1024 znaki).
-Przekaż ją przez środowisko procesu, bez wpisywania hasła do repozytorium ani
-argumentów polecenia. Brak poprawnej konfiguracji uniemożliwia start. Hasło jest
-haszowane przez scrypt z losową solą przy starcie; nie jest zapisywane w bazie.
-Zmiana hasła wymaga restartu serwera.
+Serwer przyjmuje hasło ze zmiennej `HIREOS_RECRUITER_PASSWORD` albo z pliku
+`data/recruiter-password` (ścieżkę można zmienić przez `HIREOS_PASSWORD_FILE`).
+Lokalne CLI czyta je ze standardowego wejścia, nie z argumentów:
+
+```sh
+node scripts/change-password.mjs
+```
+
+Wklej nowe hasło na standardowe wejście, zakończ je Enterem i zakończ wejście
+EOF (Ctrl-D).
+
+CLI zapisuje plik z uprawnieniami `0600`. Istniejący plik ma pierwszeństwo przed
+zmienną środowiskową, więc polecenie zmienia hasło także w konfiguracji z env.
+Po zmianie zrestartuj serwer. Hasło jest haszowane przez scrypt z losową solą
+przy starcie; nie jest zapisywane w bazie.
 
 Otwórz `/login` i wpisz hasło. Panel, jego zasoby i `/api/state` wymagają sesji;
 bez niej zwracają 401. Klucz API nie zastępuje sesji dla tych ścieżek.
@@ -23,7 +33,11 @@ przedłużania jej ważności po stronie serwera. Zmienione hasło przy tym samy
 kluczu daje 409. Po wylogowaniu powtórzenie nie reaktywuje sesji.
 Limit wynosi 5 prób na 15 minut, globalnie dla jednego konta, niezależnie od IP.
 Dotyczy również udanych logowań; powtórzenia udanego żądania nie zużywają limitu.
-Po przekroczeniu zwracane jest 429, również dla powtórzeń udanych żądań. Limit jest w pamięci i resetuje się po restarcie.
+Po przekroczeniu zwracane jest 429, również dla powtórzeń udanych żądań. Limit jest
+w pamięci i resetuje się po restarcie. Osobny limiter Node, niezależny od nginx,
+ogranicza `/api/login` do 20 żądań na 15 minut z adresu klienta, `/apply` i
+wysyłkę aplikacji do 30 na minutę oraz formularz leadów (gdy endpoint zostanie
+dodany) do 10 na godzinę. Limity resetują się po restarcie.
 
 Wylogowanie: `POST /api/logout`, JSON `{}`, `Idempotency-Key` i cookie sesji.
 Operacja jest idempotentna i usuwa sesję oraz cookie. Można ją wykonać z konsoli
