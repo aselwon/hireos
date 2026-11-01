@@ -21,7 +21,19 @@
         <input id="cv" name="cv" type="file" accept="application/pdf,.pdf" required />
         <label
           ><input name="consent" type="checkbox" required /> Zgadzam się na przetwarzanie danych w
-          celu przeprowadzenia rekrutacji. Klauzula v1.</label
+          celu przeprowadzenia rekrutacji.</label
+        >
+        <p>
+          <a href="/privacy/{{privacyVersion}}"
+            >Pełna klauzula informacyjna RODO ({{privacyVersion}}) — projekt do przeglądu
+            prawnego</a
+          >
+        </p>
+        <input type="hidden" name="consentVersion" value="{{privacyVersion}}" />
+        <label
+          ><input name="futureRecruitmentConsent" type="checkbox" /> Zgadzam się na przetwarzanie
+          moich danych na potrzeby przyszłych rekrutacji (opcjonalnie). Zgodę mogę wycofać w
+          dowolnym momencie.</label
         >
         <button type="submit">Wyślij aplikację</button>
       </form>
