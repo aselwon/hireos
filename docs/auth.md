@@ -13,9 +13,9 @@ Serwer przechowuje jej hash w pamięci; restart unieważnia wszystkie sesje.
 Cookie ma `HttpOnly`, `SameSite=Strict`, `Path=/` i `Max-Age=28800`.
 Dla HTTPS ustaw `HIREOS_SECURE_COOKIE=1`, aby dodać `Secure`.
 Serwer nadal nasłuchuje wyłącznie na loopback; konfiguracja HTTPS i reverse proxy
-należy do osobnego zadania wdrożeniowego. Proxy musi zachować dozwolony lokalny
-Host i zapewnić zgodność kontroli Origin; obecnie dopuszczone są tylko lokalne
-adresy HTTP. Nie należy wyłączać tych kontroli przy wdrożeniu.
+opisano w [paczce VPS](vps-preview.md). Proxy zachowuje dozwolony lokalny
+Host i mapuje wyłącznie dokładny Origin publicznego HTTPS na lokalny Origin.
+Obce Origin nie są usuwane ani akceptowane.
 
 `POST /api/login` przyjmuje JSON z polem `password` i nagłówkiem `Idempotency-Key`.
 Powtórzenie udanego żądania z tym samym kluczem zwraca tę samą sesję, bez

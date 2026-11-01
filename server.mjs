@@ -10,10 +10,11 @@ import { openStore } from './lib/store.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const logger = createLogger();
-await mkdir(resolve(root, 'data'), { recursive: true });
+const dataDir = process.env.HIREOS_DATA_DIR || resolve(root, 'data');
+await mkdir(dataDir, { recursive: true });
 const sessions = createSessions(process.env.HIREOS_RECRUITER_PASSWORD);
 delete process.env.HIREOS_RECRUITER_PASSWORD;
-const databasePath = process.env.HIREOS_DB || resolve(root, 'data/hireos.sqlite');
+const databasePath = process.env.HIREOS_DB || resolve(dataDir, 'hireos.sqlite');
 const store = openStore(databasePath);
 await store.purgeRejectedCv();
 const keys = openKeys(databasePath);
@@ -24,6 +25,7 @@ const server = http.createServer(
     keys,
     sessions,
     port,
+    dataDir,
     secureCookie: process.env.HIREOS_SECURE_COOKIE === '1',
   })
 );

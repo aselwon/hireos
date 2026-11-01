@@ -51,7 +51,7 @@ function fixture(t) {
   });
   async function request(actor, route = '', input, key = crypto.randomUUID()) {
     const req = Readable.from(input === undefined ? [] : [JSON.stringify(input)]);
-    req.url = `/api/v1/tasks${route}`;
+    req.url = route.startsWith('/api/') ? route : `/api/v1/tasks${route}`;
     req.method = input === undefined ? 'GET' : 'POST';
     req.headers = {
       host: '127.0.0.1:14314',
@@ -110,6 +110,102 @@ test('równoległe claimy HTTP przydzielają zadanie tylko jednemu wykonawcy', a
   assert.equal(claims[index].body.task.worker_id, owner);
   assert.deepEqual(await request(owner, '/claim', {}, 'claim'), claims[index]);
   assert.equal((await request('admin')).body.tasks.length, 1);
+});
+
+test('pauza rekrutacji i rozmowy oraz przejęcie blokują preflight, claim i wynik', async (t) => {
+  const { request } = fixture(t);
+  const {
+    body: { task },
+  } = await request('admin', '', payload, 'control-create');
+  const {
+    body: { task: leased },
+  } = await request('worker-a', '/claim', {}, 'control-claim');
+  assert.deepEqual((await request('admin', `/${task.task_id}/preflight`)).body, {
+    allowed: true,
+    reason: null,
+  });
+  await request(
+    'admin',
+    '/api/v1/briefs/job/outreach-control',
+    { paused: true },
+    'pause-recruitment'
+  );
+  assert.equal(
+    (await request('admin', `/${task.task_id}/preflight`)).body.reason,
+    'recruitment_paused'
+  );
+  assert.equal(
+    (await request('worker-a', `/${task.task_id}/result`, report(leased), 'paused-send')).status,
+    409
+  );
+  assert.equal((await request('worker-a', '/claim', {}, 'paused-claim')).body.task, null);
+  await request(
+    'admin',
+    '/api/v1/briefs/job/outreach-control',
+    { paused: false },
+    'resume-recruitment'
+  );
+  await request(
+    'admin',
+    '/api/v1/applications/candidate/outreach-control',
+    { paused: true },
+    'pause-conversation'
+  );
+  assert.equal(
+    (await request('admin', `/${task.task_id}/preflight`)).body.reason,
+    'conversation_paused'
+  );
+  assert.equal(
+    (await request('worker-a', `/${task.task_id}/result`, report(leased), 'conversation-send'))
+      .status,
+    409
+  );
+  await request(
+    'admin',
+    '/api/v1/applications/candidate/outreach-control',
+    { paused: false, human_takeover: true },
+    'takeover'
+  );
+  assert.equal(
+    (await request('admin', `/${task.task_id}/preflight`)).body.reason,
+    'human_takeover'
+  );
+  assert.equal(
+    (await request('worker-a', `/${task.task_id}/result`, report(leased), 'takeover-send')).status,
+    409
+  );
+  assert.equal((await request('worker-a', '/claim', {}, 'takeover-claim')).body.task, null);
+});
+
+test('odmowa ustawia do_not_contact, blokuje preflight i tworzenie kolejnych zadań', async (t) => {
+  const { request, db } = fixture(t);
+  const {
+    body: { task },
+  } = await request('admin', '', payload, 'refusal-create');
+  const {
+    body: { task: leased },
+  } = await request('worker-a', '/claim', {}, 'refusal-claim');
+  assert.equal(
+    (
+      await request(
+        'worker-a',
+        `/${task.task_id}/result`,
+        report(leased, 'refused'),
+        'refusal-result'
+      )
+    ).status,
+    200
+  );
+  assert.equal(
+    db.prepare('SELECT do_not_contact FROM applications WHERE id=?').get('candidate')
+      .do_not_contact,
+    1
+  );
+  assert.equal(
+    (await request('admin', `/${task.task_id}/preflight`)).body.reason,
+    'do_not_contact'
+  );
+  assert.equal((await request('admin', '', payload, 'refusal-create-again')).status, 409);
 });
 
 test('wyniki są trwałe i idempotentne, konflikt nie tworzy drugiej próby', async (t) => {

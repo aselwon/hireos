@@ -1,50 +1,146 @@
-# Prywatny podgląd HireOS na VPS
+# Paczka wdrożeniowa VPS (MVP-21)
 
-## Publiczny demonstrator HTTPS
+To instrukcja dla właściciela, nie raport wdrożenia. Harness nie uruchamia tych
+poleceń na VPS, nie zmienia DNS, TLS, nginx ani usług. Historyczny statyczny
+demonstrator nie potwierdza działania poniższej konfiguracji.
 
-Aktualny adres publiczny to <https://niezla.bieda.it/>. Jest to statyczny demonstrator `hireos/dist`, który zapisuje dane wyłącznie w `localStorage` przeglądarki. Prywatny Node/SQLite pozostaje dostępny tylko przez tunel `127.0.0.1:4317` opisany poniżej; publiczny routing nie udostępnia prywatnego API.
+## Topologia i przygotowanie
 
-Na VPS wdrożono kontener `hireos-public` z obrazu `nginx:1.28-alpine`, digest `sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236`. Mapowanie to `20172:8080`; mounty read-only to `/opt/hireos/current/hireos/dist:/usr/share/nginx/html` oraz `/opt/hireos/public/default.conf:/etc/nginx/conf.d/default.conf`. Konfiguracja źródłowa znajduje się w [`ops/hireos-public.conf`](../ops/hireos-public.conf).
+HTTPS `https://niezla.bieda.it` → istniejący reverse proxy z certyfikatem TLS →
+`hireos-public` na `127.0.0.1:20172` → Node na `127.0.0.1:4317`.
+Właściciel zapewnia przekierowanie HTTP na HTTPS, poprawny certyfikat i Host
+`niezla.bieda.it`. Porty 20172 i 4317 nie mogą być dostępne z Internetu.
 
-Endpoint `GET /hireos-api/health` ma zwracać JSON z `workerApi: "not-implemented"` i `outreachEnabled: false`. Worker API, klucz, rutyna outreachu i auth API nie są działające ani ukończone; publiczny routing demo nie dowodzi ukończenia integracji. `/api/state` jest prywatnym endpointem (403), a `/hireos-api/v1/tasks` pozostaje niedostępny (503).
+[Konfiguracja nginx](../ops/hireos-public.conf) jest plikiem kontekstu `http`
+(np. `/etc/nginx/conf.d/default.conf` w kontenerze). Właściciel zastępuje stary
+kontener `hireos-public` konfiguracją **sieci hosta**, bez mapowania `-p` i bez
+mountu statycznego `hireos/dist`. W sieci bridge adres 127.0.0.1 oznacza kontener,
+nie hosta, więc ta konfiguracja tam nie zadziała. Mount read-only:
+`/opt/hireos/public/default.conf:/etc/nginx/conf.d/default.conf`.
+Przed przełączeniem właściciel wykonuje `nginx -t` w docelowym kontenerze,
+zachowuje starą konfigurację i sprawdza routing istniejącego reverse proxy.
+Nie należy uruchamiać dwóch listenerów na porcie 20172.
 
-N8n został całkowicie usunięty z VPS 2026-10-30 (kontenery, wolumeny i kopie zapasowe, w tym `/root/hireos-backup-before-public/`), więc nie jest już ścieżką rollbacku. Procedura awaryjna dla publicznego demonstratora: `docker stop hireos-public`. Prywatna usługa `hireos-preview` działa dalej przez tunel. Auth API jest pracą przyszłą.
+Node obsługuje `/api/v1`, `/apply/:id`, logowanie i panel. Panel oraz `/api/state`
+wymagają sesji rekrutera; anonimowy klient i klucz workera nie otrzymują stanu.
+Zalogowany panel potrzebuje `/api/state`, dlatego nie blokujemy tej ścieżki dla
+sesji. Brak sesji zwraca 401 z odnośnikiem do `/login`. Publiczne zasoby formularza
+to `/apply.js` i `/styles.css`. Worker nadal wymaga klucza `worker:outreach`.
+Proxy zachowuje Authorization, Cookie i Idempotency-Key. Tylko dokładny Origin
+`https://niezla.bieda.it` jest mapowany na lokalny Origin; obce wartości pozostają
+do odrzucenia przez backend. Zmiana domeny wymaga zmiany server_name i mapy Origin.
 
-### Weryfikacja publiczna
+Limity nginx: 10 żądań/s, burst 20; logowanie 5/min, burst 5; przekroczenie → 429.
+Przy zewnętrznym proxy limit jest wspólny dla jego adresu — celowo nie ufamy
+nagłówkom IP klienta. Backend dodatkowo ogranicza logowania. Limit body 11 MiB
+pozwala na CV do 10 MiB z narzutem multipart; większe żądania → 413.
 
-Weryfikacja 2026-10-30 dla https://niezla.bieda.it: root 200 z tytułem HireOS, app.js/seed.js/styles.css 200, health 200, prywatne /api/state 403, niegotowe /hireos-api/v1/tasks 503, /.env i /lib/store.mjs 404. TLS sprawdzono przez curl bez -k; health potwierdzono również z VPS po IPv4 i IPv6. Wcześniejszy raport CYTR.US dotyczył literówki w nazwie domeny i nie opisywał tej instalacji.
+## Sekrety i trwałe dane
 
-Serwer: `marek172.mikrus.xyz`, SSH port `10172`. Usługa `hireos-preview` działa jako użytkownik `hireos`, a nie root. Runtime Node 22.22.2 spełnia engines projektu. Wersja CI jest przypięta osobno w `.nvmrc`.
+Właściciel przygotowuje konto systemowe `hireos`, Node **22.23.1** w
+`/usr/bin/node`, katalog `/opt/hireos/releases` (root, odczyt dla usługi) oraz
+`/var/lib/hireos` (hireos:hireos, 0700). Kod nie wymaga zależności runtime.
+[Jednostka systemd](../ops/hireos-preview.service) używa
+`/etc/hireos/env`: właściciel tworzy katalog 0700 i plik root:root 0600, poza repo.
+Plik ma składnię EnvironmentFile systemd, bez `export`. Wartości wprowadza lokalnie
+w bezpiecznym edytorze, nigdy w argumentach, logach, PR ani historii powłoki:
 
-## Dostęp
+- `HIREOS_RECRUITER_PASSWORD`: unikatowe hasło 12–1024 znaki.
+- `MODEL_PROVIDER=fake` na pierwszy test, bez połączenia z dostawcą.
+- `MODEL_DAILY_NEURON_CAP=9000`: twardy limit; nigdy ponad darmowy przydział.
+- `CF_ACCOUNT_ID=2791466c5820cfd886aad95e0d3ef948`.
+- `CF_AI_TOKEN`: token ograniczony wyłącznie do Workers AI na tym koncie,
+  bez uprawnień DNS, administracji kontem i innych zasobów. Tworzy go właściciel.
+  Dopiero po sprawdzeniu darmowego modelu i limitów może ustawić
+  `MODEL_PROVIDER=cloudflare`; nie włączać płatnego planu ani overage.
 
-Aplikacja nasłuchuje wyłącznie na `127.0.0.1:4317` VPS. Na komputerze operatora uruchom tunel:
+Jednostka ustawia `PORT=4317`, `HIREOS_SECURE_COOKIE=1`,
+`HIREOS_DB=/var/lib/hireos/preview.sqlite`, `HIREOS_DATA_DIR=/var/lib/hireos`.
+Nie nadpisuj ich w env. SQLite i CV (`/var/lib/hireos/cv`) pozostają poza release.
+Istniejące CV trzeba przenieść z katalogu starego release przed zmianą dataDir.
+Nie kopiuj prawdziwych danych do repo. Restart unieważnia sesje.
+
+Właściciel instaluje jednostkę w `/etc/systemd/system/hireos-preview.service`
+i wykonuje `systemctl daemon-reload`. Sekrety są czytane przez systemd, nie nginx.
+Nie należy montować env ani katalogu danych do kontenera publicznego.
+
+## Release i rollback — wyłącznie właściciel
+
+Przed każdą zmianą: zielone CI, zapis SHA, kontrola migracji i spójna kopia
+**całego** `/var/lib/hireos` przy zatrzymanej usłudze (baza, WAL/SHM i CV).
+Właściciel przygotowuje lokalny checkout wybranego SHA, bez sekretów w runtime.
+ID release powinno zawierać SHA. Skrypt nie pobiera kodu ani zależności, nie używa
+SSH, nie zmienia nginx/systemd/env i nie jest wywoływany przez CI.
 
 ```sh
-ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -L 127.0.0.1:4317:127.0.0.1:4317 -p 10172 root@marek172.mikrus.xyz
+# Tylko na VPS, ręcznie przez właściciela po backupie:
+bash ops/deploy.sh --owner /opt/hireos deploy r-SHA /sciezka/do/checkout
 ```
 
-Otwórz http://127.0.0.1:4317. Tunel wymaga działającego SSH i trwa tylko podczas jego działania; nie jest publicznym URL ani wdrożeniem SaaS. Pierwszy tunel został uruchomiony w tle na komputerze roboczym podczas konfiguracji. Po restarcie komputera uruchom go ponownie.
+[Skrypt](../ops/deploy.sh) kopiuje wyłącznie runtime do nowego release, zapisuje
+REVISION, atomowo przełącza symlink `current`, restartuje `hireos-preview` i
+sprawdza `/login` na loopback. Blokada flock wyklucza równoległe operacje.
+Istniejący release nie jest nadpisywany. Zachowaj wypisaną ścieżkę poprzedniego
+release i backup. Błąd restartu lub probe daje niezerowy kod i pozostawia nowy
+symlink do diagnozy; nie wykonuje automatycznego cofania migracji.
 
-## Pliki i operacje
+```sh
+# Po sprawdzeniu zgodności bazy ze starszym kodem:
+bash ops/deploy.sh --owner /opt/hireos rollback r-POPRZEDNI-SHA
+```
 
-- Kod: `/opt/hireos/releases/initial`; aktywny symlink: `/opt/hireos/current`.
-- Baza demonstracyjna: `/var/lib/hireos/preview.sqlite`.
-- Konfiguracja: `/etc/systemd/system/hireos-preview.service`; źródło w `ops/hireos-preview.service`.
-- Identyfikator źródła: `/opt/hireos/current/REVISION` (zapisany po publikacji repo).
-- Status: `ssh -p 10172 root@marek172.mikrus.xyz systemctl status hireos-preview`.
-- Logi: `ssh -p 10172 root@marek172.mikrus.xyz journalctl -u hireos-preview -n 100 --no-pager`.
-- Restart: `ssh -p 10172 root@marek172.mikrus.xyz systemctl restart hireos-preview`.
-- Zatrzymanie: `ssh -p 10172 root@marek172.mikrus.xyz systemctl stop hireos-preview`.
+Rollback atomowo wskazuje zachowany release, restartuje usługę i ponawia probe.
+Jeśli migracje nie są zgodne wstecz, najpierw zatrzymaj usługę i odtwórz spójny
+backup danych, a dopiero potem wykonaj rollback. Odtworzenie usuwa zapisy po
+backupie — decyzję podejmuje właściciel. Pierwszy release nie ma poprzednika;
+w razie awarii zatrzymaj usługę i przywróć zapisaną konfigurację demonstratora.
+Rollback kodu nie cofa konfiguracji nginx, jednostki ani env.
 
-Usługa ma restart po awarii, limit 256 MB i 50% CPU oraz zapis wyłącznie w katalogu danych i prywatnym tmp. Istniejące aplikacje VPS pozostają niezależne.
+Test lokalny: `node --experimental-sqlite --test tests/deployment.test.mjs`
+tworzy dwa release w katalogu tymczasowym, przełącza A → B → A i sprawdza treść,
+symlink oraz nienaruszone dane. Systemctl i curl są atrapami: test nie dowodzi
+startu systemd ani poprawnego TLS na VPS.
 
-## Aktualizacja i odtworzenie
+## Lista kontrolna curl po wdrożeniu przez właściciela
 
-Wdrożenia są na razie ręczne. Przed zmianą: zielone CI, zapis SHA, nowy katalog release i spójna kopia SQLite (przy zatrzymanej usłudze lub przez SQLite backup). Przenieś wyłącznie kod runtime i plik package.json, przygotuj pusty katalog data wymagany przez bootstrap, zapisz REVISION. Przełącz symlink current i zrestartuj usługę; sprawdź / i /api/state przez tunel. Zachowaj poprzedni katalog release. W razie błędu przywróć poprzedni symlink i restart; migracje bazy wymagają osobnego planu przywrócenia. Pierwsze wdrożenie nie ma poprzedniej wersji do rollbacku.
+Używaj syntetycznych danych, bez `-k`. Nie publikuj cookies ani kluczy.
 
-Nie skonfigurowano automatycznego CD ani cyklicznych backupów. To środowisko demonstracyjne z syntetycznymi danymi, bez logowania produktu i izolacji klientów.
+```sh
+base=https://niezla.bieda.it
+curl -I http://niezla.bieda.it/                 # 301/308 do HTTPS
+curl -i "$base/login"                        # 200, certyfikat poprawny
+curl -i "$base/"                             # 401 bez sesji
+curl -i "$base/api/state"                    # 401 bez sesji
+curl -i "$base/api/v1/tasks"                 # 401 bez klucza
+curl -i "$base/apply/synthetic-missing"       # 200, szkielet formularza
+curl -i "$base/apply.js"                     # 200 JavaScript
+curl -i "$base/styles.css"                   # 200 CSS
+curl -i "$base/api/v1/public-briefs/missing"  # 404
+curl -i "$base/.env"                         # 401/404, nigdy treść pliku
+curl -i "$base/lib/store.mjs"                # 401/404
+curl -i "$base/api/login" -H 'Origin: https://evil.example' \
+  -H 'Content-Type: application/json' -H 'Idempotency-Key: origin-check' \
+  --data '{}'                               # 403
+curl -i "$base/api/login" -H "Origin: $base" \
+  -H 'Content-Type: application/json' -H 'Idempotency-Key: login-check' \
+  --data '{}'                               # 401 (Origin zaakceptowany, brak hasła)
+```
 
-## Zakres podglądu
+- Zaloguj się przez `/login`; sprawdź Secure, HttpOnly, SameSite=Strict cookie,
+  panel oraz `/api/state` → 200 wyłącznie z sesją. W DevTools „Copy as cURL”
+  wykonaj żądanie lokalnie bez zapisywania sekretu w historii i bez udostępniania.
+  Po wylogowaniu to samo żądanie stanu musi zwrócić 401.
+- Z kluczem workera przechowywanym w prywatnym pliku konfiguracji curl 0600:
+  `curl --config /bezpieczna/sciezka/worker.curl "$base/api/v1/tasks"` → 200;
+  `/api/state` z tym samym kluczem → 401; po odwołaniu klucza tasks → 401.
+- Na opublikowanym syntetycznym briefie wyślij PDF przez formularz, sprawdź 201
+  i brak duplikatu przy powtórzeniu Idempotency-Key. Po zmianie release sprawdź
+  dostępność CV i stanu z sesją. Żądanie większe niż 11 MiB musi dać 413.
+- Kontrolowana seria żądań powyżej limitu nginx musi dać 429. Wykonuj poza
+  normalną pracą, bo limit jest współdzielony przez proxy.
+- Z zewnętrznej maszyny porty 4317 i 20172 muszą odrzucać połączenia.
+  Właściciel sprawdza `ss -ltn`, status usługi i logi bez kopiowania danych osób.
+- Powtórz checklistę po rollbacku, sprawdź REVISION i aktualny symlink.
 
-Dostępne: działająca aplikacja UI/API, pliki, stan usługi, logi i baza demonstracyjna przez SSH. Narzędzia T3 do powiązania zdalnego environment nie były dostępne podczas konfiguracji. To nie daje automatycznie natywnej przeglądarki Codexa, zdalnych sesji agentów, desktopu ani pełnego panelu obserwowalności. Takie możliwości wymagają osobnej integracji; nie są deklarowane jako ukończone.
+Zielone lokalne CI nie zastępuje tych kontroli. Kontakt z prawdziwym kandydatem
+pozostaje zablokowany do spełnienia MVP-23 i przeglądu właściciela.

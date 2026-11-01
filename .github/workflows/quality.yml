@@ -21,6 +21,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
+        with:
+          # gitleaks-action scans the PR's commit range; a shallow clone makes that git log fail
+          fetch-depth: 0
       - name: Scan repository secrets
         uses: gitleaks/gitleaks-action@v3
         env:

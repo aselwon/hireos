@@ -29,43 +29,59 @@ test('brak uzasadnienia zwraca 400 i nie zapisuje decyzji', (t) => {
   assert.equal(db.prepare('SELECT count(*) AS count FROM decisions').get().count, 0);
 });
 
-test('endpoint rekrutera odpowiada HTTP 400 bez uzasadnienia', async (t) => {
-  const { db, decide } = setup(t);
-  const handler = createHandler({
-    store: { decide },
-    keys: { authenticate: () => ({ id: 'recruiter-7', scope: 'admin' }) },
-    sessions: { valid: () => false },
-    port: 4310,
+for (const [reason, expectedStatus] of [
+  [' ', 400],
+  ['Brak wymaganych dowodów.', 200],
+]) {
+  test(`endpoint decyzji odpowiada raz: HTTP ${expectedStatus}`, async (t) => {
+    const { db, decide } = setup(t);
+    const handler = createHandler({
+      store: { decide },
+      keys: { authenticate: () => ({ id: 'recruiter-7', scope: 'admin' }) },
+      sessions: { valid: () => false },
+      port: 4310,
+    });
+    const req = Readable.from([JSON.stringify({ outcome: 'rejected', reason })]);
+    Object.assign(req, {
+      url: '/api/v1/applications/app/decision',
+      method: 'POST',
+      headers: {
+        host: 'localhost:4310',
+        authorization: 'Bearer recruiter-token',
+        'content-type': 'application/json',
+        'idempotency-key': 'decision-http',
+      },
+    });
+    let status;
+    let response;
+    let responses = 0;
+    await handler(req, {
+      setHeader(name, value) {
+        assert.ok(name);
+        assert.ok(value);
+      },
+      writeHead(value) {
+        responses += 1;
+        status = value;
+      },
+      end(value) {
+        response = JSON.parse(value);
+      },
+    });
+    assert.equal(responses, 1);
+    assert.equal(status, expectedStatus);
+    if (expectedStatus === 400) {
+      assert.match(response.error, /uzasadnienie/i);
+    } else {
+      assert.equal(response.decision.outcome, 'rejected');
+      assert.equal(response.decision.reason, reason);
+    }
+    assert.equal(
+      db.prepare('SELECT count(*) AS count FROM decisions').get().count,
+      expectedStatus === 200 ? 1 : 0
+    );
   });
-  const req = Readable.from([JSON.stringify({ outcome: 'rejected', reason: ' ' })]);
-  Object.assign(req, {
-    url: '/api/v1/applications/app/decision',
-    method: 'POST',
-    headers: {
-      host: 'localhost:4310',
-      authorization: 'Bearer recruiter-token',
-      'content-type': 'application/json',
-      'idempotency-key': 'decision-http',
-    },
-  });
-  let status;
-  let response;
-  await handler(req, {
-    setHeader(name, value) {
-      assert.ok(name);
-      assert.ok(value);
-    },
-    writeHead(value) {
-      status = value;
-    },
-    end(value) {
-      response = JSON.parse(value);
-    },
-  });
-  assert.equal(status, 400);
-  assert.match(response.error, /uzasadnienie/i);
-  assert.equal(db.prepare('SELECT count(*) AS count FROM decisions').get().count, 0);
-});
+}
 
 test('decyzja człowieka atomowo zapisuje decyzję, etap i pełny audit log', (t) => {
   const { db, decide } = setup(t);
