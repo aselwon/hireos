@@ -154,6 +154,9 @@ test('HTTP chroni panel, stan i mutacje; sprawdza sesje, zakresy, odwołanie i o
     }
     return { status, headers, body };
   };
+  for (const asset of ['/apply.js', '/styles.css']) {
+    assert.equal((await request(asset)).status, 200);
+  }
   const post = (body, extra = {}) => ({
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'http-test', ...extra },
