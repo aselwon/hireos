@@ -1,77 +1,71 @@
-# HireOS
+# HireOS — MVP rekrutacji IT
 
-Platforma operacyjna rekrutacji dla wielu firm i wszystkich branż w Polsce/UE. Astra 6 prowadzi architekturę i implementację; Antigravity wykonał katalog branż i checklisty integracji, zweryfikowane przez Astrę.
+HireOS wspiera jednego rekrutera w prowadzeniu rekrutacji IT: od briefu stanowiska przez aplikację i analizę CV po decyzję człowieka. Zakres MVP i jego ograniczenia opisują [SPEC](SPEC.md) oraz [Definition of Done MVP](docs/mvp-dod.md).
 
-**Stan: działający prototyp, plan produkcyjny i backlog. Nie jest to autonomiczna agencja produkcyjna.** Operacje HR docelowo automatyzuje trwały workflow; decyzje o odrzuceniu i zatrudnieniu wymagają znaczącego nadzoru człowieka.
-
-[Otwórz publiczny demonstrator HTTPS](https://niezla.bieda.it/)
-
-Publiczny adres jest statycznym demonstratorem `hireos/dist` i zapisuje dane w `localStorage` przeglądarki. Prywatny Node/SQLite pozostaje dostępny przez tunnel `127.0.0.1:4317`. Endpoint health sygnalizuje brak implementacji worker API (`workerApi: "not-implemented"`, `outreachEnabled: false`); nie ma działającego API worker, klucza ani rutyny outreachu. Auth API jest pracą przyszłą, a publiczny routing demo nie dowodzi ukończenia integracji.
+Interfejs jest po polsku. Dane w repozytorium, testach i ewaluacji są syntetyczne. HireOS nie odrzuca kandydatów automatycznie; decyzję podejmuje rekruter.
 
 ## Uruchomienie lokalne
 
-Wymagany jest Node.js `22.23.1` (wersja zapisana w `.nvmrc`). Zainstaluj zależności z lockfile:
+Wymagany jest Node.js `22.23.1` (wersja z `.nvmrc`). Zainstaluj zależności i przygotuj konfigurację jakości:
 
 ```sh
 npm ci --ignore-scripts
+npm run quality:prepare
 ```
 
-Następnie przygotuj konfigurację jakości i uruchom aplikację:
+Uruchom serwer:
 
 ```sh
-npm run quality:prepare
 npm start
 ```
 
-Otwórz http://localhost:4310. Serwer nasłuchuje tylko na 127.0.0.1; SQLite zapisuje dane w ignorowanym `data/hireos.sqlite`. Można ustawić `PORT` i `HIREOS_DB`. Ostrzeżenie Node o eksperymentalnym SQLite jest oczekiwane. Nie wystawiaj tego serwera jako publicznego SaaS — nie ma logowania ani izolacji wielu klientów.
+Aplikacja działa pod adresem http://localhost:4310. Serwer nasłuchuje na `127.0.0.1`, a SQLite domyślnie zapisuje dane w `data/hireos.sqlite`. Ostrzeżenie Node o eksperymentalnym SQLite jest oczekiwane.
+
+## Konfiguracja
+
+Zmienne są opcjonalne, o ile nie zaznaczono inaczej. Nie umieszczaj wartości sekretów w repozytorium.
+
+| Zmienna                        | Zastosowanie                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------- |
+| `PORT`                         | Port lokalnego serwera; domyślnie `4310`.                                       |
+| `HIREOS_DATA_DIR`              | Katalog danych serwera.                                                         |
+| `HIREOS_DB`                    | Ścieżka do bazy SQLite; nadpisuje domyślną lokalizację.                         |
+| `HIREOS_RECRUITER_PASSWORD`    | Hasło rekrutera przy uruchomieniu serwera.                                      |
+| `HIREOS_SECURE_COOKIE`         | Ustaw `1`, gdy sesja działa za HTTPS.                                           |
+| `GITHUB_TOKEN`                 | Opcjonalny token do limitów publicznego API GitHub.                             |
+| `MODEL_PROVIDER`               | Dostawca modeli; domyślnie `fake`. Produkcyjne wywołania wymagają `cloudflare`. |
+| `CF_ACCOUNT_ID`, `CF_AI_TOKEN` | Wymagane dla Cloudflare Workers AI; token trzymaj poza repozytorium.            |
+| `MODEL_DAILY_NEURON_CAP`       | Limit bramki AI na dobę; domyślnie `9000`.                                      |
+| `NODE_ENV`, `CI`               | W `test` lub CI prawdziwy dostawca modeli jest wyłączony.                       |
+| `RETENTION_DAYS`               | Okres retencji używany przez funkcje retencji.                                  |
+| `HIREOS_BACKUP_DIR`            | Katalog kopii zapasowych; domyślna lokalizacja zależy od trybu uruchomienia.    |
+| `HIREOS_BACKUP_RETENTION`      | Liczba zachowywanych kopii; domyślnie `14`.                                     |
+
+Nie uruchamiaj lokalnego serwera jako publicznej usługi. Wdrożenie wymaga HTTPS, ochrony panelu rekrutera oraz skonfigurowanych kopii zapasowych. Instrukcje podglądu i operacji są w [dokumentacji VPS](docs/vps-preview.md).
+
+## Zakres i ograniczenia
+
+MVP obejmuje rekrutację IT dla jednego tenanta i jednego rekrutera. Zakres obejmuje brief IT, aplikacje z tekstowym PDF, profilowanie CV i raport screeningowy z dowodami, ręczne decyzje, opcjonalne wyszukiwanie profili przez publiczne API GitHub oraz API zadań wykonawcy outreachu. Skanowane CV bez warstwy tekstowej wymagają ręcznej weryfikacji. HireOS nie wysyła wiadomości do kandydatów.
+
+Poza MVP są m.in. inne branże, wiele firm, SSO, integracje z portalami pracy, pocztą i kalendarzami, OCR oraz automatyczny kontakt. Przed użyciem z prawdziwymi kandydatami wymagane są decyzje właściciela dotyczące limitów outreachu, retencji i przeglądu prawnego. Szczegóły: [SPEC](SPEC.md) i [kryteria DoD](docs/mvp-dod.md).
+
+## Kontrola jakości
 
 ```sh
-npm test
+npm run quality:check
 npm run check
+npm test
+npm run ci
 ```
 
-## Jakość i CI
-
-Skrypty jakościowe działają w następujący sposób:
-
-- `npm run quality:prepare` przygotowuje konfigurację QoQ.
-- `npm run quality:check` uruchamia kontrole QoQ bez modyfikowania plików.
-- `npm run quality:fix` stosuje automatyczne poprawki formatowania.
-- `npm run ci` uruchamia bramkę jakości, sprawdzenie składni i testy.
-
-Pełna kolejność weryfikacji CI to `npm ci --ignore-scripts`, `npm run quality:prepare`, a następnie `npm run ci`. Jest zdefiniowana w [`.github/workflows/quality.yml`](.github/workflows/quality.yml) i działa dla pull requestów, pushy do `main` oraz ręcznego uruchomienia. Po podpięciu remote status uruchomień jest dostępny w zakładce Actions repozytorium GitHub.
-
-## Co działa
-
-- 8 widoków: przegląd, rekrutacje, kandydaci, agenci, rozmowy, integracje, dziennik i design system.
-- Tworzenie szkicu rekrutacji, wyszukiwanie i filtrowanie kandydatów.
-- Przegląd materiałów i ręczna zmiana sąsiedniego etapu z uzasadnieniem.
-- Uruchomienie deterministycznej checklisty lub szablonu rozmowy, pauza/wznowienie kolejki.
-- Dziennik zmian i eksport JSON; transakcje i idempotencja lokalnego API.
-- Lokalna trwałość SQLite; wersja hostowana używa localStorage danej przeglądarki.
-
-## Co jest zaplanowane
-
-Auth/SSO, tenant isolation, rzeczywiste modele AI, sourcing przez portale, parsing CV, poczta, kalendarze, rozmowy live, sandbox kodu, ATS/HRIS, podpisy, retencja i skala produkcyjna. Karty integracji pokazują wymagania, nie pozorują działających połączeń. Wszystkie osoby i firmy są fikcyjne. Nie wprowadzaj danych rzeczywistych do prototypu.
-
-Linear: [status synchronizacji](planning/linear-sync-status.json). Lokalne klucze HOS nie są identyfikatorami issue w Linear.
-
-## Dokumentacja projektu
-
-- [Propozycja Definition of Done](docs/definition-of-done.md)
-- [Prywatny podgląd na VPS, logi i operacje](docs/vps-preview.md)
-- [Publikacja demonstracyjna i ograniczenia](docs/deployment.md)
-
-- [Plan produktu, etapy, mierniki i hipoteza skali](docs/product-plan.md)
-- [System design i model domenowy](docs/system-design.md)
-- [Design system](docs/design-system.md)
-- [Playbooki 8 branż](docs/industry-playbooks.md)
-- [Checklisty integracji](docs/integration-checklist.md)
-- [Podział pracy agentów](docs/agent-orchestration.md)
-- [Backlog: 8 epików i 36 zadań](planning/backlog.json)
-- [Wyniki weryfikacji](docs/verification.md)
-- [Publikacja i ograniczenia hostowanego demo](docs/deployment.md)
+`npm run ci` uruchamia kontrole qoq, sprawdzenie składni i testy. Pipeline CI jest zdefiniowany w [`.github/workflows/quality.yml`](.github/workflows/quality.yml).
 
 ## Struktura
 
-`server.mjs` — lokalny HTTP/API. `lib/store.mjs` — transakcyjny store SQLite i reguły workflow. `hireos/dist/` — statyczny frontend i syntetyczne dane. `tests/` — reguły, retry i trwałość. `scripts/make-preview.mjs` — samowystarczalny artefakt HTML dla T3. `docs/` — projekt produkcyjny. `planning/` — backlog.
+- `server.mjs` — lokalny serwer HTTP i konfiguracja.
+- `lib/` — logika domenowa, SQLite, API i bramka modeli.
+- `hireos/dist/` — statyczny interfejs aplikacji.
+- `tests/` — testy jednostkowe i integracyjne.
+- `eval/` — syntetyczne dane i ewaluacja parsera CV.
+- `docs/` — dokumentacja MVP i operacyjna.
+- `planning/` — kolejka bieżących zadań MVP; [stary backlog](planning/backlog.json) jest zarchiwizowany i poza zakresem.
