@@ -27,9 +27,15 @@ po migracji starych rekordów). Checkbox jest opcjonalny i domyślnie odznaczony
 Zmiana zgody przy ponowieniu tego samego klucza idempotencji jest konfliktem.
 Formularz ze starą wersją wymaga odświeżenia (HTTP 409).
 
+Po zamknięciu rekrutacji dane aplikacji bez zgody na przyszłe rekrutacje są
+anonimizowane po `RETENTION_DAYS`. Dane ze zgodą są anonimizowane po tym samym
+okresie liczonym od jej udzielenia. CV, profile, raporty i treści zadań outreach
+są usuwane, a uzasadnienia decyzji zastępowane adnotacją retencji. Harmonogram
+działa codziennie; każdy przebieg zapisuje w audycie wyłącznie liczbę aplikacji,
+plików CV, zadań outreach i wartość okresu. Kopie zapasowe nadal mogą zawierać
+wcześniej usunięte dane.
+
 Właściciel i specjalista muszą przed użyciem z prawdziwymi kandydatami potwierdzić
 podstawy prawne, dane zleceniodawcy, odbiorców i warunki transferu poza EOG oraz
-okresy i wykonanie retencji. Obecny mechanizm retencji usuwa CV odrzuconych
-kandydatów; nie zapewnia kompletnego usuwania wszystkich danych ani osobnej
-kolejki usuwania dla zgody na przyszłe rekrutacje. Ten zakres nie jest rozszerzany
-w MVP-31. Projekt klauzuli nie stanowi potwierdzenia zgodności prawnej.
+okresy i wykonanie retencji. Projekt klauzuli nie stanowi potwierdzenia zgodności
+prawnej.
