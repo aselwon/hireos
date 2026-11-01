@@ -1,0 +1,19 @@
+[Unit]
+Description=Backup HireOS SQLite database and CV files
+After=hireos-preview.service
+
+[Service]
+Type=oneshot
+User=hireos
+Group=hireos
+Environment=HIREOS_DATA_DIR=/var/lib/hireos
+Environment=HIREOS_DB=/var/lib/hireos/preview.sqlite
+Environment=HIREOS_BACKUP_DIR=/var/backups/hireos
+Environment=HIREOS_BACKUP_RETENTION=14
+ExecStart=/usr/bin/node --experimental-sqlite /opt/hireos/current/ops/backup.mjs backup
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/backups/hireos
+PrivateTmp=true
