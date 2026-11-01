@@ -248,7 +248,7 @@
       "acceptance": ["Testy retencji i redakcji logów.", "CI zielone z nowym krokiem."],
       "dependsOn": ["MVP-12"],
       "tier": "worker",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-21",
