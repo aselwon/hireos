@@ -454,11 +454,11 @@
     },
     {
       "id": "MVP-37",
-      "title": "Przegląd prawny RODO i AI Act (właściciel)",
-      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil zleca/akceptuje przegląd: klauzula (MVP-31/32), retencja N, procedura praw osób (MVP-33), dokumentacja AI Act i DPIA (MVP-35), podstawa przekazywania danych zleceniodawcom. Może wymagać płatnego prawnika — decyzja Kamila.",
+      "title": "Akceptacja dokumentów RODO i AI Act (właściciel)",
+      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil sam czyta i akceptuje przygotowane dokumenty: klauzula (MVP-31/32), okres retencji N, procedura praw osób (MVP-33), dokumentacja AI Act i DPIA (MVP-35), podstawa przekazywania danych zleceniodawcom. Decyzja właściciela 2026-11-01: bez płatnego prawnika i bez zewnętrznego przeglądu prawnego.",
       "acceptance": [
         "Zatwierdzona wersja klauzuli i N wpisane do konfiguracji.",
-        "Lista poprawek z przeglądu rozpisana jako nowe zadania.",
+        "Poprawki zgłoszone przez właściciela przy akceptacji rozpisane jako nowe zadania.",
         "Status zmienia wyłącznie właściciel."
       ],
       "dependsOn": ["MVP-32", "MVP-34", "MVP-35"],
@@ -650,7 +650,7 @@
     {
       "id": "MVP-52",
       "title": "Decyzje biznesowe przed sprzedażą (właściciel)",
-      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil decyduje: cennik (success fee %/stała/zaliczka), forma działalności i dane administratora/sprzedawcy, narzędzie do faktur (płatne wymaga jego OK), domena i adres kontaktowy, akceptacja szablonów z MVP-51 po przeglądzie prawnym.",
+      "description": "ZADANIE CZŁOWIEKA (Kamil) — agent go nie wykonuje; status zmienia wyłącznie właściciel po wykonaniu. Kamil decyduje: cennik (success fee %/stała/zaliczka), forma działalności i dane administratora/sprzedawcy, narzędzie do faktur (płatne wymaga jego OK), domena i adres kontaktowy, akceptacja szablonów z MVP-51 (akceptuje sam właściciel, bez prawnika). Notatka 2026-11-01: fakturowanie odłożone; Kamil ma już iFirmę (istniejąca subskrypcja) — możliwa integracja później, nie teraz.",
       "acceptance": [
         "Cennik w konfiguracji produkcyjnej.",
         "Dane administratora w konfiguracji (odblokowują formularz z MVP-31).",
