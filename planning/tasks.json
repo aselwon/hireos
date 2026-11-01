@@ -87,7 +87,7 @@
       ],
       "dependsOn": ["MVP-05"],
       "tier": "worker",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-07",
@@ -188,7 +188,7 @@
       ],
       "dependsOn": ["MVP-02"],
       "tier": "planner",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-15",
@@ -230,7 +230,7 @@
       ],
       "dependsOn": ["MVP-05"],
       "tier": "worker",
-      "status": "review"
+      "status": "done"
     },
     {
       "id": "MVP-19",
