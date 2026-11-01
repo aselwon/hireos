@@ -218,7 +218,7 @@
       "acceptance": ["Przykłady zgodne z testami kontraktowymi.", "Prettier/qoq OK."],
       "dependsOn": ["MVP-15", "MVP-16"],
       "tier": "worker",
-      "status": "todo"
+      "status": "review"
     },
     {
       "id": "MVP-18",
