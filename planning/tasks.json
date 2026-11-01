@@ -74,7 +74,7 @@
       ],
       "dependsOn": ["MVP-03", "MVP-04"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-06",
@@ -87,7 +87,7 @@
       ],
       "dependsOn": ["MVP-05"],
       "tier": "worker",
-      "status": "todo"
+      "status": "review"
     },
     {
       "id": "MVP-07",
