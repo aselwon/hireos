@@ -1,11 +1,13 @@
-import { clientSelect, clientsPage, submitClientForm } from './clients.js';
+import { clientSelect, clientsPage, leadsPage, submitClientForm } from './clients.js';
+import { applicationRow, emptyReport, requirementEvidence } from './report.js';
 import { shortlistPanel, submitShortlist } from './shortlists.js';
-
 const app = document.querySelector('#app');
 const state = {
   briefs: [],
+  outreachLive: null,
   clients: [],
   shortlists: [],
+  leads: [],
   brief: null,
   applications: [],
   view: 'jobs',
@@ -58,6 +60,7 @@ async function loadBriefs() {
   try {
     state.briefs = (await request('/api/v1/briefs')).briefs;
     state.clients = (await request('/api/v1/clients')).clients;
+    state.leads = (await request('/api/v1/leads')).leads;
   } catch (error) {
     state.error = error.message;
   } finally {
@@ -91,9 +94,14 @@ function shell(content) {
   const applicationsNav = state.brief
     ? `<button data-action="applications" aria-current="${navCurrent}">Aplikacje <span class="count">${state.applications.length}</span></button>`
     : '';
-  const pageTitles = { jobs: 'Rekrutacje', clients: 'Klienci' };
+  const pageTitles = {
+    outreach: 'Test kontrolny outreachu',
+    jobs: 'Rekrutacje',
+    clients: 'Klienci',
+    leads: 'Zapytania',
+  };
   const pageTitle = pageTitles[state.view] || escapeHtml(state.brief?.title || 'Aplikacje');
-  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
+  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="leads" aria-current="${state.view === 'leads' ? 'page' : 'false'}">Zapytania firm</button><button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button><button data-action="outreach">Test kontrolny outreachu</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
 }
 function alertBox(message, kind = 'error') {
   return `<div class="notice ${kind}" role="${kind === 'error' ? 'alert' : 'status'}">${escapeHtml(message)}</div>`;
@@ -134,39 +142,19 @@ function requirementRow(r) {
   return `<div class="mvp-requirement"><label class="field">Wymaganie<input name="description" value="${escapeHtml(r.description)}" required maxlength="500"></label><label class="field">Typ<select name="priority"><option value="must" ${must}>Wymagane</option><option value="nice" ${nice}>Dodatkowe</option></select></label><label class="field">Waga<select name="weight">${options}</select></label></div>`;
 }
 function applicationList() {
-  const rows = state.applications.map(applicationRow).join('');
+  const rows = state.applications
+    .map((item) => applicationRow(item, escapeHtml, stageLabels, cvStatusLabels))
+    .join('');
   const content = rows
     ? `<div class="table-scroll"><table><thead><tr><th>Kandydat</th><th>Etap</th><th>CV / profil</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
     : '<div class="empty">Brak aplikacji dla tej rekrutacji.</div>';
   return `<section class="panel"><div class="panel-head"><div><h2>Aplikacje · ${state.applications.length}</h2><p>Status CV i niepewne fakty są widoczne przed oceną.</p></div></div>${content}</section>`;
 }
-function applicationStatus(application) {
-  if (application.processingStatus === 'queued') {
-    return '<span class="tag gray">W kolejce</span>';
-  }
-  if (
-    application.processingStatus === 'needs_manual_review' ||
-    application.cvStatus === 'needs_manual_review'
-  ) {
-    return '<span class="tag amber">Wymaga ręcznego przeglądu</span>';
-  }
-  if (application.uncertain) {
-    return '<span class="tag amber">Niepewne fakty</span>';
-  }
-  const ready = application.profileStatus === 'completed';
-  const className = ready ? '' : 'gray';
-  const label = ready ? 'Profil gotowy' : cvStatusLabels[application.cvStatus] || 'Oczekuje';
-  return `<span class="tag ${className}">${label}</span>`;
-}
-function applicationRow(application) {
-  const status = applicationStatus(application);
-  return `<tr><td><b>${escapeHtml(application.name)}</b><small>${escapeHtml(application.email)}</small></td><td>${stageLabels[application.stage] || escapeHtml(application.stage)}</td><td>${status}</td><td><button class="text-button" data-action="report" data-id="${escapeHtml(application.id)}">Otwórz raport →</button></td></tr>`;
-}
 function reportPage() {
   const a = state.application;
   const { report } = a;
   const requirements = report?.requirements || [];
-  const quoteItems = requirements.map(requirementEvidence).join('');
+  const quoteItems = requirements.map((item) => requirementEvidence(item, escapeHtml)).join('');
   const error = state.error ? alertBox(state.error) : '';
   const manualReview =
     a.cvStatus === 'needs_manual_review'
@@ -181,15 +169,6 @@ function reportPage() {
       : '<button class="button" data-action="screening">Utwórz raport oceny</button>';
   const reportBody = report ? quoteItems : emptyReport(a);
   return `<section class="page-heading"><div><div class="eyebrow">RAPORT OCENY</div><h1>${escapeHtml(a.name)}</h1><p>${escapeHtml(a.email)} · ${escapeHtml(state.brief.title)}</p></div><button class="button secondary" data-action="applications">Wróć do aplikacji</button></section>${error}${manualReview}${uncertain}<section class="panel"><div class="panel-head"><div><h2>Wymaganie → dowody</h2><p>Brak dowodu nie oznacza braku kompetencji.</p></div>${reportAction}</div>${reportBody}</section>${decisionPanel()}${dataRightsPanel()}`;
-}
-function emptyReport(application) {
-  if (application.processingStatus === 'queued') {
-    return '<div class="empty">W kolejce — profil i raport powstaną automatycznie. Po wyczerpaniu limitu AI praca zostanie wznowiona o 00:00 UTC. Wróć do aplikacji, aby odświeżyć status.</div>';
-  }
-  const message = application.profile
-    ? 'Raport nie został jeszcze utworzony.'
-    : 'Profil CV nie jest jeszcze dostępny.';
-  return `<div class="empty">${message}</div>`;
 }
 function dataRightsPanel() {
   const labels = { access: 'Dostęp', erase: 'Usunięcie', object: 'Sprzeciw' };
@@ -248,28 +227,16 @@ async function submitDataRights(event) {
 function decisionPanel() {
   return '<section class="panel"><div class="panel-head"><div><h2>Decyzja rekrutera</h2><p>Każda decyzja wymaga uzasadnienia.</p></div></div><form id="decision-form"><label class="field">Czy zgadzasz się z raportem AI?<select name="agreedWithAi" required><option value="">Wybierz ocenę</option><option value="true">Tak</option><option value="false">Nie</option></select></label><label class="field">Uzasadnienie<textarea name="reason" required minlength="1" maxlength="2000" rows="3"></textarea></label><div class="actions"><button class="button" name="outcome" value="approved">Zatwierdź kandydata</button><button class="button danger" name="outcome" value="rejected">Odrzuć kandydata</button></div></form></section>';
 }
-function requirementEvidence(item) {
-  const labels = { met: 'Spełnione', missing: 'Brak dowodu', uncertain: 'Niepewne' };
-  const status = labels[item.status] || item.status;
-  const statusClass = item.status === 'met' ? '' : 'amber';
-  const evidence = (item.evidence || []).map(evidenceQuote).join('');
-  const details = evidence
-    ? `<ul class="evidence">${evidence}</ul>`
-    : '<p>Brak cytatu potwierdzającego wymaganie.</p>';
-  return `<article class="mvp-evidence"><div class="panel-head"><h3>${escapeHtml(item.description)}</h3><span class="tag ${statusClass}">${status}</span></div>${details}</article>`;
-}
-function evidenceQuote(evidence) {
-  const uncertain = evidence.uncertain
-    ? '<span class="tag amber">Cytat niejednoznaczny</span>'
-    : '';
-  return `<li><blockquote>${escapeHtml(evidence.quote)}</blockquote>${uncertain}</li>`;
-}
 function render() {
   let content = jobsPage();
   if (state.loading) {
     content = alertBox('Ładowanie danych…', 'loading');
+  } else if (state.view === 'outreach') {
+    content = outreachPage();
   } else if (state.view === 'clients') {
     content = (state.error ? alertBox(state.error) : '') + clientsPage(state.clients, escapeHtml);
+  } else if (state.view === 'leads') {
+    content = leadsPage(state.leads, state.error, escapeHtml, alertBox);
   } else if (state.view === 'brief') {
     content = briefForm();
   } else if (state.view === 'applications') {
@@ -285,6 +252,28 @@ function render() {
   if (heading) {
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
+  }
+}
+async function submitLeadForm(form) {
+  const values = new FormData(form);
+  const converting = form.matches('.lead-convert-form');
+  const body = converting
+    ? {
+        nip: values.get('nip'),
+        billingModel: values.get('billingModel'),
+        feeValue: Math.round(Number(values.get('fee')) * 100),
+        advanceGrosz: Math.round(Number(values.get('advance')) * 100),
+      }
+    : { status: values.get('status'), notes: values.get('notes') };
+  try {
+    await request(
+      `/api/v1/leads/${encodeURIComponent(form.dataset.id)}${converting ? '/convert' : ''}`,
+      { method: 'POST', body: JSON.stringify(body) }
+    );
+    await loadBriefs();
+  } catch (error) {
+    state.error = error.message;
+    render();
   }
 }
 function applicationsPage() {
@@ -334,6 +323,12 @@ document.addEventListener('click', async (event) => {
   }
   try {
     switch (button.dataset.action) {
+      case 'outreach':
+        state.outreachLive = await request('/api/v1/outreach-live');
+        state.error = '';
+        state.view = 'outreach';
+        render();
+        break;
       case 'jobs':
         state.view = 'jobs';
         state.brief = null;
@@ -341,6 +336,10 @@ document.addEventListener('click', async (event) => {
         break;
       case 'clients':
         state.view = 'clients';
+        await loadBriefs();
+        break;
+      case 'leads':
+        state.view = 'leads';
         await loadBriefs();
         break;
       case 'new':
@@ -457,6 +456,11 @@ document.addEventListener('submit', async (event) => {
     await submitShortlist(event, state.brief.id, request, () => openBrief(state.brief.id));
     return;
   }
+  if (event.target.id === 'outreach-live-form') {
+    event.preventDefault();
+    await submitOutreachLive(event.target);
+    return;
+  }
   if (event.target.id === 'data-rights-form') {
     event.preventDefault();
     await submitDataRights(event);
@@ -467,6 +471,10 @@ document.addEventListener('submit', async (event) => {
   }
   if (event.target.id === 'assignment-form') {
     await submitAssignment(event);
+  }
+  if (event.target.matches('.lead-form, .lead-convert-form')) {
+    event.preventDefault();
+    await submitLeadForm(event.target);
   }
   if (event.target.id === 'brief-form') {
     event.preventDefault();
@@ -534,4 +542,39 @@ document.addEventListener('submit', async (event) => {
     }
   }
 });
+function outreachPage() {
+  const result = state.outreachLive;
+  const status = result?.outreach_live
+    ? `<p role="status">Kontakt z kandydatami odblokowany. Test: ${escapeHtml(result.control_test.date)}, raport: ${escapeHtml(result.control_test.report_id)}, wykonał(a): ${escapeHtml(result.control_test.who)}.</p>`
+    : '<p>Kontakt z kandydatami jest zablokowany. Dostępne są wyłącznie zadania kontrolne dla odbiorców z listy testowej.</p>';
+  const form = result?.outreach_live
+    ? ''
+    : `<p>Po zaliczonym teście zapisz wynik. Zapis odblokuje kontakt z prawdziwymi kandydatami i trafi do dziennika audytu.</p><form id="outreach-live-form"><label class="field">Data zaliczonego testu<input type="date" name="date" required max="${new Date().toISOString().slice(0, 10)}"></label><label class="field">Identyfikator raportu<input name="report_id" required maxlength="256"></label><label class="field">Kto wykonał test<input name="who" required maxlength="256"></label><label class="field">Hasło rekrutera<input type="password" name="password" autocomplete="current-password" required maxlength="1024"></label><button class="button primary" type="submit">Zapisz zaliczony test i odblokuj kontakt</button></form>`;
+  return `<section class="page-heading"><h1>Test kontrolny outreachu</h1></section><section class="panel">${status}${state.error ? alertBox(state.error) : ''}${form}</section>`;
+}
+async function submitOutreachLive(form) {
+  const data = new FormData(form);
+  const button = form.querySelector('button');
+  button.disabled = true;
+  button.textContent = 'Zapisywanie…';
+  try {
+    state.outreachLive = await request('/api/v1/outreach-live', {
+      method: 'POST',
+      body: JSON.stringify({
+        outreach_live: true,
+        password: data.get('password'),
+        control_test: {
+          date: data.get('date'),
+          report_id: data.get('report_id'),
+          who: data.get('who'),
+        },
+      }),
+    });
+    state.error = '';
+  } catch (error) {
+    state.error = error.message;
+  }
+  form.elements.password.value = '';
+  render();
+}
 await loadBriefs();

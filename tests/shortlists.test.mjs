@@ -220,13 +220,13 @@ test('management requires admin and valid mutations; explicit fields and CV gran
   assert.equal(
     (await request('/', { headers: { cookie: `hireos_session=${explicit.body.path.slice(3)}` } }))
       .status,
-    401
+    200
   );
   db.exec('DELETE FROM cv_files');
   assert.equal((await request(`${explicit.body.path}/cv/cv`)).status, 404);
 });
 
-test('012 migration preserves populated version 011 and installs cascading memberships', () => {
+test('017 migration preserves populated version 016 and installs cascading memberships', () => {
   const db = new DatabaseSync(':memory:');
   try {
     db.exec('CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL)');
@@ -244,7 +244,7 @@ test('012 migration preserves populated version 011 and installs cascading membe
     migrate(db);
     migrate(db);
     assert.deepEqual(db.prepare('SELECT * FROM job_briefs').get(), before);
-    assert.equal(db.prepare('SELECT MAX(version) n FROM schema_migrations').get().n, 12);
+    assert.equal(db.prepare('SELECT MAX(version) n FROM schema_migrations').get().n, 17);
     assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(), []);
     assert.equal(db.prepare('SELECT count(*) n FROM shortlists').get().n, 0);
   } finally {

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 
+import { applicationRow, emptyReport, requirementEvidence } from '../hireos/dist/report.js';
 import { shortlistPanel, submitShortlist } from '../hireos/dist/shortlists.js';
 
 function panel() {
@@ -37,6 +38,9 @@ function panel() {
     clientSelect: () => '',
     clientsPage: () => '',
     submitClientForm: () => Promise.resolve(),
+    applicationRow,
+    emptyReport,
+    requirementEvidence,
     Blob: globalThis.Blob,
     URL: { createObjectURL: () => 'blob:test', revokeObjectURL: () => undefined },
     setTimeout: (callback) => callback(),

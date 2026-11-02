@@ -52,3 +52,11 @@ Agent dopisuje tu wpis po 3 nieudanych próbach CI albo przy blokadzie wymagają
 - Ostatni błąd (bez sekretów): brak
 - Hipoteza: wymaga decyzji lub działania właściciela.
 - Pytanie do właściciela: Po MVP-30/37/41/52: umowa z pierwszą firmą, rekrutacja z prawdziwymi kandydatami, pierwsza faktura.
+
+## MVP-43 — 2026-11-02
+
+- Gałąź / PR: https://github.com/aselwon/hireos/pull/54 (otwarty, NIE zmergowany)
+- Co próbowano: harness dociągnął `main` do gałęzi 3 raz(y); CI dalej czerwone
+- Ostatni błąd (bez sekretów): CI PR czerwone (szczegóły w checkach PR).
+- Hipoteza: błąd jest w kodzie gałęzi zadania, nie w bazie.
+- Pytanie do właściciela: poprawić gałąź `task/MVP-43` albo zamknąć PR i przywrócić `MVP-43` do `todo`.

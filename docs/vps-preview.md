@@ -150,10 +150,11 @@ pozostaje zablokowany do spełnienia MVP-23 i przeglądu właściciela.
 
 Backup obejmuje spójny snapshot SQLite wykonany przez `node:sqlite` backup API,
 katalog `/var/lib/hireos/cv` oraz manifest z licznościami wszystkich tabel i
-plików CV. Timer tworzy kopię codziennie, zachowuje 14 najnowszych kopii, a
-systemd uruchamia zadanie jako `hireos`. Przed włączeniem usługi właściciel
-tworzy `/var/backups/hireos` z prawami `hireos:hireos` i trybem 0700; kopie
-zawierają dane kandydatów i muszą być chronione jak baza produkcyjna.
+plików CV. Zawartość jest szyfrowana AES-256-GCM; klucz jest w pliku poza repo,
+a manifest nie zawiera danych kandydatów. Timer tworzy kopię codziennie,
+zachowuje 14 najnowszych kopii, a systemd uruchamia zadanie jako `hireos`.
+Przed włączeniem usługi właściciel tworzy `/var/backups/hireos` z prawami
+`hireos:hireos` i trybem 0700.
 
 Zainstaluj obie jednostki i włącz timer (ręcznie przez właściciela):
 
@@ -161,6 +162,11 @@ Zainstaluj obie jednostki i włącz timer (ręcznie przez właściciela):
 sudo install -m 0644 ops/hireos-backup.service /etc/systemd/system/
 sudo install -m 0644 ops/hireos-backup.timer /etc/systemd/system/
 sudo install -d -o hireos -g hireos -m 0700 /var/backups/hireos
+# Właściciel zachowuje ten klucz poza repo i kopią VPS; utrata klucza uniemożliwia restore.
+sudo install -d -o root -g hireos -m 0750 /etc/hireos
+openssl rand -hex 32 | sudo tee /etc/hireos/backup.key >/dev/null
+sudo chown root:hireos /etc/hireos/backup.key
+sudo chmod 0640 /etc/hireos/backup.key
 sudo systemctl daemon-reload
 sudo systemctl enable --now hireos-backup.timer
 sudo systemctl start hireos-backup.service
@@ -170,6 +176,13 @@ sudo systemctl list-timers hireos-backup.timer
 
 Ręczny backup tworzy nowy katalog wersjonowany czasem w `/var/backups/hireos`;
 ustaw `HIREOS_BACKUP_RETENTION` w jednostce, jeśli liczba 14 kopii ma być inna.
+Bez `HIREOS_BACKUP_EXTERNAL_DIR` skrypt zapisuje wyłącznie lokalnie i wypisuje
+ostrzeżenie. **Decyzja właściciela:** wybrać darmowy, dostępny katalog poza VPS
+(np. zamontowany nośnik lub katalog rsync) i skonfigurować tę zmienną w
+systemd drop-in. Dla usługi z `ProtectSystem=strict` dodaj wybrany katalog do
+`ReadWritePaths`; upewnij się, że konto `hireos` może tam zapisywać. Monitor
+sprawdza świeżość lokalnej i skonfigurowanej kopii zewnętrznej, alarmując po
+26 godzinach. Nie konfiguruj celu wymagającego płatnego dostawcy.
 Odtworzenie zawsze wymaga pustego katalogu docelowego i nie nadpisuje danych.
 Poniższy przykład jest próbą do oddzielnego katalogu, nie odtwarza danych usługi:
 
@@ -180,8 +193,8 @@ sudo -u hireos /usr/bin/node --experimental-sqlite \
   /var/lib/hireos-restore-check
 ```
 
-Skrypt sprawdza liczbę rekordów w każdej tabeli z manifestem oraz liczbę plików
-CV po odtworzeniu. Przy właściwym odtworzeniu właściciel najpierw zatrzymuje
+Skrypt odszyfrowuje kopię, sprawdza integralność AEAD, liczbę rekordów w każdej
+tabeli z manifestem oraz liczbę plików CV po odtworzeniu. Przy właściwym odtworzeniu właściciel najpierw zatrzymuje
 `hireos-preview`, zachowuje obecną bazę i katalog CV, odtwarza do nowego pustego
 katalogu, sprawdza wynik, a dopiero potem ręcznie przenosi dane na miejsce,
 przywraca właściciela `hireos:hireos` i uruchamia usługę. Test lokalny:

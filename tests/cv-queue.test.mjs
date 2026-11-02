@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
-import { runInNewContext } from 'node:vm';
 
+import { applicationStatus, emptyReport } from '../hireos/dist/report.js';
 import { startCvWorker } from '../lib/cv-queue.mjs';
 import { migrate } from '../lib/migrations.mjs';
 import { createProvider } from '../lib/model-providers.mjs';
@@ -208,21 +208,11 @@ test('queue migration preserves existing v5 data without scheduling historical a
 });
 
 test('panel renders queue status ahead of completed profile and explains UTC wait', () => {
-  const source = readFileSync(new URL('../hireos/dist/app.js', import.meta.url), 'utf8');
-  const status = source.slice(
-    source.indexOf('function applicationStatus('),
-    source.indexOf('function applicationRow(')
-  );
-  const empty = source.slice(
-    source.indexOf('function emptyReport('),
-    source.indexOf('function decisionPanel(')
-  );
-  const html = runInNewContext(
-    `${status}\n${empty}\napplicationStatus(application) + emptyReport(application)`,
-    {
-      application: { processingStatus: 'queued', profileStatus: 'completed' },
-    }
-  );
+  const html =
+    applicationStatus(
+      { processingStatus: 'queued', profileStatus: 'completed' },
+      { queued: 'W kolejce' }
+    ) + emptyReport({ processingStatus: 'queued' });
   assert.match(html, /W kolejce/);
   assert.match(html, /00:00 UTC/);
   assert.doesNotMatch(html, /Profil gotowy/);
