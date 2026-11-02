@@ -72,6 +72,7 @@ export default {
       'hireos/dist/app.js',
       'hireos/dist/login.js',
       'hireos/dist/apply.js',
+      'hireos/dist/company.js',
       'tests/**/*.test.mjs',
       'scripts/*.mjs',
       'qoq.config.js',
