@@ -26,7 +26,7 @@ test('privacy migration preserves historical versions and defaults optional cons
     );
     migrate(db);
     const privacy = loadPrivacy({});
-    assert.equal(privacy.version, 'v2');
+    assert.equal(privacy.version, 'v3');
     db.prepare(
       'INSERT INTO applications (id,job_brief_id,name,email,consent_version,consent_at,idempotency_key,future_recruitment_consent) VALUES (?,?,?,?,?,?,?,?)'
     ).run('new', 'job', 'Test', 'test@example.test', privacy.version, '2026-11-01', 'new', 1);
@@ -40,7 +40,7 @@ test('privacy migration preserves historical versions and defaults optional cons
         .map((row) => ({ ...row })),
       [
         { consent_version: 'v1', future_recruitment_consent: 0 },
-        { consent_version: 'v2', future_recruitment_consent: 1 },
+        { consent_version: 'v3', future_recruitment_consent: 1 },
       ]
     );
     assert.match(privacyPage('v1', privacy), /Wersja historyczna/);
@@ -58,7 +58,7 @@ test('notice uses configured identity, DPO and retention without HTML injection'
     RETENTION_DAYS: '30',
   });
   assert.doesNotThrow(() => requirePrivacy(privacy, true));
-  const page = privacyPage('v2', privacy);
+  const page = privacyPage('v3', privacy);
   for (const text of [
     '&lt;Test&gt;',
     'Adres testowy',

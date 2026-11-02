@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -7,9 +7,11 @@ import { Readable } from 'node:stream';
 import test from 'node:test';
 
 import { createSessions, openKeys } from '../lib/auth.mjs';
+import { loadConfig } from '../lib/config.mjs';
 import { createHandler } from '../lib/http.mjs';
 import { openStore } from '../lib/store.mjs';
 import { runKeyCommand } from '../scripts/api-key.mjs';
+import { changePassword } from '../scripts/change-password.mjs';
 
 const password = 'syntetyczne-haslo-testowe';
 function fixture(t) {
@@ -35,6 +37,7 @@ test('sesje: scrypt, limit globalny, idempotencja, wylogowanie i wygaśnięcie',
   now += 15 * 60 * 1000;
   const next = sessions.login(password, 'next');
   assert.equal(next.status, 200);
+  assert.equal(sessions.valid(first.token), false);
   sessions.logout(first.token);
   sessions.logout(first.token);
   assert.equal(sessions.valid(first.token), false);
@@ -42,6 +45,20 @@ test('sesje: scrypt, limit globalny, idempotencja, wylogowanie i wygaśnięcie',
   now += 8 * 60 * 60 * 1000;
   assert.equal(sessions.valid(next.token), false);
   assert.equal(createSessions(password).valid(next.token), false);
+});
+
+test('CLI zmiany hasła zapisuje plik prywatnie i konfiguracja go odczytuje', async (t) => {
+  const { dir } = fixture(t);
+  const path = join(dir, 'password');
+  await changePassword(password, path);
+  assert.equal(statSync(path).mode & 0o777, 0o600);
+  assert.equal(
+    loadConfig({ HIREOS_PASSWORD_FILE: path, HIREOS_RECRUITER_PASSWORD: 'old-env-password' })
+      .password,
+    password
+  );
+  await assert.rejects(changePassword('short', path), /12/);
+  assert.equal(readFileSync(path, 'utf8'), `${password}\n`);
 });
 
 test('znany klucz idempotencji nie omija limitu i nie reaktywuje starego tokena', () => {
@@ -149,6 +166,11 @@ test('HTTP chroni panel, stan i mutacje; sprawdza sesje, zakresy, odwołanie i o
         body = value;
       },
     });
+    if (status === 200) {
+      assert.ok(headers.has('x-content-type-options'));
+      assert.equal(headers.get('x-frame-options'), 'DENY');
+      assert.equal(headers.get('referrer-policy'), 'no-referrer');
+    }
     for (const secret of [password, admin, worker]) {
       assert.equal(String(body).includes(secret), false);
     }
@@ -169,8 +191,19 @@ test('HTTP chroni panel, stan i mutacje; sprawdza sesje, zakresy, odwołanie i o
       401
     );
   }
+  for (const route of ['/api/v1/briefs', '/api/v1/applications/x', '/api/v1/leads']) {
+    assert.equal((await request(route)).status, 401);
+  }
   assert.equal((await request('/login')).status, 200);
   assert.equal((await request('/login.js')).status, 200);
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    await request('/apply/unknown');
+  }
+  assert.equal((await request('/apply/unknown')).status, 429);
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    await request('/api/v1/leads');
+  }
+  assert.equal((await request('/api/v1/leads')).status, 429);
   assert.equal((await request('/api/pause', post({ paused: true }))).status, 401);
   assert.equal(
     (await request('/api/pause', post({ paused: true }, { Authorization: `Bearer ${worker}` })))
@@ -200,9 +233,77 @@ test('HTTP chroni panel, stan i mutacje; sprawdza sesje, zakresy, odwołanie i o
     assert.ok(cookie.includes(attribute));
   }
   const auth = { Cookie: cookie.split(';')[0] };
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    await request(
+      '/api/login',
+      post({ password: 'wrong' }, { 'Idempotency-Key': `limited-${attempt}` })
+    );
+  }
+  assert.equal(
+    (await request('/api/login', post({ password }, { 'Idempotency-Key': 'blocked-login' })))
+      .status,
+    429
+  );
   assert.equal((await request('/', { headers: auth })).status, 200);
   assert.equal((await request('/api/state', { headers: auth })).status, 200);
   assert.equal((await request('/api/logout', post({}, auth))).status, 200);
   assert.equal((await request('/api/logout', post({}, auth))).status, 200);
   assert.equal((await request('/api/state', { headers: auth })).status, 401);
+});
+
+test('publiczny healthz ujawnia wyłącznie stan techniczny i zgłasza niedostępną bazę', async (t) => {
+  const { path } = fixture(t);
+  const keys = openKeys(path);
+  const store = openStore(path);
+  t.after(() => keys.close());
+  t.after(() => store.close());
+  const handler = createHandler({
+    store,
+    keys,
+    sessions: createSessions(password),
+    port: 14313,
+    revision: 'r-synthetic',
+  });
+  const request = async () => {
+    const req = Readable.from([]);
+    req.method = 'GET';
+    req.url = '/healthz';
+    req.headers = { host: '127.0.0.1:14313' };
+    let status;
+    let body;
+    const headers = new Map();
+    await handler(req, {
+      setHeader: (key, value) => headers.set(key.toLowerCase(), value),
+      writeHead(code) {
+        status = code;
+      },
+      end(value) {
+        body = value;
+      },
+    });
+    return { status, body: JSON.parse(body) };
+  };
+  const healthy = await request();
+  assert.equal(healthy.status, 200);
+  assert.deepEqual(healthy.body, {
+    status: 'ok',
+    revision: 'r-synthetic',
+    schemaVersion: 8,
+    db: 'ok',
+    aiCapReached: false,
+  });
+  assert.doesNotMatch(JSON.stringify(healthy.body), /candidate|email|\/|password|secret/i);
+  t.mock.method(store, 'healthStatus', () => {
+    throw new Error('database path and secret');
+  });
+  const unavailable = await request();
+  assert.equal(unavailable.status, 503);
+  assert.deepEqual(unavailable.body, {
+    status: 'unavailable',
+    revision: 'r-synthetic',
+    schemaVersion: null,
+    db: 'unavailable',
+    aiCapReached: null,
+  });
+  assert.doesNotMatch(JSON.stringify(unavailable.body), /database path|secret/i);
 });
