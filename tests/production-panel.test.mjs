@@ -71,6 +71,12 @@ test('production recruiter panel loads from an empty SQLite database without dem
   const appSource = app.body.toString();
   assert.match(appSource, /\/api\/v1\/briefs/);
   assert.doesNotMatch(appSource, /localStorage|sessionStorage|seed\.js/);
+  const clientsModule = await request('/clients.js', { cookie });
+  assert.equal(clientsModule.status, 200);
+  assert.match(clientsModule.body.toString(), /Klienci firmowi/);
+  const clients = await request('/api/v1/clients', { cookie });
+  assert.equal(clients.status, 200);
+  assert.deepEqual(JSON.parse(clients.body), { clients: [] });
   const seed = await request('/seed.js', { cookie });
   assert.equal(seed.status, 404);
   const briefs = await request('/api/v1/briefs', { cookie });

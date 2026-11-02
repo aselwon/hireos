@@ -65,6 +65,7 @@ test('notice uses configured identity, DPO and retention without HTML injection'
     'privacy@example.test',
     'iod@example.test',
     '30 dni',
+    'po jej zamknięciu przez 30 dni',
     'zleceniodawca',
     'Cloudflare Workers AI',
     'art. 6',

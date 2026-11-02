@@ -12,6 +12,10 @@ import { openStore } from '../lib/store.mjs';
 const mvpTables = [
   'cv_processing_jobs',
   'data_requests',
+  'clients',
+  'company_leads',
+  'lead_requests',
+  'lead_rate_limits',
   'job_briefs',
   'requirements',
   'applications',
@@ -26,6 +30,7 @@ const mvpTables = [
   'api_keys',
   'audit_events',
   'ai_report_views',
+  'outreach_reservations',
 ];
 const history = (db) => db.prepare('SELECT * FROM schema_migrations ORDER BY version').all();
 
@@ -49,7 +54,14 @@ test('empty database migrates once and preserves MVP data across reopen', (t) =>
       .map((row) => row.name);
     assert.deepEqual(
       tables.sort(),
-      [...mvpTables, 'workspace', 'requests', 'schema_migrations', 'model_gateway_blocks'].sort()
+      [
+        ...mvpTables,
+        'workspace',
+        'requests',
+        'schema_migrations',
+        'model_gateway_blocks',
+        'outreach_settings',
+      ].sort()
     );
     before = history(db);
     assert.deepEqual(
@@ -63,6 +75,10 @@ test('empty database migrates once and preserves MVP data across reopen', (t) =>
         [6, '006-cv-queue.sql'],
         [7, '007-data-rights.sql'],
         [8, '008-ai-audit.sql'],
+        [9, '009-retention-cycle.sql'],
+        [10, '010-outreach-limits.sql'],
+        [11, '011-clients.sql'],
+        [12, '012-company-leads.sql'],
       ]
     );
     db.prepare('INSERT INTO job_briefs (id, title, stack_json, seniority) VALUES (?, ?, ?, ?)').run(
@@ -120,7 +136,7 @@ test('legacy database keeps exact workspace and cached responses after migration
   }
   const migrated = new DatabaseSync(path);
   try {
-    assert.equal(history(migrated).length, 8);
+    assert.equal(history(migrated).length, 12);
     assert.equal(migrated.prepare('SELECT payload FROM workspace').get().payload, payload);
     assert.equal(migrated.prepare('SELECT response FROM requests').get().response, payload);
     for (const table of mvpTables) {
@@ -148,7 +164,7 @@ test('failed migration rolls back DDL and history; corrected database can retry'
     assert.equal(db.prepare('SELECT marker FROM applications').get().marker, 'zachowaj');
     db.exec('DROP TABLE applications');
     migrate(db);
-    assert.equal(history(db).length, 8);
+    assert.equal(history(db).length, 12);
   } finally {
     db.close();
   }
@@ -214,8 +230,8 @@ test('unknown migration history prevents writes from an older application', () =
   try {
     migrate(db);
     db.prepare('INSERT INTO schema_migrations (version, name) VALUES (?, ?)').run(
-      9,
-      '009-future.sql'
+      13,
+      '013-future.sql'
     );
     const before = history(db);
     assert.throws(() => migrate(db), /historia migracji/);

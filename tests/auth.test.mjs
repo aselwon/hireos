@@ -184,7 +184,8 @@ test('HTTP chroni panel, stan i mutacje; sprawdza sesje, zakresy, odwołanie i o
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'http-test', ...extra },
     body: JSON.stringify(body),
   });
-  for (const route of ['/', '/index.html', '/app.js', '/seed.js', '/api/state']) {
+  assert.equal((await request('/')).status, 200);
+  for (const route of ['/index.html', '/app.js', '/seed.js', '/api/state']) {
     assert.equal((await request(route)).status, 401);
     assert.equal(
       (await request(route, { headers: { Authorization: `Bearer ${admin}` } })).status,
@@ -288,7 +289,7 @@ test('publiczny healthz ujawnia wyłącznie stan techniczny i zgłasza niedostę
   assert.deepEqual(healthy.body, {
     status: 'ok',
     revision: 'r-synthetic',
-    schemaVersion: 8,
+    schemaVersion: 12,
     db: 'ok',
     aiCapReached: false,
   });

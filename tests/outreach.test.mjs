@@ -1,96 +1,13 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { Readable } from 'node:stream';
 import test from 'node:test';
 import { Worker } from 'node:worker_threads';
 
-import { createSessions, openKeys } from '../lib/auth.mjs';
-import { createHandler } from '../lib/http.mjs';
 import { migrate } from '../lib/migrations.mjs';
 import { createOutreach } from '../lib/outreach.mjs';
-import { openStore } from '../lib/store.mjs';
 
-const payload = {
-  application_id: 'candidate',
-  job_brief_id: 'job',
-  context: 'Rozmowa o roli Node.js.',
-  contact_rules: 'Jedna wiadomość, bez follow-upów.',
-  contact_rules_approved: true,
-};
-function fixture(t) {
-  const dir = mkdtempSync(join(tmpdir(), 'hireos-outreach-'));
-  const path = join(dir, 'test.sqlite');
-  const store = openStore(path);
-  const db = new DatabaseSync(path);
-  db.exec(
-    "PRAGMA foreign_keys=ON; INSERT INTO job_briefs (id,title,stack_json,seniority) VALUES ('job','Demo','[]','mid'); INSERT INTO applications (id,job_brief_id,name,email,consent_version,consent_at,idempotency_key) VALUES ('candidate','job','Osoba Testowa','osoba@example.test','v1','2026-10-31','application')"
-  );
-  const keys = openKeys(path);
-  const tokens = Object.fromEntries(
-    ['admin', 'worker-a', 'worker-b'].map((id) => [
-      id,
-      keys.create(id, id === 'admin' ? 'admin' : 'worker:outreach'),
-    ])
-  );
-  let time = Date.parse('2026-10-31T12:00:00Z');
-  store.outreach = createOutreach(db, () => time);
-  const handler = createHandler({
-    store,
-    keys,
-    sessions: createSessions('synthetic-password'),
-    port: 14314,
-  });
-  t.after(() => {
-    store.close();
-    keys.close();
-    db.close();
-    rmSync(dir, { recursive: true, force: true });
-  });
-  async function request(actor, route = '', input, key = crypto.randomUUID()) {
-    const req = Readable.from(input === undefined ? [] : [JSON.stringify(input)]);
-    req.url = route.startsWith('/api/') ? route : `/api/v1/tasks${route}`;
-    req.method = input === undefined ? 'GET' : 'POST';
-    req.headers = {
-      host: '127.0.0.1:14314',
-      authorization: `Bearer ${tokens[actor]}`,
-      'content-type': 'application/json',
-      'idempotency-key': key,
-    };
-    let status;
-    let body;
-    await handler(req, {
-      setHeader(name, value) {
-        req.responseHeaders ??= {};
-        req.responseHeaders[name] = value;
-      },
-      writeHead(code) {
-        status = code;
-      },
-      end(value) {
-        body = JSON.parse(value);
-      },
-    });
-    return { status, body };
-  }
-  return {
-    request,
-    db,
-    keys,
-    advance: (ms) => {
-      time += ms;
-    },
-  };
-}
-const report = (task, result = 'sent') => ({
-  task_id: task.task_id,
-  message_id: task.message_id,
-  lease_id: task.lease_id,
-  result,
-  message: 'Wynik syntetycznej próby.',
-});
+import { fixture, payload, report, configure, addCandidate } from './outreach-fixture.mjs';
 
 test('równoległe claimy HTTP przydzielają zadanie tylko jednemu wykonawcy', async (t) => {
   const { request } = fixture(t);
@@ -412,9 +329,12 @@ test('migracja istniejącego zadania zachowuje dane i dodaje lease_id tylko raz'
   }
 });
 
-test('dwa równoległe połączenia SQLite nie rezerwują tego samego zadania', async (t) => {
+test('dwa równoległe połączenia SQLite nie przekraczają limitu dziennego', async (t) => {
   const { request, db } = fixture(t);
   await request('admin', '', payload);
+  await configure(request, { daily_global: 1 });
+  addCandidate(db, 'concurrent');
+  await request('admin', '', { ...payload, application_id: 'concurrent' });
   const barrier = new SharedArrayBuffer(4);
   const source = `
     import { parentPort, workerData } from 'node:worker_threads';
@@ -427,7 +347,7 @@ test('dwa równoległe połączenia SQLite nie rezerwują tego samego zadania', 
     Atomics.wait(gate, 0, 0);
     try {
       parentPort.postMessage(createOutreach(db).mutate('claim', null, {}, 'race', { id: workerData.id, scope: 'worker:outreach' }));
-    } finally { db.close(); }
+    } catch (error) { parentPort.postMessage({ code: error.code }); } finally { db.close(); }
   `;
   let ready = 0;
   const claims = await Promise.all(
@@ -459,6 +379,7 @@ test('dwa równoległe połączenia SQLite nie rezerwują tego samego zadania', 
     )
   );
   assert.equal(claims.filter(({ task }) => task).length, 1);
+  assert.equal(claims.filter(({ code }) => code === 'daily_global_limit').length, 1);
   assert.equal(
     db.prepare("SELECT count(*) AS n FROM outreach_tasks WHERE status='leased'").get().n,
     1
