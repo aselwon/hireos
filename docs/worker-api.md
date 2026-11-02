@@ -30,6 +30,13 @@ Odpowiedź zawiera `task` z nadanymi `task_id`, `message_id` i stanem `queued`.
 Kontekst ma limit 8000 znaków, zasady 4000. Kandydat z aktywną odmową kontaktu
 nie może otrzymać nowego zadania (409).
 
+Każde zadanie zawiera `opt_out_url` oraz `message_footer`. Executor musi dołączyć
+stopkę do każdej wysyłanej wiadomości. Link jest publiczny i jednorazowy; jego
+otwarcie pod `GET /opt-out/:token` ustawia `do_not_contact`, anuluje zadania w
+stanach `queued`, `leased` i `unresolved`, a strona pokazuje wyłącznie
+potwierdzenie. Adres bazowy linku ustawia `HIREOS_PUBLIC_URL` (np.
+`https://hireos.example`); bez konfiguracji używany jest lokalny adres serwera.
+
 ## Claim, kontrola i wysłanie
 
 Wykonawca pobiera pracę przez `POST /api/v1/tasks/claim` z treścią `{}`. Claim

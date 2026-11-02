@@ -289,7 +289,7 @@ test('publiczny healthz ujawnia wyłącznie stan techniczny i zgłasza niedostę
   assert.deepEqual(healthy.body, {
     status: 'ok',
     revision: 'r-synthetic',
-    schemaVersion: 13,
+    schemaVersion: 14,
     db: 'ok',
     aiCapReached: false,
   });

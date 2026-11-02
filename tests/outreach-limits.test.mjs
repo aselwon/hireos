@@ -193,13 +193,12 @@ test('migracja limitów zachowuje istniejącą historię kontaktu i wyłącza cl
     );
     const outreach = createOutreach(db);
     assert.equal(outreach.readSettings().daily_global, 0);
-    assert.throws(
-      () =>
-        outreach.mutate('claim', null, {}, 'legacy-claim', {
-          id: 'worker',
-          scope: 'worker:outreach',
-        }),
-      { code: 'outreach_disabled' }
+    assert.deepEqual(
+      outreach.mutate('claim', null, {}, 'legacy-claim', {
+        id: 'worker',
+        scope: 'worker:outreach',
+      }),
+      { task: null }
     );
     assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(), []);
   } finally {
