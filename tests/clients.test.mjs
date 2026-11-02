@@ -18,7 +18,7 @@ const client = {
   advanceGrosz: 50000,
 };
 
-test('006 upgrades populated version 005 without changing recruitment data', () => {
+test('011 upgrades populated version 005 without changing recruitment data', () => {
   const db = new DatabaseSync(':memory:');
   try {
     db.exec('CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL)');
@@ -40,7 +40,7 @@ test('006 upgrades populated version 005 without changing recruitment data', () 
     migrate(db);
     assert.deepEqual(
       { ...db.prepare('SELECT * FROM job_briefs').get() },
-      { ...before, client_id: null }
+      { ...before, closed_at: null, client_id: null }
     );
     const clients = createClients(db);
     const created = clients.createClient(client, 'create');
@@ -51,7 +51,7 @@ test('006 upgrades populated version 005 without changing recruitment data', () 
     assert.throws(() => db.exec("UPDATE job_briefs SET client_id='missing'"), /FOREIGN KEY/);
     assert.throws(() => db.exec('DELETE FROM clients'), /FOREIGN KEY/);
     assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(), []);
-    assert.equal(db.prepare('SELECT count(*) AS count FROM schema_migrations').get().count, 6);
+    assert.equal(db.prepare('SELECT count(*) AS count FROM schema_migrations').get().count, 11);
   } finally {
     db.close();
   }

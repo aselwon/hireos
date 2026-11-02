@@ -21,9 +21,13 @@ test('release A → B → A: atomowy wybór kodu, trwałe dane i błędy operato
   writeFileSync(join(source, '.env'), 'synthetic-excluded');
   const log = join(dir, 'commands');
   for (const command of ['systemctl', 'curl']) {
+    const output =
+      command === 'curl'
+        ? `printf '{"status":"ok","revision":"%s"}\\n' "$(basename "$(readlink "$DEPLOY_TEST_ROOT/current")")"\n`
+        : '';
     writeFileSync(
       join(bin, command),
-      `#!/bin/sh\nprintf '%s\\n' '${command}' >> "$DEPLOY_TEST_LOG"\nexit "\${DEPLOY_TEST_FAILURE:-0}"\n`,
+      `#!/bin/sh\nprintf '%s\\n' '${command}' >> "$DEPLOY_TEST_LOG"\n${output}exit "\${DEPLOY_TEST_FAILURE:-0}"\n`,
       { mode: 0o755 }
     );
   }
@@ -31,13 +35,21 @@ test('release A → B → A: atomowy wybór kodu, trwałe dane i błędy operato
   const run = (args, extra = {}) =>
     spawnSync('bash', [script, ...args], {
       encoding: 'utf8',
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, DEPLOY_TEST_LOG: log, ...extra },
+      env: {
+        ...process.env,
+        PATH: `${bin}:${process.env.PATH}`,
+        DEPLOY_TEST_LOG: log,
+        DEPLOY_TEST_ROOT: root,
+        ...extra,
+      },
     });
   const deploy = (id, extra) => run(['--owner', root, 'deploy', id, source], extra);
   writeFileSync(join(source, 'server.mjs'), 'release A');
   assert.equal(run([root, 'deploy', 'A', source]).status, 2);
   assert.equal(deploy('../escape').status, 2);
-  assert.equal(deploy('A').status, 0);
+  const firstRelease = deploy('A');
+  assert.equal(firstRelease.status, 0, firstRelease.stderr);
+  assert.match(firstRelease.stdout, /Aktywny release: A/);
   writeFileSync(join(source, 'server.mjs'), 'release B');
   assert.equal(deploy('B').status, 0);
   assert.equal(readFileSync(join(root, 'current/server.mjs'), 'utf8'), 'release B');
