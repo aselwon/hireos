@@ -74,7 +74,8 @@ export function fixture(t, enabled = true, live = true, allowlist = '') {
   });
   async function request(actor, route = '', input, key = crypto.randomUUID()) {
     const req = Readable.from(input === undefined ? [] : [JSON.stringify(input)]);
-    req.url = route.startsWith('/api/') ? route : `/api/v1/tasks${route}`;
+    req.url =
+      route.startsWith('/api/') || route.startsWith('/opt-out/') ? route : `/api/v1/tasks${route}`;
     req.method = input === undefined ? 'GET' : 'POST';
     req.headers = {
       host: '127.0.0.1:14314',
@@ -91,14 +92,19 @@ export function fixture(t, enabled = true, live = true, allowlist = '') {
         req.responseHeaders ??= {};
         req.responseHeaders[name] = value;
       },
-      writeHead(code) {
+      writeHead(code, headers = {}) {
         status = code;
+        req.responseHeaders = headers;
       },
       end(value) {
-        body = JSON.parse(value);
+        try {
+          body = JSON.parse(value);
+        } catch {
+          body = value;
+        }
       },
     });
-    return { status, body };
+    return { status, body, headers: req.responseHeaders };
   }
   return {
     request,

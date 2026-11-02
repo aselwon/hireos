@@ -177,6 +177,13 @@ test('migracja limitów zachowuje istniejącą historię kontaktu i wyłącza cl
         'INSERT INTO outreach_tasks (id,application_id,message_id,payload_json,idempotency_key,status) VALUES (?,?,?,?,?,?)'
       ).run(id, 'legacy', id, '{}', id, status);
     }
+    db.prepare('UPDATE outreach_tasks SET payload_json=? WHERE id=?').run(
+      JSON.stringify({
+        opt_out_url: 'https://example.test/opt-out/token',
+        message_footer: 'Stop link',
+      }),
+      'third'
+    );
     const before = db.prepare('SELECT * FROM outreach_tasks ORDER BY id').all();
     migrate(db);
     migrate(db);

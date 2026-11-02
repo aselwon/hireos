@@ -39,3 +39,29 @@ cofnięcie zmiany wymaga odtworzenia kopii zgodnej z poprzednią wersją aplikac
 Weryfikacja lokalna: `npm run ci`. Testy migracji obejmują pustą i istniejącą bazę,
 ponowne otwarcie, zachowanie danych i idempotencji demo, ograniczenia schematu,
 nieobsługiwaną historię oraz wycofanie nieudanej migracji.
+
+## Klienci firmowi (006)
+
+`006-clients.sql` dodaje tabelę `clients` i opcjonalny klucz obcy
+`job_briefs.client_id`. Istniejące briefy pozostają bez klienta. Indeks wspiera
+wyszukiwanie rekrutacji klienta. Migracja nie dodaje firm ani cen domyślnych.
+
+Panel „Klienci” pozwala zapisać nazwę, NIP (10 cyfr, bez weryfikacji rejestrowej),
+kontakt i warunki wpisane przez właściciela. Kwoty są w PLN: `advance_grosz`
+przechowuje zaliczkę w groszach, a `fee_value` oznacza grosze dla `fixed_fee`
+lub setne części punktu procentowego dla `success_fee` (0–10000 = 0–100%).
+Podstawę naliczania procentu właściciel uzgadnia poza aplikacją. To rejestr warunków,
+bez wystawiania faktur, obliczania należności ani płatności.
+
+API (sesja rekrutera lub klucz `admin`):
+
+- `GET /api/v1/clients` — lista klientów.
+- `POST /api/v1/clients` — JSON: `name`, `nip`, `contact`, `billingModel`,
+  `feeValue`, `advanceGrosz`.
+- `PUT /api/v1/briefs/:id/client` — JSON: `clientId` (ID istniejącego klienta
+  albo `null` w celu odpięcia). Działa także dla zatwierdzonego briefu.
+
+Zapisy wymagają `Idempotency-Key`; ponowienie tego samego żądania zwraca zapisaną
+odpowiedź, a ponowne użycie klucza z innymi danymi jest błędem. Zapis i odpowiedź
+idempotentna są jedną transakcją. Przypisanie można zmienić w widoku briefu.
+Edycja i usuwanie firm nie są częścią tego interfejsu.

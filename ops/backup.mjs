@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync, backup } from 'node:sqlite';
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
 const usage =
   'Usage: node --experimental-sqlite ops/backup.mjs backup | restore BACKUP_DIR EMPTY_TARGET_DIR';
@@ -10,6 +11,37 @@ const dataDir = resolve(process.env.HIREOS_DATA_DIR || '/var/lib/hireos');
 const databasePath = resolve(process.env.HIREOS_DB || join(dataDir, 'preview.sqlite'));
 const backupRoot = resolve(process.env.HIREOS_BACKUP_DIR || '/var/backups/hireos');
 const retention = Number(process.env.HIREOS_BACKUP_RETENTION || 14);
+async function encryptionKey() {
+  const keyFile = resolve(process.env.HIREOS_BACKUP_KEY_FILE || '/etc/hireos/backup.key');
+  const value = (await readFile(keyFile, 'utf8')).trim();
+  const key = /^[a-f\d]{64}$/i.test(value) ? Buffer.from(value, 'hex') : Buffer.from(value, 'base64');
+  if (key.length !== 32) throw new Error('Backup key must contain 32 raw bytes, 64 hex characters, or base64 for 32 bytes.');
+  return key;
+}
+
+function encrypt(value, key) {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  const ciphertext = Buffer.concat([cipher.update(value), cipher.final()]);
+  return { iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), data: ciphertext.toString('base64') };
+}
+
+function decrypt(value, key) {
+  const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(value.iv, 'base64'));
+  decipher.setAuthTag(Buffer.from(value.tag, 'base64'));
+  return Buffer.concat([decipher.update(Buffer.from(value.data, 'base64')), decipher.final()]);
+}
+
+async function collectFiles(path, prefix = '') {
+  const result = {};
+  for (const entry of await readdir(path, { withFileTypes: true })) {
+    const relative = join(prefix, entry.name);
+    if (entry.isDirectory()) Object.assign(result, await collectFiles(join(path, entry.name), relative));
+    else if (entry.isFile()) result[relative] = (await readFile(join(path, entry.name))).toString('base64');
+    else throw new Error(`Unsupported backup file: ${join(path, entry.name)}`);
+  }
+  return result;
+}
 
 function inventory(path) {
   const db = new DatabaseSync(path, { readOnly: true });
@@ -48,6 +80,7 @@ export async function backupData() {
   if (!Number.isInteger(retention) || retention < 1)
     throw new Error('HIREOS_BACKUP_RETENTION must be a positive integer.');
   await mkdir(backupRoot, { recursive: true, mode: 0o700 });
+  const key = await encryptionKey();
   const staging = await mkdtemp(join(backupRoot, '.staging-'));
   try {
     const sourceDb = new DatabaseSync(databasePath, { readOnly: true });
@@ -68,12 +101,25 @@ export async function backupData() {
       database: inventory(join(staging, 'hireos.sqlite')),
       cvFiles: await fileCount(join(staging, 'cv')),
     };
-    await writeFile(join(staging, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, {
-      mode: 0o600,
-    });
+    const files = await collectFiles(staging);
+    await rm(join(staging, 'hireos.sqlite'));
+    await rm(join(staging, 'cv'), { recursive: true });
+    await writeFile(join(staging, 'backup.enc'), JSON.stringify(encrypt(JSON.stringify({ manifest, files }), key)), { mode: 0o600 });
+    await writeFile(join(staging, 'manifest.json'), `${JSON.stringify({ createdAt: manifest.createdAt, encrypted: true })}\n`, { mode: 0o600 });
     const name = `backup-${manifest.createdAt.replaceAll(':', '-').replaceAll('.', '-')}`;
     const destination = join(backupRoot, name);
     await rename(staging, destination);
+    const externalBackupDir = process.env.HIREOS_BACKUP_EXTERNAL_DIR
+      ? resolve(process.env.HIREOS_BACKUP_EXTERNAL_DIR)
+      : null;
+    if (externalBackupDir) {
+      await mkdir(externalBackupDir, { recursive: true, mode: 0o700 });
+      const externalStaging = join(externalBackupDir, `.${name}.staging`);
+      await rm(externalStaging, { recursive: true, force: true });
+      await cp(destination, externalStaging, { recursive: true, errorOnExist: true });
+      await rename(externalStaging, join(externalBackupDir, name));
+      console.log(`Encrypted backup copied to external destination: ${externalBackupDir}`);
+    } else console.warn('HIREOS_BACKUP_EXTERNAL_DIR is unset; backup exists only locally.');
     const backups = (await readdir(backupRoot, { withFileTypes: true }))
       .filter((entry) => entry.isDirectory() && /^backup-/.test(entry.name))
       .map((entry) => entry.name)
@@ -99,20 +145,28 @@ export async function restore(backupDir, targetDir) {
     throw error;
   });
   if (targetEntries?.length) throw new Error('Restore target must be an empty directory.');
-  const manifest = JSON.parse(await readFile(join(source, 'manifest.json'), 'utf8'));
+  const metadata = JSON.parse(await readFile(join(source, 'manifest.json'), 'utf8'));
+  const archive = JSON.parse(await readFile(join(source, 'backup.enc'), 'utf8'));
+  const contents = JSON.parse(decrypt(archive, await encryptionKey()).toString('utf8'));
+  const manifest = contents.manifest;
   const staged = await mkdtemp(join(tmpdir(), 'hireos-restore-'));
   try {
-    const database = join(source, 'hireos.sqlite');
-    const cv = join(source, 'cv');
     if (!manifest.database || !Number.isInteger(manifest.cvFiles))
       throw new Error('Invalid backup manifest.');
+    if (!metadata.encrypted) throw new Error('Backup is not encrypted.');
+    const database = join(staged, 'hireos.sqlite');
+    const cv = join(staged, 'cv');
+    for (const [relative, value] of Object.entries(contents.files)) {
+      const destination = join(staged, relative);
+      if (!destination.startsWith(`${staged}/`)) throw new Error('Invalid path in encrypted backup.');
+      await mkdir(resolve(destination, '..'), { recursive: true });
+      await writeFile(destination, Buffer.from(value, 'base64'));
+    }
     if (JSON.stringify(inventory(database)) !== JSON.stringify(manifest.database))
       throw new Error('Backup database counts do not match its manifest.');
     if ((await fileCount(cv)) !== manifest.cvFiles)
       throw new Error('Backup CV file count does not match its manifest.');
-    await mkdir(join(staged, 'cv'));
     await cp(database, join(staged, 'preview.sqlite'));
-    await cp(cv, join(staged, 'cv'), { recursive: true });
     if (
       JSON.stringify(inventory(join(staged, 'preview.sqlite'))) !==
       JSON.stringify(manifest.database)

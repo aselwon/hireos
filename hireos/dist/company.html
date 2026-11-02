@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Rekrutacja IT prowadzona przez człowieka, wspierana przez AI."
+    />
+    <title>HireOS — rekrutacja IT z ludzką decyzją</title>
+    <link rel="stylesheet" href="/company.css" />
+    <script src="/company.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="/">HireOS<span>.</span></a
+      ><a href="#kontakt">Porozmawiajmy <span aria-hidden="true">↗</span></a>
+    </header>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">REKRUTACJA IT, KTÓRA MA SENS</p>
+        <h1>Dobry zespół zaczyna się od <em>dobrego dopasowania.</em></h1>
+        <p class="intro">
+          Prowadzimy rekrutacje IT od briefu do decyzji. AI pomaga porządkować informacje i
+          przygotować dowody. Ostateczną decyzję zawsze podejmuje człowiek.
+        </p>
+        <a class="button" href="#kontakt"
+          >Opowiedz nam o rekrutacji <span aria-hidden="true">↓</span></a
+        >
+        <div class="hero-note">
+          <span class="pulse"></span>Partnerskie podejście. Przejrzysty proces. Żadnych decyzji z
+          czarnej skrzynki.
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="orbit-core">IT<br />+<br />LUDZIE</div>
+          <span class="orbit-tag tag-one">dowody</span><span class="orbit-tag tag-two">rozmowa</span
+          ><span class="orbit-tag tag-three">decyzja</span>
+        </div>
+      </section>
+      <section class="section process" id="proces">
+        <p class="eyebrow">PROSTY PROCES</p>
+        <h2>Od potrzeby do właściwej osoby.</h2>
+        <div class="steps">
+          <article>
+            <span>01</span>
+            <h3>Poznajemy zespół</h3>
+            <p>
+              Ustalamy, kogo potrzebujesz, co ta osoba będzie robić i jak wygląda sukces na tym
+              stanowisku.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Szukamy i rozmawiamy</h3>
+            <p>
+              Docieramy do specjalistów IT, weryfikujemy doświadczenie i przedstawiamy kontekst
+              roli.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Przedstawiamy dowody</h3>
+            <p>
+              Otrzymujesz przejrzyste podsumowanie profilu. Ty spotykasz kandydatów i podejmujesz
+              decyzję.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="section value">
+        <div>
+          <p class="eyebrow">JASNE ZASADY</p>
+          <h2>Technologia wspiera. Człowiek decyduje.</h2>
+        </div>
+        <ul>
+          <li>
+            <strong>Więcej konkretów</strong
+            ><span>Wnioski oparte na doświadczeniu i dowodach z rozmów.</span>
+          </li>
+          <li>
+            <strong>Mniej chaosu</strong
+            ><span>Jeden uporządkowany proces i regularna informacja zwrotna.</span>
+          </li>
+          <li>
+            <strong>Twoja decyzja</strong
+            ><span>AI nie odrzuca kandydatów. Decyzje należą do ludzi.</span>
+          </li>
+        </ul>
+      </section>
+      <section class="section pricing">
+        <p class="eyebrow">WSPÓŁPRACA</p>
+        <h2>Warunki dopasowane do rekrutacji.</h2>
+        <p>
+          Zakres i rozliczenie ustalamy po krótkiej rozmowie o stanowisku, terminie i wyzwaniach
+          zespołu.
+        </p>
+        <div class="price-card">
+          <span>Rekrutacja IT</span><strong>{{pricing}}</strong
+          ><small>Przejrzysty zakres współpracy ustalamy przed startem.</small>
+        </div>
+      </section>
+      <section class="section faq">
+        <p class="eyebrow">FAQ</p>
+        <h2>Najczęstsze pytania.</h2>
+        <details>
+          <summary>Jakie stanowiska obsługujecie?</summary>
+          <p>
+            Skupiamy się na rekrutacjach IT: backend, frontend, mobile, DevOps, data, QA i security.
+          </p>
+        </details>
+        <details>
+          <summary>Czy AI samodzielnie ocenia kandydatów?</summary>
+          <p>
+            Nie. AI pomaga przygotować informacje i dowody. Każdą ocenę weryfikuje człowiek, a
+            decyzję podejmuje klient.
+          </p>
+        </details>
+        <details>
+          <summary>Ile trwa proces?</summary>
+          <p>
+            Zakres i harmonogram zależą od stanowiska. Ustalamy je wspólnie przed rozpoczęciem
+            współpracy.
+          </p>
+        </details>
+      </section>
+      <section class="section contact" id="kontakt">
+        <div>
+          <p class="eyebrow">PIERWSZY KROK</p>
+          <h2>Opowiedz nam, kogo szukasz.</h2>
+          <p>Odezwiemy się, żeby poznać potrzeby i sprawdzić, czy możemy pomóc.</p>
+          <p class="contact-aside">Bez zobowiązań. Bez automatycznych decyzji.</p>
+        </div>
+        <form id="lead-form">
+          <label
+            >Firma<input
+              name="company"
+              required
+              maxlength="200"
+              autocomplete="organization" /></label
+          ><label
+            >Jak się z Tobą skontaktować?<input
+              name="contact"
+              required
+              maxlength="200"
+              autocomplete="email"
+              placeholder="E-mail lub telefon" /></label
+          ><label>Stanowisko do rekrutacji<input name="position" required maxlength="200" /></label
+          ><label class="consent"
+            ><input type="checkbox" name="consent" required /><span
+              >Wyrażam zgodę na kontakt w sprawie mojego zapytania. Szczegóły:
+              <a href="/privacy-firms">polityka prywatności</a>.</span
+            ></label
+          ><label class="trap" aria-hidden="true"
+            >Strona internetowa<input name="website" tabindex="-1" autocomplete="off" /></label
+          ><button class="button" type="submit">
+            Wyślij zapytanie <span aria-hidden="true">↗</span>
+          </button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+    <footer>
+      <a class="wordmark" href="/">HireOS<span>.</span></a
+      ><span>Rekrutacja IT z ludzką decyzją.</span><a href="/privacy-firms">Polityka prywatności</a>
+    </footer>
+  </body>
+</html>
