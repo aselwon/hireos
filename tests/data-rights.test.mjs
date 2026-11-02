@@ -12,6 +12,8 @@ import { migrate } from '../lib/migrations.mjs';
 import { createModelGateway } from '../lib/model-gateway.mjs';
 import { createOutreach } from '../lib/outreach.mjs';
 
+import { enabledSettings } from './outreach-fixture.mjs';
+
 const receivedAt = '2026-01-01';
 const admin = { id: 'admin', scope: 'admin' };
 const worker = { id: 'worker', scope: 'worker:outreach' };
@@ -51,6 +53,9 @@ function fixture(t) {
     INSERT INTO requests VALUES ('apply','{"action":"application"}','{"application":{"id":"candidate","name":"Syntetyczna Osoba"}}');
     INSERT INTO requests VALUES ('unrelated','{}','{"id":"other"}');
   `);
+  db.prepare('UPDATE outreach_settings SET payload_json=? WHERE id=1').run(
+    JSON.stringify(enabledSettings)
+  );
   const outreach = createOutreach(db);
   const { task } = outreach.mutate('create', null, payload, 'create', admin);
   db.prepare(
