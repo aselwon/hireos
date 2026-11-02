@@ -56,7 +56,7 @@ Agent dopisuje tu wpis po 3 nieudanych próbach CI albo przy blokadzie wymagają
 ## MVP-43 — 2026-11-02
 
 - Gałąź / PR: https://github.com/aselwon/hireos/pull/54 (otwarty, NIE zmergowany)
-- Co próbowano: harness auto-merge; CI czerwone na 28854a2
-- Ostatni błąd (bez sekretów): Quality: failure
-- Hipoteza: lokalny `npm run ci` przeszedł, CI na GitHubie nie.
-- Pytanie do właściciela: poprawić gałąź `task/MVP-43` (nowy push → harness ponownie sprawdzi CI i zmerguje) albo zamknąć PR.
+- Co próbowano: harness dociągnął `main` do gałęzi 3 raz(y); CI dalej czerwone
+- Ostatni błąd (bez sekretów): CI PR czerwone (szczegóły w checkach PR).
+- Hipoteza: błąd jest w kodzie gałęzi zadania, nie w bazie.
+- Pytanie do właściciela: poprawić gałąź `task/MVP-43` albo zamknąć PR i przywrócić `MVP-43` do `todo`.

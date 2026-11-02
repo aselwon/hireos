@@ -3,6 +3,9 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 
+import { applicationRow, emptyReport, requirementEvidence } from '../hireos/dist/report.js';
+import { shortlistPanel, submitShortlist } from '../hireos/dist/shortlists.js';
+
 function panel() {
   const requests = [];
   const downloads = [];
@@ -30,9 +33,23 @@ function panel() {
       }
     },
     crypto: { randomUUID: () => 'panel-key' },
+    shortlistPanel,
+    submitShortlist,
     clientSelect: () => '',
     clientsPage: () => '',
     submitClientForm: () => Promise.resolve(),
+    createSettingsUi: () => ({
+      settingsPage: () => '',
+      submitApiKey: () => Promise.resolve(),
+      submitSettings: () => Promise.resolve(),
+    }),
+    createOutreachPanel: () => ({
+      outreachPage: () => '',
+      submitOutreachLive: () => Promise.resolve(),
+    }),
+    applicationRow,
+    emptyReport,
+    requirementEvidence,
     Blob: globalThis.Blob,
     URL: { createObjectURL: () => 'blob:test', revokeObjectURL: () => undefined },
     setTimeout: (callback) => callback(),
@@ -54,7 +71,7 @@ function panel() {
   const source = readFileSync(new URL('../hireos/dist/app.js', import.meta.url), 'utf8');
   runInNewContext(
     source
-      .replace(/^import .*\n/m, '')
+      .replace(/^import .*\n/gm, '')
       .replace(
         /\nawait loadBriefs\(\);\s*$/,
         '\nglobalThis.panel = { state, submitDataRights, dataRightsPanel };'

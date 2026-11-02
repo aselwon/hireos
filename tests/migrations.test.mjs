@@ -16,6 +16,8 @@ const mvpTables = [
   'company_leads',
   'lead_requests',
   'lead_rate_limits',
+  'lead_management_requests',
+  'billing_events',
   'job_briefs',
   'requirements',
   'applications',
@@ -61,6 +63,11 @@ test('empty database migrates once and preserves MVP data across reopen', (t) =>
         'schema_migrations',
         'model_gateway_blocks',
         'outreach_settings',
+        'shortlists',
+        'shortlist_members',
+        'shortlist_requests',
+        'outreach_live_settings',
+        'outreach_opt_out_tokens',
       ].sort()
     );
     before = history(db);
@@ -79,6 +86,11 @@ test('empty database migrates once and preserves MVP data across reopen', (t) =>
         [10, '010-outreach-limits.sql'],
         [11, '011-clients.sql'],
         [12, '012-company-leads.sql'],
+        [13, '013-lead-management.sql'],
+        [14, '014-outreach-opt-out.sql'],
+        [15, '015-outreach-live.sql'],
+        [16, '016-billing.sql'],
+        [17, '017-shortlists.sql'],
       ]
     );
     db.prepare('INSERT INTO job_briefs (id, title, stack_json, seniority) VALUES (?, ?, ?, ?)').run(
@@ -136,7 +148,7 @@ test('legacy database keeps exact workspace and cached responses after migration
   }
   const migrated = new DatabaseSync(path);
   try {
-    assert.equal(history(migrated).length, 12);
+    assert.equal(history(migrated).length, 17);
     assert.equal(migrated.prepare('SELECT payload FROM workspace').get().payload, payload);
     assert.equal(migrated.prepare('SELECT response FROM requests').get().response, payload);
     for (const table of mvpTables) {
@@ -164,7 +176,7 @@ test('failed migration rolls back DDL and history; corrected database can retry'
     assert.equal(db.prepare('SELECT marker FROM applications').get().marker, 'zachowaj');
     db.exec('DROP TABLE applications');
     migrate(db);
-    assert.equal(history(db).length, 12);
+    assert.equal(history(db).length, 17);
   } finally {
     db.close();
   }
@@ -230,8 +242,8 @@ test('unknown migration history prevents writes from an older application', () =
   try {
     migrate(db);
     db.prepare('INSERT INTO schema_migrations (version, name) VALUES (?, ?)').run(
-      13,
-      '013-future.sql'
+      18,
+      '018-future.sql'
     );
     const before = history(db);
     assert.throws(() => migrate(db), /historia migracji/);

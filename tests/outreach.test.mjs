@@ -125,6 +125,51 @@ test('odmowa ustawia do_not_contact, blokuje preflight i tworzenie kolejnych zad
   assert.equal((await request('admin', '', payload, 'refusal-create-again')).status, 409);
 });
 
+test('opt-out jest jednorazowy, anuluje otwarte zadania i blokuje nowe bez ujawniania kandydata', async (t) => {
+  const { request, db } = fixture(t);
+  const created = await request('admin', '', payload, 'optout-create');
+  const { task } = created.body;
+  assert.match(task.message_footer, /rezygnuj z kontaktu/);
+  assert.match(task.opt_out_url, /^http:\/\/localhost:14314\/opt-out\/[A-Za-z0-9_-]+$/);
+  const token = task.opt_out_url.split('/').at(-1);
+  const result = await request('unknown', `/opt-out/${token}`);
+  assert.equal(result.status, 200);
+  assert.match(result.body, /została potwierdzona/);
+  assert.equal(result.headers['Content-Type'], 'text/html; charset=utf-8');
+  assert.equal(
+    db.prepare('SELECT do_not_contact FROM applications WHERE id=?').get('candidate')
+      .do_not_contact,
+    1
+  );
+  assert.equal(
+    db.prepare('SELECT status FROM outreach_tasks WHERE id=?').get(task.task_id).status,
+    'cancelled'
+  );
+  assert.equal((await request('admin', '', payload, 'optout-create-again')).status, 409);
+  assert.match(
+    (await request('unknown', `/opt-out/${token}`)).body,
+    /nieprawidłowy lub został już użyty/
+  );
+  assert.equal((await request('unknown', '/api/v1/applications/candidate')).status, 401);
+});
+
+test('opt-out anuluje aktywny lease przed kolejnym wynikiem i claimem', async (t) => {
+  const { request } = fixture(t);
+  const {
+    body: { task },
+  } = await request('admin', '', payload, 'leased-optout-create');
+  const {
+    body: { task: leased },
+  } = await request('worker-a', '/claim', {}, 'leased-optout-claim');
+  const token = task.opt_out_url.split('/').at(-1);
+  assert.equal((await request('unknown', `/opt-out/${token}`)).status, 200);
+  assert.equal(
+    (await request('worker-a', `/${leased.task_id}/result`, report(leased), 'after-optout')).status,
+    404
+  );
+  assert.equal((await request('worker-b', '/claim', {}, 'after-optout-claim')).body.task, null);
+});
+
 test('wyniki są trwałe i idempotentne, konflikt nie tworzy drugiej próby', async (t) => {
   const { request, db } = fixture(t);
   for (const result of ['sent', 'replied', 'needs_intervention', 'failed', 'unresolved']) {
