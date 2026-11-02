@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import http from 'node:http';
 import { dirname, resolve } from 'node:path';
@@ -11,6 +12,12 @@ import { createLogger } from './lib/logger.mjs';
 import { openStore } from './lib/store.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
+let revision = 'unknown';
+try {
+  revision = readFileSync(resolve(root, 'REVISION'), 'utf8').trim() || 'unknown';
+} catch {
+  // Local development has no release marker.
+}
 const config = loadConfig();
 const logger = createLogger();
 const dataDir = process.env.HIREOS_DATA_DIR || resolve(root, 'data');
@@ -32,6 +39,7 @@ const server = http.createServer(
     dataDir,
     secureCookie: config.secureCookie,
     production: config.production,
+    revision,
   })
 );
 server.listen(port, '127.0.0.1', () =>
