@@ -142,3 +142,65 @@ test('lead consent is versioned, honeypot is ignored, and rate limit is enforced
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('lead can be managed, converted idempotently and expired by configured retention', () => {
+  const store = openStore();
+  try {
+    const lead = store.createLead(
+      {
+        company: 'Firma Syntetyczna',
+        contact: 'osoba@example.test',
+        position: 'Backend',
+        consent: true,
+      },
+      'manage-lead',
+      '127.0.0.2'
+    );
+    const updated = store.updateLead(
+      lead.id,
+      { status: 'offer', notes: 'Oferta wysłana' },
+      'update-lead'
+    );
+    assert.equal(updated.status, 'offer');
+    const terms = {
+      nip: '0000000000',
+      billingModel: 'success_fee',
+      feeValue: 1500,
+      advanceGrosz: 25000,
+    };
+    const client = store.convertLead(lead.id, terms, 'convert-lead');
+    assert.equal(client.name, 'Firma Syntetyczna');
+    assert.equal(store.convertLead(lead.id, terms, 'convert-lead').id, client.id);
+    assert.equal(store.listClients().filter(({ id }) => id === client.id).length, 1);
+    assert.throws(() => store.convertLead(lead.id, terms, 'convert-again'), { status: 404 });
+    const invalidLead = store.createLead(
+      { company: 'Firma Druga', contact: 'x@example.test', position: 'QA', consent: true },
+      'invalid-lead',
+      '127.0.0.4'
+    );
+    assert.throws(
+      () => store.convertLead(invalidLead.id, { ...terms, nip: 'bad' }, 'convert-invalid'),
+      { status: 400 }
+    );
+    const old = store.createLead(
+      { company: 'Stary Lead', contact: 'kontakt@example.test', position: 'DevOps', consent: true },
+      'old-lead',
+      '127.0.0.3',
+      new Date('2020-01-01T00:00:00.000Z')
+    );
+    assert.deepEqual(store.purgeOldLeads(30, new Date('2020-03-01T00:00:00.000Z')), {
+      leads: 1,
+      days: 30,
+    });
+    assert.equal(
+      store.listLeads().some(({ id }) => id === old.id),
+      false
+    );
+    assert.equal(
+      store.listLeads().some(({ id }) => id === lead.id),
+      true
+    );
+  } finally {
+    store.close();
+  }
+});

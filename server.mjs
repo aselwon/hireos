@@ -30,7 +30,7 @@ const store = openStore(databasePath, undefined, { seedDemo: !config.production 
 const runRetention = async () => {
   try {
     const report = await store.purgeRejectedCv();
-    logger.info('retention.completed', report);
+    logger.info('retention.completed', { ...report, ...store.purgeOldLeads() });
   } catch (error) {
     logger.error('retention.failed', { error: error.message });
   }
