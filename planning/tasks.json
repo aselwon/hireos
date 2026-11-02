@@ -14,7 +14,7 @@
       "id": "FIXMAIN-5cbc50f",
       "title": "Napraw czerwony main (5cbc50f)",
       "description": "CI na main @ 5cbc50f jest czerwone: Quality: failure. Odtwórz błąd lokalnie (`npm run ci` oraz kroki z .github/workflows) i napraw go minimalną zmianą: formatowanie (np. prettier --write na zmienionych plikach), autofix lintu, zepsuty test lub konfiguracja CI. Nie zmieniaj funkcjonalności i nie usuwaj testów.",
-      "status": "todo",
+      "status": "review",
       "priority": "high",
       "tier": "worker",
       "harnessFixMain": true,
