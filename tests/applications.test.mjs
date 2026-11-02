@@ -2,19 +2,48 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 
 import { createSessions, openKeys } from '../lib/auth.mjs';
 import { createHandler } from '../lib/http.mjs';
+import { loadPrivacy } from '../lib/legal/privacy.mjs';
 import { openStore } from '../lib/store.mjs';
+
+function assertCandidateTransparency(page, notice) {
+  assert.match(page, /name="consentVersion" value="v3"/);
+  for (const text of [page, notice]) {
+    assert.match(text, /CV analizuje system AI wspierający rekrutera/);
+    assert.match(text, /wyjaśnienie i weryfikację przez człowieka/);
+    assert.doesNotMatch(
+      text,
+      /(?:AI|system)\s+(?:automatycznie\s+)?(?:odrzucił|zdecydował)|automatyczna decyzja/i
+    );
+  }
+  assert.match(page, /AI nie podejmuje decyzji ani nie\s+odrzuca kandydatów automatycznie/);
+  assert.match(page, /decyzję podejmuje człowiek/i);
+  assert.match(
+    notice,
+    /AI nie podejmuje decyzji o wyniku rekrutacji ani nie odrzuca kandydatów automatycznie/
+  );
+}
+
+function assertApplicationMessages() {
+  const messages = readFileSync(new URL('../hireos/dist/apply.js', import.meta.url), 'utf8');
+  assert.match(messages, /Dziękujemy\. Aplikacja została wysłana\./);
+  assert.doesNotMatch(
+    messages,
+    /(?:AI|system)\s+(?:automatycznie\s+)?(?:odrzucił|zdecydował)|automatyczna decyzja/i
+  );
+}
 
 test('public application saves a validated PDF once and keeps its file private', async (t) => {
   const directory = mkdtempSync(join(tmpdir(), 'hireos-application-'));
   const database = join(directory, 'hireos.sqlite');
   const keys = openKeys(database);
   const store = openStore(database);
-  const handler = createHandler({
+  let handler = createHandler({
     store,
     keys,
     sessions: createSessions('synthetic-password'),
@@ -51,7 +80,7 @@ test('public application saves a validated PDF once and keeps its file private',
   const multipart = (file = pdf, consent = true) =>
     Buffer.concat([
       Buffer.from(
-        `--${boundary}\r\nContent-Disposition: form-data; name="name"\r\n\r\nOsoba Testowa\r\n--${boundary}\r\nContent-Disposition: form-data; name="email"\r\n\r\ntest@example.test\r\n--${boundary}\r\nContent-Disposition: form-data; name="consentVersion"\r\n\r\nv1\r\n--${boundary}\r\nContent-Disposition: form-data; name="consent"\r\n\r\n${consent ? 'yes' : ''}\r\n--${boundary}\r\nContent-Disposition: form-data; name="cv"; filename="cv.pdf"\r\nContent-Type: application/pdf\r\n\r\n`
+        `--${boundary}\r\nContent-Disposition: form-data; name="name"\r\n\r\nOsoba Testowa\r\n--${boundary}\r\nContent-Disposition: form-data; name="email"\r\n\r\ntest@example.test\r\n--${boundary}\r\nContent-Disposition: form-data; name="consentVersion"\r\n\r\nv3\r\n--${boundary}\r\nContent-Disposition: form-data; name="consent"\r\n\r\n${consent ? 'yes' : ''}\r\n--${boundary}\r\nContent-Disposition: form-data; name="cv"; filename="cv.pdf"\r\nContent-Type: application/pdf\r\n\r\n`
       ),
       file,
       Buffer.from(`\r\n--${boundary}--\r\n`),
@@ -64,7 +93,11 @@ test('public application saves a validated PDF once and keeps its file private',
   } = {}) => {
     const req = Readable.from([body]);
     req.method =
-      url.startsWith('/apply/') || url.startsWith('/api/v1/public-briefs/') ? 'GET' : 'POST';
+      url.startsWith('/apply/') ||
+      url.startsWith('/privacy/') ||
+      url.startsWith('/api/v1/public-briefs/')
+        ? 'GET'
+        : 'POST';
     req.url = url;
     req.headers = {
       host: '127.0.0.1:14314',
@@ -99,7 +132,52 @@ test('public application saves a validated PDF once and keeps its file private',
   assert.equal(repeated.body.application.id, first.body.application.id);
   assert.equal(readdirSync(join(directory, 'cv')).length, 1);
   assert.deepEqual(readFileSync(join(directory, 'cv', readdirSync(join(directory, 'cv'))[0])), pdf);
-  assert.equal((await request({ url: `/apply/${brief.id}` })).status, 200);
+  const page = await request({ url: `/apply/${brief.id}` });
+  assert.match(page.body, /href="\/privacy\/v3"/);
+  assert.match(page.body, /href="\/privacy\/v3"[^>]*>klauzuli informacyjnej/);
+  assert.match(page.body, /name="futureRecruitmentConsent" type="checkbox" \/>/);
+  const notice = await request({ url: '/privacy/v3' });
+  assert.equal(notice.status, 200);
+  assert.match(notice.body, /Projekt do przeglądu prawnego/);
+  assertCandidateTransparency(page.body, notice.body);
+  assertApplicationMessages();
+  assert.equal((await request({ url: '/privacy/unknown' })).status, 404);
+  const db = new DatabaseSync(database);
+  t.after(() => db.close());
+  assert.equal(
+    db.prepare('SELECT consent_version FROM applications WHERE id=?').get(first.body.application.id)
+      .consent_version,
+    'v3'
+  );
+  assert.equal(
+    db
+      .prepare('SELECT future_recruitment_consent FROM applications WHERE id=?')
+      .get(first.body.application.id).future_recruitment_consent,
+    0
+  );
+  const optedIn = Buffer.from(
+    multipart()
+      .toString('latin1')
+      .replace(
+        `--${boundary}--`,
+        `--${boundary}\r\nContent-Disposition: form-data; name="futureRecruitmentConsent"\r\n\r\nyes\r\n--${boundary}--`
+      ),
+    'latin1'
+  );
+  const future = await request({ body: optedIn, key: 'future-consent' });
+  assert.equal(future.status, 201);
+  assert.equal(
+    db
+      .prepare('SELECT future_recruitment_consent FROM applications WHERE id=?')
+      .get(future.body.application.id).future_recruitment_consent,
+    1
+  );
+  assert.equal((await request({ body: optedIn })).status, 400);
+  const stale = Buffer.from(
+    multipart().toString('latin1').replace('\r\nv3\r\n', '\r\nv1\r\n'),
+    'latin1'
+  );
+  assert.equal((await request({ body: stale, key: 'stale' })).status, 409);
   const publicBrief = await request({ url: `/api/v1/public-briefs/${brief.id}` });
   assert.equal(publicBrief.status, 200);
   assert.equal(publicBrief.body.title, brief.title);
@@ -130,4 +208,35 @@ test('public application saves a validated PDF once and keeps its file private',
     }
   );
   assert.equal((await request({ key: 'application-key', body: multipart(pdf, true) })).status, 201);
+  for (const missing of [
+    'PRIVACY_CONTROLLER_NAME',
+    'PRIVACY_CONTROLLER_ADDRESS',
+    'PRIVACY_CONTROLLER_CONTACT',
+  ]) {
+    const env = {
+      PRIVACY_CONTROLLER_NAME: 'Administrator Testowy',
+      PRIVACY_CONTROLLER_ADDRESS: 'Adres syntetyczny',
+      PRIVACY_CONTROLLER_CONTACT: 'privacy@example.test',
+    };
+    delete env[missing];
+    handler = createHandler({
+      store,
+      keys,
+      sessions: createSessions('synthetic-password'),
+      port: 14314,
+      dataDir: directory,
+      production: true,
+      privacy: loadPrivacy(env),
+    });
+    for (const url of [
+      `/apply/${brief.id}`,
+      `/api/v1/public-briefs/${brief.id}`,
+      `/api/v1/briefs/${brief.id}/applications`,
+    ]) {
+      const unavailable = await request({ url, key: 'blocked' });
+      assert.equal(unavailable.status, 503);
+      assert.match(unavailable.body.error, /niedostępny/);
+    }
+  }
+  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM applications').get().count, 3);
 });

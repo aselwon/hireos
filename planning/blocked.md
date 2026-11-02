@@ -22,10 +22,11 @@ Agent dopisuje tu wpis po 3 nieudanych próbach CI albo przy blokadzie wymagają
 ## MVP-37 — 2026-11-01
 
 - Gałąź / PR: brak (krok człowieka, zadanie ze statusem blocked od utworzenia)
-- Co próbowano: nic — agent nie wykonuje tego zadania (Przegląd prawny RODO i AI Act).
+- Co próbowano: nic — agent nie wykonuje tego zadania (Akceptacja dokumentów RODO i AI Act).
 - Ostatni błąd (bez sekretów): brak
 - Hipoteza: wymaga decyzji lub działania właściciela.
-- Pytanie do właściciela: Zatwierdzić klauzulę i informację o AI (MVP-31/32), okres retencji N, procedurę praw osób (MVP-33), dokumentację AI Act i DPIA (MVP-35), podstawę przekazania danych zleceniodawcom. Czy zlecić płatnego prawnika (koszt = decyzja właściciela)?
+- Pytanie do właściciela: Przeczytać i zaakceptować klauzulę i informację o AI (MVP-31/32), okres retencji N, procedurę praw osób (MVP-33), dokumentację AI Act i DPIA (MVP-35), podstawę przekazania danych zleceniodawcom.
+- Decyzja właściciela (2026-11-01): bez płatnego prawnika i bez zewnętrznego przeglądu prawnego; dokumenty akceptuje sam Kamil.
 
 ## MVP-41 — 2026-11-01
 
@@ -42,6 +43,7 @@ Agent dopisuje tu wpis po 3 nieudanych próbach CI albo przy blokadzie wymagają
 - Ostatni błąd (bez sekretów): brak
 - Hipoteza: wymaga decyzji lub działania właściciela.
 - Pytanie do właściciela: Cennik (success fee %/stała/zaliczka), forma działalności i dane administratora/sprzedawcy, narzędzie do faktur (płatne wymaga zgody), adres kontaktowy, akceptacja szablonów umów z MVP-51.
+- Notatka (2026-11-01): fakturowanie odłożone. Kamil ma już iFirmę (istniejąca subskrypcja); integracja możliwa później, nie teraz.
 
 ## MVP-55 — 2026-11-01
 
@@ -50,3 +52,29 @@ Agent dopisuje tu wpis po 3 nieudanych próbach CI albo przy blokadzie wymagają
 - Ostatni błąd (bez sekretów): brak
 - Hipoteza: wymaga decyzji lub działania właściciela.
 - Pytanie do właściciela: Po MVP-30/37/41/52: umowa z pierwszą firmą, rekrutacja z prawdziwymi kandydatami, pierwsza faktura.
+
+## MVP-34 — 2026-11-01
+
+- Gałąź / PR: https://github.com/aselwon/hireos/pull/39 (otwarty, NIE zmergowany)
+- Co próbowano: harness auto-merge, 3 próba/y
+- Ostatni błąd (bez sekretów):
+
+```text
+GitHub PUT /repos/aselwon/hireos/pulls/39/merge: 405 Pull Request has merge conflicts
+```
+
+- Hipoteza: merge odrzucany (konflikt, ochrona gałęzi albo zmiana bazy).
+- Pytanie do właściciela: zmergować/poprawić PR ręcznie albo przywrócić `MVP-34` do `todo`.
+
+## MVP-45 — 2026-11-01
+
+- Gałąź / PR: https://github.com/aselwon/hireos/pull/43 (otwarty, NIE zmergowany)
+- Co próbowano: harness auto-merge, 3 próba/y
+- Ostatni błąd (bez sekretów):
+
+```text
+GitHub PUT /repos/aselwon/hireos/pulls/43/merge: 405 Pull Request has merge conflicts
+```
+
+- Hipoteza: merge odrzucany (konflikt, ochrona gałęzi albo zmiana bazy).
+- Pytanie do właściciela: zmergować/poprawić PR ręcznie albo przywrócić `MVP-45` do `todo`.
