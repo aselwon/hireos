@@ -5,6 +5,7 @@ const state = {
   applications: [],
   view: 'jobs',
   application: null,
+  dataRequests: [],
   loading: true,
   error: '',
 };
@@ -170,7 +171,7 @@ function reportPage() {
       ? ''
       : '<button class="button" data-action="screening">Utwórz raport oceny</button>';
   const reportBody = report ? quoteItems : emptyReport(a);
-  return `<section class="page-heading"><div><div class="eyebrow">RAPORT OCENY</div><h1>${escapeHtml(a.name)}</h1><p>${escapeHtml(a.email)} · ${escapeHtml(state.brief.title)}</p></div><button class="button secondary" data-action="applications">Wróć do aplikacji</button></section>${error}${manualReview}${uncertain}<section class="panel"><div class="panel-head"><div><h2>Wymaganie → dowody</h2><p>Brak dowodu nie oznacza braku kompetencji.</p></div>${reportAction}</div>${reportBody}</section>${decisionPanel()}`;
+  return `<section class="page-heading"><div><div class="eyebrow">RAPORT OCENY</div><h1>${escapeHtml(a.name)}</h1><p>${escapeHtml(a.email)} · ${escapeHtml(state.brief.title)}</p></div><button class="button secondary" data-action="applications">Wróć do aplikacji</button></section>${error}${manualReview}${uncertain}<section class="panel"><div class="panel-head"><div><h2>Wymaganie → dowody</h2><p>Brak dowodu nie oznacza braku kompetencji.</p></div>${reportAction}</div>${reportBody}</section>${decisionPanel()}${dataRightsPanel()}`;
 }
 function emptyReport(application) {
   if (application.processingStatus === 'queued') {
@@ -181,8 +182,62 @@ function emptyReport(application) {
     : 'Profil CV nie jest jeszcze dostępny.';
   return `<div class="empty">${message}</div>`;
 }
+function dataRightsPanel() {
+  const labels = { access: 'Dostęp', erase: 'Usunięcie', object: 'Sprzeciw' };
+  const history = state.dataRequests
+    .map(
+      (item) =>
+        `<li>${labels[item.kind]} · Wpłynęło: ${escapeHtml(item.received_at.slice(0, 10))} · Termin: ${escapeHtml(item.due_at.slice(0, 10))} · Wykonano: ${escapeHtml(item.completed_at.slice(0, 10))}</li>`
+    )
+    .join('');
+  const register = history ? `<ul>${history}</ul>` : '<p>Brak zarejestrowanych żądań.</p>';
+  return `<section class="panel"><div class="panel-head"><div><h2>Prawa osoby</h2><p>${state.application.doNotContact ? 'Kontakt zablokowany po sprzeciwie.' : 'Obsługa zweryfikowanego żądania kandydata. Termin realizacji: 30 dni od wpłynięcia.'}</p></div></div><form id="data-rights-form"><label class="field">Data wpłynięcia<input type="date" name="receivedAt" required max="${new Date().toISOString().slice(0, 10)}" value="${new Date().toISOString().slice(0, 10)}"></label><p>Eksport JSON zawiera dane oraz CV zakodowane jako base64. Usunięcie trwale usuwa dane, CV, raporty i zadania outreach.</p><div class="actions"><button class="button secondary" name="kind" value="access">Pobierz dane i CV</button><button class="button secondary" name="kind" value="object">Zablokuj kontakt</button><label><input type="checkbox" name="confirmErase"> Potwierdzam trwałe usunięcie danych i CV. Tej operacji nie można cofnąć.</label><button class="button danger" name="kind" value="erase">Trwale usuń dane</button></div></form><h3>Rejestr żądań</h3>${register}</section>`;
+}
+async function submitDataRights(event) {
+  const kind = event.submitter.value;
+  if (kind === 'erase' && !new FormData(event.target).has('confirmErase')) {
+    state.error = 'Aby usunąć dane, zaznacz potwierdzenie trwałego usunięcia.';
+    render();
+    return;
+  }
+  const button = event.submitter;
+  button.disabled = true;
+  try {
+    const result = await request(`/api/v1/applications/${state.application.id}/data-rights`, {
+      method: 'POST',
+      body: JSON.stringify({ kind, receivedAt: new FormData(event.target).get('receivedAt') }),
+    });
+    if (result.archive) {
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(result.archive, null, 2)], { type: 'application/json' })
+      );
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'dane-kandydata.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    await openBrief(state.brief.id);
+    if (kind === 'erase') {
+      state.application = null;
+      state.view = 'applications';
+    } else {
+      state.application = state.applications.find((item) => item.id === state.application.id);
+      state.dataRequests = (
+        await request(`/api/v1/applications/${state.application.id}/data-rights`)
+      ).requests;
+      state.view = 'report';
+    }
+    render();
+  } catch (error) {
+    state.error = error.message;
+    render();
+  } finally {
+    button.disabled = false;
+  }
+}
 function decisionPanel() {
-  return '<section class="panel"><div class="panel-head"><div><h2>Decyzja rekrutera</h2><p>Każda decyzja wymaga uzasadnienia.</p></div></div><form id="decision-form"><label class="field">Uzasadnienie<textarea name="reason" required minlength="1" maxlength="2000" rows="3"></textarea></label><div class="actions"><button class="button" name="outcome" value="approved">Zatwierdź kandydata</button><button class="button danger" name="outcome" value="rejected">Odrzuć kandydata</button></div></form></section>';
+  return '<section class="panel"><div class="panel-head"><div><h2>Decyzja rekrutera</h2><p>Każda decyzja wymaga uzasadnienia.</p></div></div><form id="decision-form"><label class="field">Czy zgadzasz się z raportem AI?<select name="agreedWithAi" required><option value="">Wybierz ocenę</option><option value="true">Tak</option><option value="false">Nie</option></select></label><label class="field">Uzasadnienie<textarea name="reason" required minlength="1" maxlength="2000" rows="3"></textarea></label><div class="actions"><button class="button" name="outcome" value="approved">Zatwierdź kandydata</button><button class="button danger" name="outcome" value="rejected">Odrzuć kandydata</button></div></form></section>';
 }
 function requirementEvidence(item) {
   const labels = { met: 'Spełnione', missing: 'Brak dowodu', uncertain: 'Niepewne' };
@@ -282,6 +337,14 @@ document.addEventListener('click', async (event) => {
         break;
       case 'report':
         state.application = state.applications.find((item) => item.id === button.dataset.id);
+        if (state.application.report) {
+          state.application.report = await request(
+            `/api/v1/applications/${state.application.id}/screening`
+          );
+        }
+        state.dataRequests = (
+          await request(`/api/v1/applications/${state.application.id}/data-rights`)
+        ).requests;
         state.view = 'report';
         state.error = '';
         render();
@@ -332,6 +395,11 @@ document.addEventListener('click', async (event) => {
   }
 });
 document.addEventListener('submit', async (event) => {
+  if (event.target.id === 'data-rights-form') {
+    event.preventDefault();
+    await submitDataRights(event);
+    return;
+  }
   if (event.target.id === 'brief-form') {
     event.preventDefault();
     const data = new FormData(event.target);
@@ -376,11 +444,16 @@ document.addEventListener('submit', async (event) => {
   if (event.target.id === 'decision-form') {
     event.preventDefault();
     const { submitter } = event;
-    const reason = new FormData(event.target).get('reason');
+    const form = new FormData(event.target);
+    const reason = form.get('reason');
     try {
       await request(`/api/v1/applications/${state.application.id}/decision`, {
         method: 'POST',
-        body: JSON.stringify({ outcome: submitter.value, reason }),
+        body: JSON.stringify({
+          outcome: submitter.value,
+          reason,
+          agreedWithAi: form.get('agreedWithAi') === 'true',
+        }),
       });
       state.error = 'Decyzja została zapisana.';
       await openBrief(state.brief.id);

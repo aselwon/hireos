@@ -79,7 +79,7 @@ bash ops/deploy.sh --owner /opt/hireos deploy r-SHA /sciezka/do/checkout
 
 [Skrypt](../ops/deploy.sh) kopiuje wyłącznie runtime do nowego release, zapisuje
 REVISION, atomowo przełącza symlink `current`, restartuje `hireos-preview` i
-sprawdza `/login` na loopback. Blokada flock wyklucza równoległe operacje.
+sprawdza `/healthz` na loopback, w tym zgodność zwróconego REVISION. Blokada flock wyklucza równoległe operacje.
 Istniejący release nie jest nadpisywany. Zachowaj wypisaną ścieżkę poprzedniego
 release i backup. Błąd restartu lub probe daje niezerowy kod i pozostawia nowy
 symlink do diagnozy; nie wykonuje automatycznego cofania migracji.
@@ -109,6 +109,7 @@ Używaj syntetycznych danych, bez `-k`. Nie publikuj cookies ani kluczy.
 base=https://niezla.bieda.it
 curl -I http://niezla.bieda.it/                 # 301/308 do HTTPS
 curl -i "$base/login"                        # 200, certyfikat poprawny
+curl -i "$base/healthz"                      # 200, stan bazy i REVISION bez logowania
 curl -i "$base/"                             # 401 bez sesji
 curl -i "$base/api/state"                    # 401 bez sesji
 curl -i "$base/api/v1/tasks"                 # 401 bez klucza

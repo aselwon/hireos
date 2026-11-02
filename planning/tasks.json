@@ -320,7 +320,7 @@
       ],
       "dependsOn": ["MVP-25"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-27",
@@ -411,7 +411,7 @@
       ],
       "dependsOn": ["MVP-31"],
       "tier": "planner",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-34",
@@ -450,7 +450,7 @@
       ],
       "dependsOn": ["MVP-33"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-37",
@@ -671,7 +671,7 @@
       ],
       "dependsOn": ["MVP-25"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-54",
