@@ -10,6 +10,7 @@ Environment=HIREOS_DATA_DIR=/var/lib/hireos
 Environment=HIREOS_DB=/var/lib/hireos/preview.sqlite
 Environment=HIREOS_BACKUP_DIR=/var/backups/hireos
 Environment=HIREOS_BACKUP_RETENTION=14
+Environment=HIREOS_BACKUP_KEY_FILE=/etc/hireos/backup.key
 ExecStart=/usr/bin/node --experimental-sqlite /opt/hireos/current/ops/backup.mjs backup
 UMask=0077
 NoNewPrivileges=true

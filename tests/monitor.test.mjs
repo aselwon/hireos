@@ -49,3 +49,18 @@ test('alert deduplication suppresses repeats for one hour and allows them after'
   );
   assert.deepEqual(deduplicateAlerts(['healthz'], first.state, 100_001).emitted, ['healthz']);
 });
+
+test('monitor alarms when a configured external backup is older than 26 hours', () => {
+  assert.deepEqual(
+    collectAlerts({
+      healthOk: true,
+      backupAgeMs: 60_000,
+      externalBackupConfigured: true,
+      externalBackupAgeMs: 27 * 60 * 60 * 1000,
+      freeBytes: 2 * 1024 ** 3,
+      aiCapReached: false,
+      errors5xx: 0,
+    }),
+    ['external-backup-stale']
+  );
+});
