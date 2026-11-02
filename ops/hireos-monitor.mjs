@@ -13,6 +13,9 @@ export function collectAlerts(metrics, thresholds = {}) {
   if (!metrics.healthOk) alerts.push('healthz');
   if (metrics.backupAgeMs == null || metrics.backupAgeMs > backupMaxAgeMs)
     alerts.push('backup-stale');
+  if (metrics.externalBackupConfigured &&
+      (metrics.externalBackupAgeMs == null || metrics.externalBackupAgeMs > backupMaxAgeMs))
+    alerts.push('external-backup-stale');
   if (metrics.freeBytes < minFreeBytes) alerts.push('disk-low');
   if (metrics.aiCapReached) alerts.push('ai-cap');
   if (metrics.errors5xx > 0) alerts.push('http-5xx');
@@ -66,6 +69,10 @@ export async function sample(config = {}) {
     if (response.ok) aiCapReached = Boolean((await response.json()).aiCapReached);
   } catch {}
   const backupAgeMs = await latestBackupAge(config.backupDir ?? '/var/backups/hireos', now);
+  const externalBackupConfigured = Boolean(config.externalBackupDir);
+  const externalBackupAgeMs = externalBackupConfigured
+    ? await latestBackupAge(config.externalBackupDir, now)
+    : null;
   const disk = await statfs(config.dataDir ?? '/var/lib/hireos');
   let errors5xx = 0;
   try {
@@ -81,7 +88,7 @@ export async function sample(config = {}) {
     ]);
     errors5xx = stdout.split('\n').filter((line) => /\b5\d\d\b/.test(line)).length;
   } catch {}
-  return { healthOk, backupAgeMs, freeBytes: disk.bavail * disk.bsize, aiCapReached, errors5xx };
+  return { healthOk, backupAgeMs, externalBackupAgeMs, externalBackupConfigured, freeBytes: disk.bavail * disk.bsize, aiCapReached, errors5xx };
 }
 
 export async function runMonitor(env = process.env) {
@@ -89,6 +96,7 @@ export async function runMonitor(env = process.env) {
   const metrics = await sample({
     healthUrl: env.HIREOS_HEALTH_URL,
     backupDir: env.HIREOS_BACKUP_DIR,
+    externalBackupDir: env.HIREOS_BACKUP_EXTERNAL_DIR,
     dataDir: env.HIREOS_DATA_DIR,
     now,
   });

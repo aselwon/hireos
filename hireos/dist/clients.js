@@ -49,3 +49,30 @@ export async function submitClientForm(event, request, refresh) {
     button.disabled = false;
   }
 }
+
+export function leadsPage(leads, error, escapeHtml, alertBox) {
+  const labels = {
+    new: 'Nowy',
+    contacted: 'W kontakcie',
+    offer: 'Oferta',
+    won: 'Wygrany',
+    lost: 'Przegrany',
+  };
+  const cards = leads
+    .filter((lead) => !lead.client_id)
+    .map(
+      (lead) =>
+        `<article class="panel client-panel"><h2>${escapeHtml(lead.company)}</h2><p>${escapeHtml(lead.contact)} · ${escapeHtml(lead.position)}</p><p>Otrzymano: ${escapeHtml(lead.created_at)}</p><form class="lead-form" data-id="${escapeHtml(lead.id)}"><label class="field">Status<select name="status">${Object.entries(
+          labels
+        )
+          .map(
+            ([value, label]) =>
+              `<option value="${value}" ${lead.status === value ? 'selected' : ''}>${label}</option>`
+          )
+          .join(
+            ''
+          )}</select></label><label class="field">Notatki<textarea name="notes" maxlength="5000">${escapeHtml(lead.notes)}</textarea></label><button class="button secondary" type="submit">Zapisz</button></form><form class="lead-convert-form" data-id="${escapeHtml(lead.id)}"><h3>Konwertuj w klienta</h3><label class="field">NIP<input name="nip" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric"></label><label class="field">Model rozliczenia<select name="billingModel"><option value="success_fee">Success fee (%)</option><option value="fixed_fee">Stała opłata (PLN)</option></select></label><label class="field">Wartość (procent lub PLN)<input name="fee" type="number" min="0" step="0.01" required></label><label class="field">Zaliczka (PLN)<input name="advance" type="number" min="0" step="0.01" required></label><button class="button" type="submit">Utwórz klienta</button></form></article>`
+    )
+    .join('');
+  return `<section class="page-heading"><div><h1>Zapytania od firm</h1><p>Leady z formularza, statusy i konwersja do klientów.</p></div></section>${error ? alertBox(error) : ''}${cards || '<section class="panel client-panel"><h2>Brak aktywnych zapytań</h2></section>'}`;
+}

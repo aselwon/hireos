@@ -177,6 +177,13 @@ test('migracja limitów zachowuje istniejącą historię kontaktu i wyłącza cl
         'INSERT INTO outreach_tasks (id,application_id,message_id,payload_json,idempotency_key,status) VALUES (?,?,?,?,?,?)'
       ).run(id, 'legacy', id, '{}', id, status);
     }
+    db.prepare('UPDATE outreach_tasks SET payload_json=? WHERE id=?').run(
+      JSON.stringify({
+        opt_out_url: 'https://example.test/opt-out/token',
+        message_footer: 'Stop link',
+      }),
+      'third'
+    );
     const before = db.prepare('SELECT * FROM outreach_tasks ORDER BY id').all();
     migrate(db);
     migrate(db);
@@ -193,6 +200,14 @@ test('migracja limitów zachowuje istniejącą historię kontaktu i wyłącza cl
     );
     const outreach = createOutreach(db);
     assert.equal(outreach.readSettings().daily_global, 0);
+    assert.equal(outreach.readLive().outreach_live, false);
+    // Isolate the existing limits assertion after the new control-test gate.
+    db.prepare('UPDATE outreach_live_settings SET payload_json=? WHERE id=1').run(
+      JSON.stringify({
+        outreach_live: true,
+        control_test: { date: '2026-10-30', report_id: 'synthetic', who: 'Test' },
+      })
+    );
     assert.throws(
       () =>
         outreach.mutate('claim', null, {}, 'legacy-claim', {

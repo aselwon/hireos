@@ -1,9 +1,11 @@
-import { clientSelect, clientsPage, submitClientForm } from './clients.js';
+import { clientSelect, clientsPage, leadsPage, submitClientForm } from './clients.js';
 
 const app = document.querySelector('#app');
 const state = {
   briefs: [],
+  outreachLive: null,
   clients: [],
+  leads: [],
   brief: null,
   applications: [],
   view: 'jobs',
@@ -56,6 +58,7 @@ async function loadBriefs() {
   try {
     state.briefs = (await request('/api/v1/briefs')).briefs;
     state.clients = (await request('/api/v1/clients')).clients;
+    state.leads = (await request('/api/v1/leads')).leads;
   } catch (error) {
     state.error = error.message;
   } finally {
@@ -86,10 +89,16 @@ function shell(content) {
   const applicationsNav = state.brief
     ? `<button data-action="applications" aria-current="${navCurrent}">Aplikacje <span class="count">${state.applications.length}</span></button>`
     : '';
-  const pageTitles = { jobs: 'Rekrutacje', clients: 'Klienci' };
+  const pageTitles = {
+    outreach: 'Test kontrolny outreachu',
+    jobs: 'Rekrutacje',
+    clients: 'Klienci',
+    leads: 'Zapytania',
+  };
   const pageTitle = pageTitles[state.view] || escapeHtml(state.brief?.title || 'Aplikacje');
-  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
+  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="leads" aria-current="${state.view === 'leads' ? 'page' : 'false'}">Zapytania firm</button><button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button><button data-action="outreach">Test kontrolny outreachu</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
 }
+
 function alertBox(message, kind = 'error') {
   return `<div class="notice ${kind}" role="${kind === 'error' ? 'alert' : 'status'}">${escapeHtml(message)}</div>`;
 }
@@ -263,8 +272,12 @@ function render() {
   let content = jobsPage();
   if (state.loading) {
     content = alertBox('Ładowanie danych…', 'loading');
+  } else if (state.view === 'outreach') {
+    content = outreachPage();
   } else if (state.view === 'clients') {
     content = (state.error ? alertBox(state.error) : '') + clientsPage(state.clients, escapeHtml);
+  } else if (state.view === 'leads') {
+    content = leadsPage(state.leads, state.error, escapeHtml, alertBox);
   } else if (state.view === 'brief') {
     content = briefForm();
   } else if (state.view === 'applications') {
@@ -277,6 +290,28 @@ function render() {
   if (heading) {
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
+  }
+}
+async function submitLeadForm(form) {
+  const values = new FormData(form);
+  const converting = form.matches('.lead-convert-form');
+  const body = converting
+    ? {
+        nip: values.get('nip'),
+        billingModel: values.get('billingModel'),
+        feeValue: Math.round(Number(values.get('fee')) * 100),
+        advanceGrosz: Math.round(Number(values.get('advance')) * 100),
+      }
+    : { status: values.get('status'), notes: values.get('notes') };
+  try {
+    await request(
+      `/api/v1/leads/${encodeURIComponent(form.dataset.id)}${converting ? '/convert' : ''}`,
+      { method: 'POST', body: JSON.stringify(body) }
+    );
+    await loadBriefs();
+  } catch (error) {
+    state.error = error.message;
+    render();
   }
 }
 function applicationsPage() {
@@ -326,6 +361,12 @@ document.addEventListener('click', async (event) => {
   }
   try {
     switch (button.dataset.action) {
+      case 'outreach':
+        state.outreachLive = await request('/api/v1/outreach-live');
+        state.error = '';
+        state.view = 'outreach';
+        render();
+        break;
       case 'jobs':
         state.view = 'jobs';
         state.brief = null;
@@ -333,6 +374,10 @@ document.addEventListener('click', async (event) => {
         break;
       case 'clients':
         state.view = 'clients';
+        await loadBriefs();
+        break;
+      case 'leads':
+        state.view = 'leads';
         await loadBriefs();
         break;
       case 'new':
@@ -427,6 +472,16 @@ async function submitAssignment(event) {
   }
 }
 document.addEventListener('submit', async (event) => {
+  if (event.target.id === 'outreach-live-form') {
+    event.preventDefault();
+    await submitOutreachLive(event.target);
+    return;
+  }
+  if (event.target.id === 'outreach-live-form') {
+    event.preventDefault();
+    await submitOutreachLive(event.target);
+    return;
+  }
   if (event.target.id === 'data-rights-form') {
     event.preventDefault();
     await submitDataRights(event);
@@ -437,6 +492,10 @@ document.addEventListener('submit', async (event) => {
   }
   if (event.target.id === 'assignment-form') {
     await submitAssignment(event);
+  }
+  if (event.target.matches('.lead-form, .lead-convert-form')) {
+    event.preventDefault();
+    await submitLeadForm(event.target);
   }
   if (event.target.id === 'brief-form') {
     event.preventDefault();
@@ -504,4 +563,40 @@ document.addEventListener('submit', async (event) => {
     }
   }
 });
+function outreachPage() {
+  const result = state.outreachLive;
+  const status = result?.outreach_live
+    ? `<p role="status">Kontakt z kandydatami odblokowany. Test: ${escapeHtml(result.control_test.date)}, raport: ${escapeHtml(result.control_test.report_id)}, wykonał(a): ${escapeHtml(result.control_test.who)}.</p>`
+    : '<p>Kontakt z kandydatami jest zablokowany. Dostępne są wyłącznie zadania kontrolne dla odbiorców z listy testowej.</p>';
+  const form = result?.outreach_live
+    ? ''
+    : `<p>Po zaliczonym teście zapisz wynik. Zapis odblokuje kontakt z prawdziwymi kandydatami i trafi do dziennika audytu.</p><form id="outreach-live-form"><label class="field">Data zaliczonego testu<input type="date" name="date" required max="${new Date().toISOString().slice(0, 10)}"></label><label class="field">Identyfikator raportu<input name="report_id" required maxlength="256"></label><label class="field">Kto wykonał test<input name="who" required maxlength="256"></label><label class="field">Hasło rekrutera<input type="password" name="password" autocomplete="current-password" required maxlength="1024"></label><button class="button primary" type="submit">Zapisz zaliczony test i odblokuj kontakt</button></form>`;
+  return `<section class="page-heading"><h1>Test kontrolny outreachu</h1></section><section class="panel">${status}${state.error ? alertBox(state.error) : ''}${form}</section>`;
+}
+async function submitOutreachLive(form) {
+  const data = new FormData(form);
+  const button = form.querySelector('button');
+  button.disabled = true;
+  button.textContent = 'Zapisywanie…';
+  try {
+    state.outreachLive = await request('/api/v1/outreach-live', {
+      method: 'POST',
+      body: JSON.stringify({
+        outreach_live: true,
+        password: data.get('password'),
+        control_test: {
+          date: data.get('date'),
+          report_id: data.get('report_id'),
+          who: data.get('who'),
+        },
+      }),
+    });
+    state.error = '';
+  } catch (error) {
+    state.error = error.message;
+  }
+  form.elements.password.value = '';
+  render();
+}
+
 await loadBriefs();
