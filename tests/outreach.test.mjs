@@ -4,10 +4,59 @@ import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { Worker } from 'node:worker_threads';
 
+import { outreachPage } from '../hireos/dist/outreach.js';
 import { migrate } from '../lib/migrations.mjs';
 import { createOutreach } from '../lib/outreach.mjs';
 
 import { fixture, payload, report, configure, addCandidate } from './outreach-fixture.mjs';
+
+test('panel API tworzy zadanie i obsługuje pauzę, przejęcie oraz blokadę kontaktu', async (t) => {
+  const { request, db } = fixture(t);
+  const created = await request('admin', '', payload, 'panel-create');
+  assert.equal(created.status, 201);
+  await request(
+    'admin',
+    '/api/v1/applications/candidate/outreach-control',
+    { paused: true },
+    'panel-pause'
+  );
+  assert.equal(
+    (await request('admin', `/${created.body.task.task_id}/preflight`)).body.reason,
+    'conversation_paused'
+  );
+  await request(
+    'admin',
+    '/api/v1/applications/candidate/outreach-control',
+    { paused: false, human_takeover: true },
+    'panel-takeover'
+  );
+  assert.equal(
+    (await request('admin', `/${created.body.task.task_id}/preflight`)).body.reason,
+    'human_takeover'
+  );
+  db.prepare('UPDATE applications SET do_not_contact=1 WHERE id=?').run('candidate');
+  const panel = readFileSync(new URL('../hireos/dist/outreach.js', import.meta.url), 'utf8');
+  assert.match(panel, /filter\(\(item\) => !item\.doNotContact\)/);
+  assert.match(panel, /Kontakt zablokowany/);
+  assert.equal((await request('admin', '', payload, 'panel-dnc-create')).status, 409);
+});
+
+test('panel wyświetla blokadę live i ukrywa akcje dla do_not_contact', () => {
+  const html = outreachPage(
+    {
+      outreachLive: { outreach_live: false },
+      outreachCandidates: [{ id: 'candidate', name: 'Osoba Testowa', doNotContact: true }],
+      outreachTasks: [{ application_id: 'candidate', task_id: 'task', status: 'queued' }],
+      outreachSettings: null,
+      error: '',
+    },
+    String,
+    () => ''
+  );
+  assert.match(html, /Kontakt z kandydatami jest zablokowany/);
+  assert.match(html, /Kontakt zablokowany/);
+  assert.doesNotMatch(html, /data-action="candidate-control"|data-action="cancel-task"/);
+});
 
 test('równoległe claimy HTTP przydzielają zadanie tylko jednemu wykonawcy', async (t) => {
   const { request } = fixture(t);

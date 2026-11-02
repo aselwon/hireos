@@ -1,5 +1,6 @@
 import { clientSelect, clientsPage, leadsPage, submitClientForm } from './clients.js';
 import { createOutreachPanel } from './outreach-panel.js';
+import * as outreachUi from './outreach.js';
 import { applicationRow, emptyReport, requirementEvidence } from './report.js';
 import { createSettingsUi } from './settings.js';
 import { shortlistPanel, submitShortlist } from './shortlists.js';
@@ -9,6 +10,9 @@ const state = {
   settings: null,
   createdSecret: '',
   outreachLive: null,
+  outreachTasks: [],
+  outreachSettings: null,
+  outreachCandidates: [],
   clients: [],
   shortlists: [],
   leads: [],
@@ -251,7 +255,7 @@ function render() {
   if (state.loading) {
     content = alertBox('Ładowanie danych…', 'loading');
   } else if (state.view === 'outreach') {
-    content = outreachPage();
+    content = `${outreachPage()}${outreachUi.outreachPage(state, escapeHtml, alertBox)}`;
   } else if (state.view === 'settings') {
     content = settingsPage();
   } else if (state.view === 'clients') {
@@ -344,11 +348,16 @@ document.addEventListener('click', async (event) => {
   }
   try {
     switch (button.dataset.action) {
-      case 'outreach':
-        state.outreachLive = await request('/api/v1/outreach-live');
-        state.error = '';
-        state.view = 'outreach';
-        render();
+      case 'outreach': {
+        await outreachUi.loadOutreachPanel(state, request, render);
+        break;
+      }
+      case 'candidate-control': {
+        await outreachUi.handleOutreachAction(button, state, request, render);
+        break;
+      }
+      case 'cancel-task':
+        await outreachUi.handleOutreachAction(button, state, request, render);
         break;
       case 'jobs':
         state.view = 'jobs';
@@ -574,6 +583,10 @@ const submitHandlers = {
   'decision-form': submitDecision,
 };
 document.addEventListener('submit', async (event) => {
+  if (event.target.id === 'outreach-task-form') {
+    await outreachUi.submitOutreachTask(event, state, request, render);
+    return;
+  }
   const handler = submitHandlers[event.target.id];
   if (handler) {
     await handler(event);
