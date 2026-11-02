@@ -16,7 +16,8 @@ flock -n 9 || { echo 'Trwa inna operacja.' >&2; exit 1; }
 target="$root/releases/$release"
 staging="$root/releases/.staging-$$"
 link="$root/.current-$$"
-trap 'rm -rf -- "$staging"; rm -f -- "$link"' EXIT
+health="$root/.healthz-$$"
+trap 'rm -rf -- "$staging"; rm -f -- "$link" "$health"' EXIT
 if [[ $action == deploy ]]; then
     [[ ! -e $target ]] || { echo 'Release już istnieje; wybierz nowe ID.' >&2; exit 1; }
     source=$(realpath -e -- "$5")
@@ -39,5 +40,8 @@ printf 'Poprzedni release: %s\n' "${previous:-brak}"
 # Restart i probe są lokalne; błąd wymaga decyzji właściciela o bazie i rollbacku.
 systemctl restart hireos-preview
 curl --fail --silent --show-error --retry 5 --retry-connrefused --retry-delay 1 \
-    http://127.0.0.1:4317/login >/dev/null
-printf 'Aktywny release: %s\n' "$release"
+    http://127.0.0.1:4317/healthz > "$health"
+grep -Fq '"status":"ok"' "$health"
+revision=$(sed -n 's/.*"revision":"\([^"]*\)".*/\1/p' "$health")
+[[ $revision == "$release" ]] || { echo 'REVISION probe nie zgadza się z aktywnym release.' >&2; exit 1; }
+printf 'Aktywny release: %s\n' "$revision"

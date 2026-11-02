@@ -26,13 +26,17 @@ Podstawy w kodzie: [lib/migrations/001-demo.sql](../../lib/migrations/001-demo.s
 Log procesu nie zastępuje audytu decyzji. Nie ma dowodu, że rejestrowane są wszystkie
 zdarzenia potrzebne do rekonstrukcji działania systemu.
 
-[lib/retention.mjs](../../lib/retention.mjs) udostępnia `purgeRejectedCv`:
-domyślnie 90 dni od najnowszej decyzji odrzucającej dla aplikacji nadal odrzuconej.
-Usuwa raporty, fakty, profile, rekordy CV i następnie pliki. Nie usuwa aplikacji,
-decyzji, audytu, odpowiedzi bramki ani `requests`. To funkcja wywoływana przez
-operatora/integrację, a nie dowód działającego harmonogramu. Błąd usuwania pliku
-po zatwierdzeniu transakcji może pozostawić plik bez rekordu; wymaga obsługi
-operacyjnej. Test zakresu: [tests/retention.test.mjs](../../tests/retention.test.mjs).
+[lib/retention.mjs](../../lib/retention.mjs) udostępnia `purgeRejectedCv`.
+Odrzucone aplikacje zachowują dotychczasową retencję. Po zamknięciu rekrutacji
+aplikacje bez zgody na przyszłe rekrutacje są anonimizowane po `RETENTION_DAYS`
+od zamknięcia; aplikacje ze zgodą — po tym okresie od udzielenia zgody. Usuwane
+są CV, profile, fakty, raporty i treść powiązanych zadań outreach, a dane
+identyfikujące aplikację oraz uzasadnienia decyzji są anonimizowane. Oczekujące
+zadania outreach są anulowane. Codzienny harmonogram działa podczas pracy serwera.
+Każdy przebieg zapisuje w audycie liczby aplikacji, plików CV i zadań outreach
+oraz okres, bez danych osobowych. Błąd usuwania pliku po zatwierdzeniu transakcji może pozostawić
+plik bez rekordu; wymaga obsługi operacyjnej. Test zakresu:
+[tests/retention.test.mjs](../../tests/retention.test.mjs).
 
 [ops/backup.mjs](../../ops/backup.mjs) kopiuje bazę i CV oraz domyślnie zachowuje
 14 kopii, nie 14 dni ani 6 miesięcy logów. Kopie mogą odtworzyć dane wcześniej
