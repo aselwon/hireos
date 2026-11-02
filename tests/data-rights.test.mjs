@@ -23,6 +23,7 @@ const payload = {
   context: 'Syntetyczna rozmowa',
   contact_rules: 'Jedna wiadomość',
   contact_rules_approved: true,
+  control_recipient: true,
 };
 function fixture(t) {
   const dir = mkdtempSync(join(tmpdir(), 'hireos-rights-'));
@@ -56,7 +57,7 @@ function fixture(t) {
   db.prepare('UPDATE outreach_settings SET payload_json=? WHERE id=1').run(
     JSON.stringify(enabledSettings)
   );
-  const outreach = createOutreach(db);
+  const outreach = createOutreach(db, Date.now, 'test@example.test');
   const { task } = outreach.mutate('create', null, payload, 'create', admin);
   db.prepare(
     'INSERT INTO task_attempts (id,outreach_task_id,api_key_id,result,message,idempotency_key) VALUES (?,?,?,?,?,?)'

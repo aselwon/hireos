@@ -26,7 +26,7 @@ export const enabledSettings = {
   start_hour: 0,
   end_hour: 24,
 };
-export function fixture(t, enabled = true) {
+export function fixture(t, enabled = true, live = true, allowlist = '') {
   const dir = mkdtempSync(join(tmpdir(), 'hireos-outreach-'));
   const path = join(dir, 'test.sqlite');
   const store = openStore(path);
@@ -42,17 +42,28 @@ export function fixture(t, enabled = true) {
     ])
   );
   let time = Date.parse('2026-10-31T12:00:00Z');
-  store.outreach = createOutreach(db, () => time);
+  store.outreach = createOutreach(db, () => time, allowlist);
+  // Existing lease/limit suites exercise outreach after the control test.
+  if (live) {
+    db.prepare('UPDATE outreach_live_settings SET payload_json=? WHERE id=1').run(
+      JSON.stringify({
+        outreach_live: true,
+        control_test: { date: '2026-10-30', report_id: 'synthetic', who: 'Test' },
+      })
+    );
+  }
   if (enabled) {
     store.outreach.mutate('settings', null, enabledSettings, 'enable', {
       id: 'admin',
       scope: 'admin',
     });
   }
+  const sessions = createSessions('synthetic-password');
+  const sessionToken = sessions.login('synthetic-password', 'fixture-login').token;
   const handler = createHandler({
     store,
     keys,
-    sessions: createSessions('synthetic-password'),
+    sessions,
     port: 14314,
   });
   t.after(() => {
@@ -67,7 +78,9 @@ export function fixture(t, enabled = true) {
     req.method = input === undefined ? 'GET' : 'POST';
     req.headers = {
       host: '127.0.0.1:14314',
-      authorization: `Bearer ${tokens[actor]}`,
+      ...(actor === 'session'
+        ? { cookie: `hireos_session=${sessionToken}` }
+        : { authorization: `Bearer ${tokens[actor]}` }),
       'content-type': 'application/json',
       'idempotency-key': key,
     };
