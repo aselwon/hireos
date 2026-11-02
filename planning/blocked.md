@@ -78,3 +78,11 @@ GitHub PUT /repos/aselwon/hireos/pulls/43/merge: 405 Pull Request has merge conf
 
 - Hipoteza: merge odrzucany (konflikt, ochrona gałęzi albo zmiana bazy).
 - Pytanie do właściciela: zmergować/poprawić PR ręcznie albo przywrócić `MVP-45` do `todo`.
+
+## MVP-26 — 2026-11-02
+
+- Gałąź / PR: https://github.com/aselwon/hireos/pull/36 (otwarty, NIE zmergowany)
+- Co próbowano: harness auto-merge; CI czerwone na d0e0325
+- Ostatni błąd (bez sekretów): Quality: failure
+- Hipoteza: lokalny `npm run ci` przeszedł, CI na GitHubie nie.
+- Pytanie do właściciela: poprawić gałąź `task/MVP-26` (nowy push → harness ponownie sprawdzi CI i zmerguje) albo zamknąć PR.
