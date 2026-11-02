@@ -233,6 +233,61 @@ test('HTTP chroni panel, stan i mutacje; sprawdza sesje, zakresy, odwołanie i o
     assert.ok(cookie.includes(attribute));
   }
   const auth = { Cookie: cookie.split(';')[0] };
+  const settingData = await request('/api/v1/settings', { headers: auth });
+  assert.equal(settingData.status, 200);
+  assert.deepEqual(JSON.parse(settingData.body).modelUsage, {
+    used: 0,
+    limit: 9000,
+    day: new Date().toISOString().slice(0, 10),
+  });
+  assert.equal(settingData.body.includes('key_hash'), false);
+  const createKey = await request(
+    '/api/v1/api-keys',
+    post(
+      { id: 'panel-worker', scope: 'worker:outreach' },
+      { ...auth, 'Idempotency-Key': 'create-panel-key' }
+    )
+  );
+  assert.equal(createKey.status, 201);
+  const { secret } = JSON.parse(createKey.body);
+  assert.match(secret, /^hos_[\w-]{43}$/);
+  const repeatedKey = await request(
+    '/api/v1/api-keys',
+    post(
+      { id: 'panel-worker', scope: 'worker:outreach' },
+      { ...auth, 'Idempotency-Key': 'retry-panel-key' }
+    )
+  );
+  assert.equal(JSON.parse(repeatedKey.body).secret, null);
+  assert.equal((await request('/api/v1/settings', { headers: auth })).body.includes(secret), false);
+  assert.equal(
+    (await request('/api/v1/tasks', { headers: { Authorization: `Bearer ${secret}` } })).status,
+    200
+  );
+  assert.equal(
+    (
+      await request(
+        '/api/v1/api-keys/panel-worker',
+        post({}, { ...auth, 'Idempotency-Key': 'revoke-panel-key' })
+      )
+    ).status,
+    200
+  );
+  assert.equal(
+    (await request('/api/v1/tasks', { headers: { Authorization: `Bearer ${secret}` } })).status,
+    401
+  );
+  const usageDb = new DatabaseSync(path);
+  usageDb
+    .prepare(
+      "INSERT INTO model_calls (id,provider,model,purpose,estimated_neurons,status,idempotency_key,created_at,fingerprint,input_tokens,output_tokens) VALUES ('usage-test','cloudflare','test','test',17,'completed','usage-test',?,'fingerprint',1,1)"
+    )
+    .run(new Date().toISOString());
+  usageDb.close();
+  assert.equal(
+    JSON.parse((await request('/api/v1/settings', { headers: auth })).body).modelUsage.used,
+    17
+  );
   for (let attempt = 0; attempt < 20; attempt += 1) {
     await request(
       '/api/login',

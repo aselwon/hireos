@@ -1217,6 +1217,35 @@ textarea {
   display: grid;
   gap: 16px;
 }
+.settings-facts p {
+  margin: 10px 0;
+  color: var(--muted);
+}
+.mvp-content .notice.success code {
+  display: block;
+  overflow-wrap: anywhere;
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--surface);
+  border-radius: 8px;
+}
+.mvp-content #api-key-form {
+  grid-template-columns: minmax(160px, 1fr) minmax(180px, 0.7fr) auto;
+  align-items: end;
+  margin-bottom: 24px;
+}
+.mvp-content #settings-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.mvp-content #settings-form button {
+  justify-self: start;
+}
+@media (max-width: 760px) {
+  .mvp-content #api-key-form,
+  .mvp-content #settings-form {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 760px) {
   .mvp-shell {
     grid-template-columns: 1fr;
