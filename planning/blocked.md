@@ -86,3 +86,11 @@ GitHub PUT /repos/aselwon/hireos/pulls/43/merge: 405 Pull Request has merge conf
 - Ostatni błąd (bez sekretów): Quality: failure
 - Hipoteza: lokalny `npm run ci` przeszedł, CI na GitHubie nie.
 - Pytanie do właściciela: poprawić gałąź `task/MVP-26` (nowy push → harness ponownie sprawdzi CI i zmerguje) albo zamknąć PR.
+
+## FIXMAIN-5cbc50f — 2026-11-02
+
+- Gałąź / PR: https://github.com/aselwon/hireos/pull/47 (otwarty, NIE zmergowany)
+- Co próbowano: harness auto-merge; CI czerwone na f3bb174
+- Ostatni błąd (bez sekretów): Quality: failure
+- Hipoteza: lokalny `npm run ci` przeszedł, CI na GitHubie nie.
+- Pytanie do właściciela: poprawić gałąź `task/FIXMAIN-5cbc50f` (nowy push → harness ponownie sprawdzi CI i zmerguje) albo zamknąć PR.
