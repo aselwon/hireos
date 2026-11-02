@@ -54,7 +54,7 @@ function panel() {
   const source = readFileSync(new URL('../hireos/dist/app.js', import.meta.url), 'utf8');
   runInNewContext(
     source
-      .replace(/^import .*\n/m, '')
+      .replace(/^import .*\n/gm, '')
       .replace(
         /\nawait loadBriefs\(\);\s*$/,
         '\nglobalThis.panel = { state, submitDataRights, dataRightsPanel };'
