@@ -346,7 +346,7 @@
       ],
       "dependsOn": ["MVP-26"],
       "tier": "planner",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-29",
@@ -359,7 +359,7 @@
       ],
       "dependsOn": ["MVP-26"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-30",
@@ -580,7 +580,7 @@
       ],
       "dependsOn": ["MVP-25"],
       "tier": "planner",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-47",
@@ -619,7 +619,7 @@
       ],
       "dependsOn": ["MVP-31"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-50",
@@ -632,7 +632,7 @@
       ],
       "dependsOn": ["MVP-46", "MVP-49", "MVP-34"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-51",
@@ -684,7 +684,7 @@
       ],
       "dependsOn": ["MVP-29"],
       "tier": "worker",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "MVP-55",

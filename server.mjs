@@ -30,7 +30,7 @@ const store = openStore(databasePath, undefined, { seedDemo: !config.production 
 const runRetention = async () => {
   try {
     const report = await store.purgeRejectedCv();
-    logger.info('retention.completed', report);
+    logger.info('retention.completed', { ...report, ...store.purgeOldLeads() });
   } catch (error) {
     logger.error('retention.failed', { error: error.message });
   }
@@ -39,18 +39,24 @@ await runRetention();
 const stopCvWorker = startCvWorker(store, () => logger.error('processing.queue_failed'));
 const keys = openKeys(databasePath);
 const port = Number(process.env.PORT || 4310);
-const server = http.createServer(
-  createHandler({
-    store,
-    keys,
-    sessions,
-    port,
-    dataDir,
-    secureCookie: config.secureCookie,
-    production: config.production,
-    revision,
-  })
-);
+const handler = createHandler({
+  store,
+  keys,
+  sessions,
+  port,
+  dataDir,
+  secureCookie: config.secureCookie,
+  production: config.production,
+  revision,
+});
+const server = http.createServer((req, res) => {
+  res.once('finish', () => {
+    if (res.statusCode >= 500) {
+      logger.error('http.5xx', { status: res.statusCode });
+    }
+  });
+  return handler(req, res);
+});
 server.listen(port, '127.0.0.1', () =>
   logger.info('server.started', {
     url: `http://localhost:${port}`,

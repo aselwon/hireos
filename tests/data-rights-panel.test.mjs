@@ -30,6 +30,9 @@ function panel() {
       }
     },
     crypto: { randomUUID: () => 'panel-key' },
+    clientSelect: () => '',
+    clientsPage: () => '',
+    submitClientForm: () => Promise.resolve(),
     Blob: globalThis.Blob,
     URL: { createObjectURL: () => 'blob:test', revokeObjectURL: () => undefined },
     setTimeout: (callback) => callback(),
@@ -50,10 +53,12 @@ function panel() {
   };
   const source = readFileSync(new URL('../hireos/dist/app.js', import.meta.url), 'utf8');
   runInNewContext(
-    source.replace(
-      /\nawait loadBriefs\(\);\s*$/,
-      '\nglobalThis.panel = { state, submitDataRights, dataRightsPanel };'
-    ),
+    source
+      .replace(/^import .*\n/m, '')
+      .replace(
+        /\nawait loadBriefs\(\);\s*$/,
+        '\nglobalThis.panel = { state, submitDataRights, dataRightsPanel };'
+      ),
     context
   );
   Object.assign(context.panel.state, {

@@ -1,6 +1,10 @@
+import { clientSelect, clientsPage, submitClientForm } from './clients.js';
+
 const app = document.querySelector('#app');
 const state = {
   briefs: [],
+  clients: [],
+  leads: [],
   brief: null,
   applications: [],
   view: 'jobs',
@@ -52,6 +56,8 @@ async function loadBriefs() {
   render();
   try {
     state.briefs = (await request('/api/v1/briefs')).briefs;
+    state.clients = (await request('/api/v1/clients')).clients;
+    state.leads = (await request('/api/v1/leads')).leads;
   } catch (error) {
     state.error = error.message;
   } finally {
@@ -82,9 +88,35 @@ function shell(content) {
   const applicationsNav = state.brief
     ? `<button data-action="applications" aria-current="${navCurrent}">Aplikacje <span class="count">${state.applications.length}</span></button>`
     : '';
-  const pageTitle =
-    state.view === 'jobs' ? 'Rekrutacje' : escapeHtml(state.brief?.title || 'Aplikacje');
-  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}</nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
+  const pageTitles = { jobs: 'Rekrutacje', clients: 'Klienci', leads: 'Zapytania' };
+  const pageTitle = pageTitles[state.view] || escapeHtml(state.brief?.title || 'Aplikacje');
+  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="leads" aria-current="${state.view === 'leads' ? 'page' : 'false'}">Zapytania firm</button><button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
+}
+function leadsPage() {
+  const labels = {
+    new: 'Nowy',
+    contacted: 'W kontakcie',
+    offer: 'Oferta',
+    won: 'Wygrany',
+    lost: 'Przegrany',
+  };
+  const cards = state.leads
+    .filter((lead) => !lead.client_id)
+    .map(
+      (lead) =>
+        `<article class="panel client-panel"><h2>${escapeHtml(lead.company)}</h2><p>${escapeHtml(lead.contact)} · ${escapeHtml(lead.position)}</p><p>Otrzymano: ${escapeHtml(lead.created_at)}</p><form class="lead-form" data-id="${escapeHtml(lead.id)}"><label class="field">Status<select name="status">${Object.entries(
+          labels
+        )
+          .map(
+            ([value, label]) =>
+              `<option value="${value}" ${lead.status === value ? 'selected' : ''}>${label}</option>`
+          )
+          .join(
+            ''
+          )}</select></label><label class="field">Notatki<textarea name="notes" maxlength="5000">${escapeHtml(lead.notes)}</textarea></label><button class="button secondary" type="submit">Zapisz</button></form><form class="lead-convert-form" data-id="${escapeHtml(lead.id)}"><h3>Konwertuj w klienta</h3><label class="field">NIP<input name="nip" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric"></label><label class="field">Model rozliczenia<select name="billingModel"><option value="success_fee">Success fee (%)</option><option value="fixed_fee">Stała opłata (PLN)</option></select></label><label class="field">Wartość (procent lub PLN)<input name="fee" type="number" min="0" step="0.01" required></label><label class="field">Zaliczka (PLN)<input name="advance" type="number" min="0" step="0.01" required></label><button class="button" type="submit">Utwórz klienta</button></form></article>`
+    )
+    .join('');
+  return `<section class="page-heading"><div><h1>Zapytania od firm</h1><p>Leady z formularza, statusy i konwersja do klientów.</p></div></section>${state.error ? alertBox(state.error) : ''}${cards || '<section class="panel client-panel"><h2>Brak aktywnych zapytań</h2></section>'}`;
 }
 function alertBox(message, kind = 'error') {
   return `<div class="notice ${kind}" role="${kind === 'error' ? 'alert' : 'status'}">${escapeHtml(message)}</div>`;
@@ -114,7 +146,7 @@ function briefForm() {
   const addButton = editing
     ? '<button class="button secondary small" type="button" data-action="add-requirement">Dodaj wymaganie</button>'
     : '';
-  return `<section class="page-heading"><div><div class="eyebrow">${status}</div><h1>${escapeHtml(b.title)}</h1><p>${escapeHtml((b.stack || []).join(' · '))} · ${seniorityLabels[b.seniority] || escapeHtml(b.seniority)}</p></div><button class="button secondary" data-action="applications">Aplikacje (${state.applications.length})</button></section>${error}<section class="panel"><div class="panel-head"><div><h2>Ogłoszenie i macierz wymagań</h2><p>Przejrzyj treść przed zatwierdzeniem.</p></div></div><form id="content-form"><label class="field">Treść ogłoszenia<textarea name="advertisement" required rows="8">${escapeHtml(b.advertisement || '')}</textarea></label><div class="panel-head"><h3>Wymagania</h3>${addButton}</div><div id="requirements">${requirements}</div>${actions}</form></section>${applicationList()}`;
+  return `<section class="page-heading"><div><div class="eyebrow">${status}</div><h1>${escapeHtml(b.title)}</h1><p>${escapeHtml((b.stack || []).join(' · '))} · ${seniorityLabels[b.seniority] || escapeHtml(b.seniority)}</p></div><button class="button secondary" data-action="applications">Aplikacje (${state.applications.length})</button></section>${error}<section class="panel client-panel"><h2>Klient rekrutacji</h2><form id="assignment-form">${clientSelect(state.clients, b.client_id, escapeHtml)}<button class="button secondary" type="submit">Zapisz przypisanie</button><p role="status" id="assignment-message"></p></form></section><section class="panel"><div class="panel-head"><div><h2>Ogłoszenie i macierz wymagań</h2><p>Przejrzyj treść przed zatwierdzeniem.</p></div></div><form id="content-form"><label class="field">Treść ogłoszenia<textarea name="advertisement" required rows="8">${escapeHtml(b.advertisement || '')}</textarea></label><div class="panel-head"><h3>Wymagania</h3>${addButton}</div><div id="requirements">${requirements}</div>${actions}</form></section>${applicationList()}`;
 }
 function requirementRow(r) {
   const options = [1, 2, 3]
@@ -259,6 +291,10 @@ function render() {
   let content = jobsPage();
   if (state.loading) {
     content = alertBox('Ładowanie danych…', 'loading');
+  } else if (state.view === 'clients') {
+    content = (state.error ? alertBox(state.error) : '') + clientsPage(state.clients, escapeHtml);
+  } else if (state.view === 'leads') {
+    content = leadsPage();
   } else if (state.view === 'brief') {
     content = briefForm();
   } else if (state.view === 'applications') {
@@ -271,6 +307,28 @@ function render() {
   if (heading) {
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
+  }
+}
+async function submitLeadForm(form) {
+  const values = new FormData(form);
+  const converting = form.matches('.lead-convert-form');
+  const body = converting
+    ? {
+        nip: values.get('nip'),
+        billingModel: values.get('billingModel'),
+        feeValue: Math.round(Number(values.get('fee')) * 100),
+        advanceGrosz: Math.round(Number(values.get('advance')) * 100),
+      }
+    : { status: values.get('status'), notes: values.get('notes') };
+  try {
+    await request(
+      `/api/v1/leads/${encodeURIComponent(form.dataset.id)}${converting ? '/convert' : ''}`,
+      { method: 'POST', body: JSON.stringify(body) }
+    );
+    await loadBriefs();
+  } catch (error) {
+    state.error = error.message;
+    render();
   }
 }
 function applicationsPage() {
@@ -323,6 +381,14 @@ document.addEventListener('click', async (event) => {
       case 'jobs':
         state.view = 'jobs';
         state.brief = null;
+        await loadBriefs();
+        break;
+      case 'clients':
+        state.view = 'clients';
+        await loadBriefs();
+        break;
+      case 'leads':
+        state.view = 'leads';
         await loadBriefs();
         break;
       case 'new':
@@ -394,11 +460,43 @@ document.addEventListener('click', async (event) => {
     render();
   }
 });
+async function submitAssignment(event) {
+  event.preventDefault();
+  const form = event.target;
+  const briefId = state.brief.id;
+  const clientId = new FormData(form).get('clientId') || null;
+  const button = form.querySelector('[type=submit]');
+  button.disabled = true;
+  try {
+    await request(`/api/v1/briefs/${briefId}/client`, {
+      method: 'PUT',
+      body: JSON.stringify({ clientId }),
+    });
+    if (state.brief?.id === briefId) {
+      state.brief.client_id = clientId;
+    }
+    form.querySelector('#assignment-message').textContent = 'Przypisanie zapisane.';
+  } catch (error) {
+    form.querySelector('#assignment-message').textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
 document.addEventListener('submit', async (event) => {
   if (event.target.id === 'data-rights-form') {
     event.preventDefault();
     await submitDataRights(event);
     return;
+  }
+  if (event.target.id === 'client-form') {
+    await submitClientForm(event, request, loadBriefs);
+  }
+  if (event.target.id === 'assignment-form') {
+    await submitAssignment(event);
+  }
+  if (event.target.matches('.lead-form, .lead-convert-form')) {
+    event.preventDefault();
+    await submitLeadForm(event.target);
   }
   if (event.target.id === 'brief-form') {
     event.preventDefault();
