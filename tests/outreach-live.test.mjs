@@ -108,7 +108,9 @@ test('migration closes gate on existing database without changing limits or lega
   const db = new DatabaseSync(':memory:');
   try {
     migrate(db);
-    db.exec('DROP TABLE outreach_live_settings; DELETE FROM schema_migrations WHERE version=15');
+    db.exec(
+      'DROP TABLE outreach_live_settings; DROP TABLE billing_events; DELETE FROM schema_migrations WHERE version IN (15, 16)'
+    );
     const before = db.prepare('SELECT * FROM outreach_settings').get();
     migrate(db);
     migrate(db);
