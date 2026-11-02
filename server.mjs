@@ -9,6 +9,7 @@ import { loadConfig } from './lib/config.mjs';
 import { startCvWorker } from './lib/cv-queue.mjs';
 import { createHandler } from './lib/http.mjs';
 import { createLogger } from './lib/logger.mjs';
+import { startRetentionSchedule } from './lib/retention.mjs';
 import { openStore } from './lib/store.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
@@ -26,7 +27,15 @@ const sessions = createSessions(config.password);
 delete process.env.HIREOS_RECRUITER_PASSWORD;
 const databasePath = process.env.HIREOS_DB || resolve(dataDir, 'hireos.sqlite');
 const store = openStore(databasePath, undefined, { seedDemo: !config.production });
-await store.purgeRejectedCv();
+const runRetention = async () => {
+  try {
+    const report = await store.purgeRejectedCv();
+    logger.info('retention.completed', report);
+  } catch (error) {
+    logger.error('retention.failed', { error: error.message });
+  }
+};
+await runRetention();
 const stopCvWorker = startCvWorker(store, () => logger.error('processing.queue_failed'));
 const keys = openKeys(databasePath);
 const port = Number(process.env.PORT || 4310);
@@ -48,9 +57,11 @@ server.listen(port, '127.0.0.1', () =>
     mode: config.production ? 'produkcja' : 'lokalny prototyp',
   })
 );
+const stopRetention = startRetentionSchedule(runRetention);
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () =>
     server.close(async () => {
+      stopRetention();
       await stopCvWorker();
       store.close();
       keys.close();
