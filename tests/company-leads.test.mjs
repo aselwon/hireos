@@ -128,7 +128,7 @@ test('lead consent is versioned, honeypot is ignored, and rate limit is enforced
       store.createLead(base, `lead-${index + 2}`, '127.0.0.1');
     }
     assert.throws(() => store.createLead(base, 'lead-over-limit', '127.0.0.1'), { status: 429 });
-    const now = new Date('2026-11-01T23:00:00Z');
+    const now = new Date();
     store.createLead(
       base,
       'lead-after-window',
