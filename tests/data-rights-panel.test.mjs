@@ -38,6 +38,15 @@ function panel() {
     clientSelect: () => '',
     clientsPage: () => '',
     submitClientForm: () => Promise.resolve(),
+    createSettingsUi: () => ({
+      settingsPage: () => '',
+      submitApiKey: () => Promise.resolve(),
+      submitSettings: () => Promise.resolve(),
+    }),
+    createOutreachPanel: () => ({
+      outreachPage: () => '',
+      submitOutreachLive: () => Promise.resolve(),
+    }),
     applicationRow,
     emptyReport,
     requirementEvidence,

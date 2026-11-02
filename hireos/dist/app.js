@@ -1,9 +1,13 @@
 import { clientSelect, clientsPage, leadsPage, submitClientForm } from './clients.js';
+import { createOutreachPanel } from './outreach-panel.js';
 import { applicationRow, emptyReport, requirementEvidence } from './report.js';
+import { createSettingsUi } from './settings.js';
 import { shortlistPanel, submitShortlist } from './shortlists.js';
 const app = document.querySelector('#app');
 const state = {
   briefs: [],
+  settings: null,
+  createdSecret: '',
   outreachLive: null,
   clients: [],
   shortlists: [],
@@ -99,13 +103,28 @@ function shell(content) {
     jobs: 'Rekrutacje',
     clients: 'Klienci',
     leads: 'Zapytania',
+    settings: 'Ustawienia',
   };
   const pageTitle = pageTitles[state.view] || escapeHtml(state.brief?.title || 'Aplikacje');
-  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="leads" aria-current="${state.view === 'leads' ? 'page' : 'false'}">Zapytania firm</button><button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button><button data-action="outreach">Test kontrolny outreachu</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
+  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="leads" aria-current="${state.view === 'leads' ? 'page' : 'false'}">Zapytania firm</button><button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button><button data-action="settings" aria-current="${state.view === 'settings' ? 'page' : 'false'}">Ustawienia</button><button data-action="outreach">Test kontrolny outreachu</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
 }
 function alertBox(message, kind = 'error') {
   return `<div class="notice ${kind}" role="${kind === 'error' ? 'alert' : 'status'}">${escapeHtml(message)}</div>`;
 }
+const { settingsPage, submitApiKey, submitSettings } = createSettingsUi(
+  state,
+  request,
+  render,
+  escapeHtml,
+  alertBox
+);
+const { outreachPage, submitOutreachLive } = createOutreachPanel(
+  state,
+  request,
+  escapeHtml,
+  alertBox,
+  render
+);
 function jobsPage() {
   const empty =
     '<section class="panel empty-state"><h2>Brak rekrutacji</h2><p>Utwórz brief IT, aby rozpocząć proces.</p><button class="button" data-action="new">Utwórz brief</button></section>';
@@ -233,6 +252,8 @@ function render() {
     content = alertBox('Ładowanie danych…', 'loading');
   } else if (state.view === 'outreach') {
     content = outreachPage();
+  } else if (state.view === 'settings') {
+    content = settingsPage();
   } else if (state.view === 'clients') {
     content = (state.error ? alertBox(state.error) : '') + clientsPage(state.clients, escapeHtml);
   } else if (state.view === 'leads') {
@@ -333,6 +354,24 @@ document.addEventListener('click', async (event) => {
         state.view = 'jobs';
         state.brief = null;
         await loadBriefs();
+        break;
+      case 'settings':
+        state.view = 'settings';
+        state.error = '';
+        state.settings = await request('/api/v1/settings');
+        render();
+        break;
+      case 'revoke-key':
+        await request(`/api/v1/api-keys/${encodeURIComponent(button.dataset.id)}`, {
+          method: 'POST',
+          body: '{}',
+        });
+        state.settings = await request('/api/v1/settings');
+        render();
+        break;
+      case 'dismiss-secret':
+        state.createdSecret = '';
+        render();
         break;
       case 'clients':
         state.view = 'clients';
@@ -451,130 +490,98 @@ document.addEventListener('click', async (event) => {
     button.disabled = false;
   }
 });
+async function submitBrief(event) {
+  event.preventDefault();
+  const data = new FormData(event.target);
+  try {
+    const result = await request('/api/v1/briefs', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: data.get('title'),
+        stack: data.getAll('stack'),
+        seniority: data.get('seniority'),
+        salary: {
+          min: Number(data.get('min')),
+          max: Number(data.get('max')),
+          currency: data.get('currency'),
+          basis: data.get('basis'),
+          contractType: data.get('contractType'),
+        },
+        location: data.get('location'),
+        remote: data.has('remote'),
+      }),
+    });
+    await loadBriefs();
+    await openBrief(result.brief.id);
+  } catch (error) {
+    state.error = error.message;
+    render();
+  }
+}
+async function submitBriefContent(event) {
+  event.preventDefault();
+  try {
+    await request(`/api/v1/briefs/${state.brief.id}/content`, {
+      method: 'PUT',
+      body: JSON.stringify(formContent()),
+    });
+    await openBrief(state.brief.id);
+  } catch (error) {
+    state.error = error.message;
+    render();
+  }
+}
+async function submitDecision(event) {
+  event.preventDefault();
+  const form = new FormData(event.target);
+  const { submitter } = event;
+  try {
+    await request(`/api/v1/applications/${state.application.id}/decision`, {
+      method: 'POST',
+      body: JSON.stringify({
+        outcome: submitter.value,
+        reason: form.get('reason'),
+        agreedWithAi: form.get('agreedWithAi') === 'true',
+      }),
+    });
+    state.error = 'Decyzja została zapisana.';
+    await openBrief(state.brief.id);
+    state.application = state.applications.find((item) => item.id === state.application.id);
+    state.view = 'report';
+    render();
+  } catch (error) {
+    state.error = error.message;
+    render();
+  }
+}
+const submitHandlers = {
+  'api-key-form': submitApiKey,
+  'settings-form': submitSettings,
+  'shortlist-form': (event) =>
+    submitShortlist(event, state.brief.id, request, () => openBrief(state.brief.id)),
+  'outreach-live-form': (event) => {
+    event.preventDefault();
+    return submitOutreachLive(event.target);
+  },
+  'data-rights-form': (event) => {
+    event.preventDefault();
+    return submitDataRights(event);
+  },
+  'client-form': (event) => submitClientForm(event, request, loadBriefs),
+  'assignment-form': submitAssignment,
+  'brief-form': submitBrief,
+  'content-form': submitBriefContent,
+  'decision-form': submitDecision,
+};
 document.addEventListener('submit', async (event) => {
-  if (event.target.id === 'shortlist-form') {
-    await submitShortlist(event, state.brief.id, request, () => openBrief(state.brief.id));
+  const handler = submitHandlers[event.target.id];
+  if (handler) {
+    await handler(event);
     return;
-  }
-  if (event.target.id === 'outreach-live-form') {
-    event.preventDefault();
-    await submitOutreachLive(event.target);
-    return;
-  }
-  if (event.target.id === 'data-rights-form') {
-    event.preventDefault();
-    await submitDataRights(event);
-    return;
-  }
-  if (event.target.id === 'client-form') {
-    await submitClientForm(event, request, loadBriefs);
-  }
-  if (event.target.id === 'assignment-form') {
-    await submitAssignment(event);
   }
   if (event.target.matches('.lead-form, .lead-convert-form')) {
     event.preventDefault();
     await submitLeadForm(event.target);
   }
-  if (event.target.id === 'brief-form') {
-    event.preventDefault();
-    const data = new FormData(event.target);
-    try {
-      const result = await request('/api/v1/briefs', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: data.get('title'),
-          stack: data.getAll('stack'),
-          seniority: data.get('seniority'),
-          salary: {
-            min: Number(data.get('min')),
-            max: Number(data.get('max')),
-            currency: data.get('currency'),
-            basis: data.get('basis'),
-            contractType: data.get('contractType'),
-          },
-          location: data.get('location'),
-          remote: data.has('remote'),
-        }),
-      });
-      await loadBriefs();
-      await openBrief(result.brief.id);
-    } catch (error) {
-      state.error = error.message;
-      render();
-    }
-  }
-  if (event.target.id === 'content-form') {
-    event.preventDefault();
-    try {
-      await request(`/api/v1/briefs/${state.brief.id}/content`, {
-        method: 'PUT',
-        body: JSON.stringify(formContent()),
-      });
-      await openBrief(state.brief.id);
-    } catch (error) {
-      state.error = error.message;
-      render();
-    }
-  }
-  if (event.target.id === 'decision-form') {
-    event.preventDefault();
-    const { submitter } = event;
-    const form = new FormData(event.target);
-    const reason = form.get('reason');
-    try {
-      await request(`/api/v1/applications/${state.application.id}/decision`, {
-        method: 'POST',
-        body: JSON.stringify({
-          outcome: submitter.value,
-          reason,
-          agreedWithAi: form.get('agreedWithAi') === 'true',
-        }),
-      });
-      state.error = 'Decyzja została zapisana.';
-      await openBrief(state.brief.id);
-      state.application = state.applications.find((item) => item.id === state.application.id);
-      state.view = 'report';
-      render();
-    } catch (error) {
-      state.error = error.message;
-      render();
-    }
-  }
 });
-function outreachPage() {
-  const result = state.outreachLive;
-  const status = result?.outreach_live
-    ? `<p role="status">Kontakt z kandydatami odblokowany. Test: ${escapeHtml(result.control_test.date)}, raport: ${escapeHtml(result.control_test.report_id)}, wykonał(a): ${escapeHtml(result.control_test.who)}.</p>`
-    : '<p>Kontakt z kandydatami jest zablokowany. Dostępne są wyłącznie zadania kontrolne dla odbiorców z listy testowej.</p>';
-  const form = result?.outreach_live
-    ? ''
-    : `<p>Po zaliczonym teście zapisz wynik. Zapis odblokuje kontakt z prawdziwymi kandydatami i trafi do dziennika audytu.</p><form id="outreach-live-form"><label class="field">Data zaliczonego testu<input type="date" name="date" required max="${new Date().toISOString().slice(0, 10)}"></label><label class="field">Identyfikator raportu<input name="report_id" required maxlength="256"></label><label class="field">Kto wykonał test<input name="who" required maxlength="256"></label><label class="field">Hasło rekrutera<input type="password" name="password" autocomplete="current-password" required maxlength="1024"></label><button class="button primary" type="submit">Zapisz zaliczony test i odblokuj kontakt</button></form>`;
-  return `<section class="page-heading"><h1>Test kontrolny outreachu</h1></section><section class="panel">${status}${state.error ? alertBox(state.error) : ''}${form}</section>`;
-}
-async function submitOutreachLive(form) {
-  const data = new FormData(form);
-  const button = form.querySelector('button');
-  button.disabled = true;
-  button.textContent = 'Zapisywanie…';
-  try {
-    state.outreachLive = await request('/api/v1/outreach-live', {
-      method: 'POST',
-      body: JSON.stringify({
-        outreach_live: true,
-        password: data.get('password'),
-        control_test: {
-          date: data.get('date'),
-          report_id: data.get('report_id'),
-          who: data.get('who'),
-        },
-      }),
-    });
-    state.error = '';
-  } catch (error) {
-    state.error = error.message;
-  }
-  form.elements.password.value = '';
-  render();
-}
 await loadBriefs();
