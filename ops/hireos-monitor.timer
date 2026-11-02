@@ -1,0 +1,11 @@
+[Unit]
+Description=Run HireOS monitoring every five minutes
+
+[Timer]
+OnBootSec=2m
+OnUnitActiveSec=5m
+Persistent=true
+Unit=hireos-monitor.service
+
+[Install]
+WantedBy=timers.target

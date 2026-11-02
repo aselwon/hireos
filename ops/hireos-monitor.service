@@ -1,0 +1,19 @@
+[Unit]
+Description=Check HireOS health and emit operational alerts
+After=hireos-preview.service
+
+[Service]
+Type=oneshot
+User=hireos
+Group=hireos
+Environment=HIREOS_HEALTH_URL=http://127.0.0.1:4317/healthz
+Environment=HIREOS_DATA_DIR=/var/lib/hireos
+Environment=HIREOS_BACKUP_DIR=/var/backups/hireos
+Environment=HIREOS_MONITOR_STATE=/var/lib/hireos/monitor-state.json
+ExecStart=/usr/bin/node /opt/hireos/current/ops/hireos-monitor.mjs
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/hireos
+PrivateTmp=true
