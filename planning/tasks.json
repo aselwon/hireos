@@ -11,16 +11,6 @@
   "statuses": ["todo", "in_progress", "review", "done", "blocked"],
   "tasks": [
     {
-      "id": "FIXMAIN-5cbc50f",
-      "title": "Napraw czerwony main (5cbc50f)",
-      "description": "CI na main @ 5cbc50f jest czerwone: Quality: failure. Odtwórz błąd lokalnie (`npm run ci` oraz kroki z .github/workflows) i napraw go minimalną zmianą: formatowanie (np. prettier --write na zmienionych plikach), autofix lintu, zepsuty test lub konfiguracja CI. Nie zmieniaj funkcjonalności i nie usuwaj testów.",
-      "status": "todo",
-      "priority": "high",
-      "tier": "worker",
-      "harnessFixMain": true,
-      "dependsOn": []
-    },
-    {
       "id": "MVP-01",
       "title": "Migracje i schemat danych MVP",
       "description": "Wprowadź wersjonowane migracje node:sqlite (tabela schema_migrations) i tabele MVP: job_briefs, requirements, applications, cv_files, cv_profiles, profile_facts, screening_reports, decisions, outreach_tasks, task_attempts, model_calls, api_keys, audit_events. Zachowaj działanie obecnego demo.",
