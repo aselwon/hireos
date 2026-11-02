@@ -1,9 +1,11 @@
 import { clientSelect, clientsPage, submitClientForm } from './clients.js';
+import { shortlistPanel, submitShortlist } from './shortlists.js';
 
 const app = document.querySelector('#app');
 const state = {
   briefs: [],
   clients: [],
+  shortlists: [],
   brief: null,
   applications: [],
   view: 'jobs',
@@ -73,6 +75,9 @@ async function openBrief(id) {
     state.applications = (
       await request(`/api/v1/briefs/${encodeURIComponent(id)}/applications`)
     ).applications;
+    state.shortlists = (
+      await request(`/api/v1/shortlists?briefId=${encodeURIComponent(id)}`)
+    ).shortlists;
     state.view = 'brief';
   } catch (error) {
     state.error = error.message;
@@ -272,6 +277,9 @@ function render() {
   } else if (state.view === 'report' && state.application) {
     content = reportPage();
   }
+  if (['brief', 'applications'].includes(state.view) && !state.loading) {
+    content += shortlistPanel(state.brief, state.applications, state.shortlists, escapeHtml);
+  }
   app.innerHTML = shell(content);
   const heading = app.querySelector('h1');
   if (heading) {
@@ -418,15 +426,37 @@ async function submitAssignment(event) {
     });
     if (state.brief?.id === briefId) {
       state.brief.client_id = clientId;
+      render();
     }
-    form.querySelector('#assignment-message').textContent = 'Przypisanie zapisane.';
+    document.querySelector('#assignment-message').textContent = 'Przypisanie zapisane.';
   } catch (error) {
     form.querySelector('#assignment-message').textContent = error.message;
   } finally {
     button.disabled = false;
   }
 }
+document.addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-revoke-shortlist]');
+  if (!button) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    await request(`/api/v1/shortlists/${button.dataset.revokeShortlist}/revoke`, {
+      method: 'POST',
+      body: '{}',
+    });
+    await openBrief(state.brief.id);
+  } catch (error) {
+    document.querySelector('#shortlist-message').textContent = error.message;
+    button.disabled = false;
+  }
+});
 document.addEventListener('submit', async (event) => {
+  if (event.target.id === 'shortlist-form') {
+    await submitShortlist(event, state.brief.id, request, () => openBrief(state.brief.id));
+    return;
+  }
   if (event.target.id === 'data-rights-form') {
     event.preventDefault();
     await submitDataRights(event);
