@@ -109,7 +109,7 @@ test('migration closes gate on existing database without changing limits or lega
   try {
     migrate(db);
     db.exec(
-      'DROP TABLE outreach_live_settings; DROP TABLE billing_events; DELETE FROM schema_migrations WHERE version IN (15, 16)'
+      'DROP TABLE outreach_live_settings; DROP TABLE billing_events; DROP TABLE shortlists; DROP TABLE shortlist_members; DROP TABLE shortlist_requests; DELETE FROM schema_migrations WHERE version IN (15, 16, 17)'
     );
     const before = db.prepare('SELECT * FROM outreach_settings').get();
     migrate(db);
