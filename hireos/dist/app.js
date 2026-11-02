@@ -15,6 +15,22 @@ const escapeHtml = (value) =>
     (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
   );
 const key = () => crypto.randomUUID();
+const seniorityLabels = { junior: 'początkujący', mid: 'średni', senior: 'starszy', lead: 'lider' };
+const stageLabels = {
+  applied: 'Aplikacja',
+  screening: 'Weryfikacja',
+  interview: 'Rozmowa',
+  offer: 'Oferta',
+  hired: 'Zatrudniony',
+  rejected: 'Odrzucony',
+};
+const cvStatusLabels = {
+  pending: 'Oczekuje',
+  queued: 'W kolejce',
+  processing: 'Przetwarzanie',
+  completed: 'Gotowe',
+  failed: 'Nie udało się przetworzyć',
+};
 async function request(path, options = {}) {
   const response = await fetch(path, {
     ...options,
@@ -98,7 +114,7 @@ function briefForm() {
   const addButton = editing
     ? '<button class="button secondary small" type="button" data-action="add-requirement">Dodaj wymaganie</button>'
     : '';
-  return `<section class="page-heading"><div><div class="eyebrow">${status}</div><h1>${escapeHtml(b.title)}</h1><p>${escapeHtml((b.stack || []).join(' · '))} · ${escapeHtml(b.seniority)}</p></div><button class="button secondary" data-action="applications">Aplikacje (${state.applications.length})</button></section>${error}<section class="panel"><div class="panel-head"><div><h2>Ogłoszenie i macierz wymagań</h2><p>Przejrzyj treść przed zatwierdzeniem.</p></div></div><form id="content-form"><label class="field">Treść ogłoszenia<textarea name="advertisement" required rows="8">${escapeHtml(b.advertisement || '')}</textarea></label><div class="panel-head"><h3>Wymagania</h3>${addButton}</div><div id="requirements">${requirements}</div>${actions}</form></section>${applicationList()}`;
+  return `<section class="page-heading"><div><div class="eyebrow">${status}</div><h1>${escapeHtml(b.title)}</h1><p>${escapeHtml((b.stack || []).join(' · '))} · ${seniorityLabels[b.seniority] || escapeHtml(b.seniority)}</p></div><button class="button secondary" data-action="applications">Aplikacje (${state.applications.length})</button></section>${error}<section class="panel"><div class="panel-head"><div><h2>Ogłoszenie i macierz wymagań</h2><p>Przejrzyj treść przed zatwierdzeniem.</p></div></div><form id="content-form"><label class="field">Treść ogłoszenia<textarea name="advertisement" required rows="8">${escapeHtml(b.advertisement || '')}</textarea></label><div class="panel-head"><h3>Wymagania</h3>${addButton}</div><div id="requirements">${requirements}</div>${actions}</form></section>${applicationList()}`;
 }
 function requirementRow(r) {
   const options = [1, 2, 3]
@@ -106,7 +122,7 @@ function requirementRow(r) {
     .join('');
   const must = r.priority === 'must' ? 'selected' : '';
   const nice = r.priority === 'nice' ? 'selected' : '';
-  return `<div class="mvp-requirement"><label class="field">Wymaganie<input name="description" value="${escapeHtml(r.description)}" required maxlength="500"></label><label class="field">Typ<select name="priority"><option value="must" ${must}>Must-have</option><option value="nice" ${nice}>Nice-to-have</option></select></label><label class="field">Waga<select name="weight">${options}</select></label></div>`;
+  return `<div class="mvp-requirement"><label class="field">Wymaganie<input name="description" value="${escapeHtml(r.description)}" required maxlength="500"></label><label class="field">Typ<select name="priority"><option value="must" ${must}>Wymagane</option><option value="nice" ${nice}>Dodatkowe</option></select></label><label class="field">Waga<select name="weight">${options}</select></label></div>`;
 }
 function applicationList() {
   const rows = state.applications.map(applicationRow).join('');
@@ -130,12 +146,12 @@ function applicationStatus(application) {
   }
   const ready = application.profileStatus === 'completed';
   const className = ready ? '' : 'gray';
-  const label = ready ? 'Profil gotowy' : escapeHtml(application.cvStatus || 'Oczekuje');
+  const label = ready ? 'Profil gotowy' : cvStatusLabels[application.cvStatus] || 'Oczekuje';
   return `<span class="tag ${className}">${label}</span>`;
 }
 function applicationRow(application) {
   const status = applicationStatus(application);
-  return `<tr><td><b>${escapeHtml(application.name)}</b><small>${escapeHtml(application.email)}</small></td><td>${escapeHtml(application.stage)}</td><td>${status}</td><td><button class="text-button" data-action="report" data-id="${escapeHtml(application.id)}">Otwórz raport →</button></td></tr>`;
+  return `<tr><td><b>${escapeHtml(application.name)}</b><small>${escapeHtml(application.email)}</small></td><td>${stageLabels[application.stage] || escapeHtml(application.stage)}</td><td>${status}</td><td><button class="text-button" data-action="report" data-id="${escapeHtml(application.id)}">Otwórz raport →</button></td></tr>`;
 }
 function reportPage() {
   const a = state.application;
@@ -153,13 +169,13 @@ function reportPage() {
   const reportAction =
     report || a.processingStatus === 'queued'
       ? ''
-      : '<button class="button" data-action="screening">Utwórz raport</button>';
+      : '<button class="button" data-action="screening">Utwórz raport oceny</button>';
   const reportBody = report ? quoteItems : emptyReport(a);
-  return `<section class="page-heading"><div><div class="eyebrow">RAPORT SCREENINGOWY</div><h1>${escapeHtml(a.name)}</h1><p>${escapeHtml(a.email)} · ${escapeHtml(state.brief.title)}</p></div><button class="button secondary" data-action="applications">Wróć do aplikacji</button></section>${error}${manualReview}${uncertain}<section class="panel"><div class="panel-head"><div><h2>Wymaganie → dowody</h2><p>Brak dowodu nie oznacza braku kompetencji.</p></div>${reportAction}</div>${reportBody}</section>${decisionPanel()}${dataRightsPanel()}`;
+  return `<section class="page-heading"><div><div class="eyebrow">RAPORT OCENY</div><h1>${escapeHtml(a.name)}</h1><p>${escapeHtml(a.email)} · ${escapeHtml(state.brief.title)}</p></div><button class="button secondary" data-action="applications">Wróć do aplikacji</button></section>${error}${manualReview}${uncertain}<section class="panel"><div class="panel-head"><div><h2>Wymaganie → dowody</h2><p>Brak dowodu nie oznacza braku kompetencji.</p></div>${reportAction}</div>${reportBody}</section>${decisionPanel()}${dataRightsPanel()}`;
 }
 function emptyReport(application) {
   if (application.processingStatus === 'queued') {
-    return '<div class="empty">W kolejce — profil i raport powstaną automatycznie. Po wyczerpaniu limitu AI praca zostanie wznowiona po 00:00 UTC. Wróć do aplikacji, aby odświeżyć status.</div>';
+    return '<div class="empty">W kolejce — profil i raport powstaną automatycznie. Po wyczerpaniu limitu AI praca zostanie wznowiona o 00:00 UTC. Wróć do aplikacji, aby odświeżyć status.</div>';
   }
   const message = application.profile
     ? 'Raport nie został jeszcze utworzony.'
@@ -280,7 +296,7 @@ function newBriefDialog() {
         `<label><input type="checkbox" name="stack" value="${technology}"> ${technology}</label>`
     )
     .join('');
-  const body = `<section class="panel"><h2>Nowy brief IT</h2><form id="brief-form"><label class="field">Stanowisko<input name="title" required maxlength="160"></label><fieldset><legend>Stack (wybierz min. jedną technologię)</legend><div class="chip-list">${stackOptions}</div></fieldset><label class="field">Seniority<select name="seniority"><option>junior</option><option>mid</option><option>senior</option><option>lead</option></select></label><div class="mvp-requirement"><label class="field">Widełki od<input name="min" type="number" min="0" required></label><label class="field">Do<input name="max" type="number" min="0" required></label><label class="field">Waluta<select name="currency"><option>PLN</option><option>EUR</option><option>USD</option></select></label></div><div class="mvp-requirement"><label class="field">Kwota<select name="basis"><option value="gross">Brutto</option><option value="net">Netto</option></select></label><label class="field">Umowa<select name="contractType"><option value="b2b">B2B</option><option value="employment">UoP</option></select></label><label class="field">Lokalizacja<input name="location" placeholder="Warszawa"></label></div><label><input name="remote" type="checkbox"> Praca zdalna</label><button class="button" type="submit">Utwórz brief</button></form><button class="text-button" data-action="jobs">Anuluj</button></section>`;
+  const body = `<section class="panel"><h2>Nowy brief IT</h2><form id="brief-form"><label class="field">Stanowisko<input name="title" required maxlength="160"></label><fieldset><legend>Technologie (wybierz min. jedną)</legend><div class="chip-list">${stackOptions}</div></fieldset><label class="field">Poziom<select name="seniority"><option value="junior">Początkujący</option><option value="mid">Średni</option><option value="senior">Starszy</option><option value="lead">Lider</option></select></label><div class="mvp-requirement"><label class="field">Widełki od<input name="min" type="number" min="0" required></label><label class="field">Do<input name="max" type="number" min="0" required></label><label class="field">Waluta<select name="currency"><option>PLN</option><option>EUR</option><option>USD</option></select></label></div><div class="mvp-requirement"><label class="field">Kwota<select name="basis"><option value="gross">Brutto</option><option value="net">Netto</option></select></label><label class="field">Umowa<select name="contractType"><option value="b2b">B2B</option><option value="employment">Umowa o pracę</option></select></label><label class="field">Lokalizacja<input name="location" placeholder="Warszawa"></label></div><label><input name="remote" type="checkbox"> Praca zdalna</label><button class="button" type="submit">Utwórz brief</button></form><button class="text-button" data-action="jobs">Anuluj</button></section>`;
   app.innerHTML = shell(body);
   document.querySelector('#brief-form [name=title]').focus();
 }
@@ -358,7 +374,7 @@ document.addEventListener('click', async (event) => {
           .querySelector('#requirements')
           .insertAdjacentHTML(
             'beforeend',
-            '<div class="mvp-requirement"><label class="field">Wymaganie<input name="description" required maxlength="500"></label><label class="field">Typ<select name="priority"><option value="must">Must-have</option><option value="nice">Nice-to-have</option></select></label><label class="field">Waga<select name="weight"><option>1</option><option>2</option><option>3</option></select></label></div>'
+            '<div class="mvp-requirement"><label class="field">Wymaganie<input name="description" required maxlength="500"></label><label class="field">Typ<select name="priority"><option value="must">Wymagane</option><option value="nice">Dodatkowe</option></select></label><label class="field">Waga<select name="weight"><option>1</option><option>2</option><option>3</option></select></label></div>'
           );
         document.querySelector('#requirements .mvp-requirement:last-child input').focus();
         break;
