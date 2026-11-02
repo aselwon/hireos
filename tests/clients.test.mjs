@@ -51,7 +51,7 @@ test('011 upgrades populated version 005 without changing recruitment data', () 
     assert.throws(() => db.exec("UPDATE job_briefs SET client_id='missing'"), /FOREIGN KEY/);
     assert.throws(() => db.exec('DELETE FROM clients'), /FOREIGN KEY/);
     assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(), []);
-    assert.equal(db.prepare('SELECT count(*) AS count FROM schema_migrations').get().count, 14);
+    assert.equal(db.prepare('SELECT count(*) AS count FROM schema_migrations').get().count, 15);
   } finally {
     db.close();
   }

@@ -1,8 +1,9 @@
-import { clientSelect, clientsPage, submitClientForm } from './clients.js';
+import { clientSelect, clientsPage, leadsPage, submitClientForm } from './clients.js';
 
 const app = document.querySelector('#app');
 const state = {
   briefs: [],
+  outreachLive: null,
   clients: [],
   leads: [],
   brief: null,
@@ -88,36 +89,16 @@ function shell(content) {
   const applicationsNav = state.brief
     ? `<button data-action="applications" aria-current="${navCurrent}">Aplikacje <span class="count">${state.applications.length}</span></button>`
     : '';
-  const pageTitles = { jobs: 'Rekrutacje', clients: 'Klienci', leads: 'Zapytania' };
-  const pageTitle = pageTitles[state.view] || escapeHtml(state.brief?.title || 'Aplikacje');
-  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="leads" aria-current="${state.view === 'leads' ? 'page' : 'false'}">Zapytania firm</button><button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
-}
-function leadsPage() {
-  const labels = {
-    new: 'Nowy',
-    contacted: 'W kontakcie',
-    offer: 'Oferta',
-    won: 'Wygrany',
-    lost: 'Przegrany',
+  const pageTitles = {
+    outreach: 'Test kontrolny outreachu',
+    jobs: 'Rekrutacje',
+    clients: 'Klienci',
+    leads: 'Zapytania',
   };
-  const cards = state.leads
-    .filter((lead) => !lead.client_id)
-    .map(
-      (lead) =>
-        `<article class="panel client-panel"><h2>${escapeHtml(lead.company)}</h2><p>${escapeHtml(lead.contact)} · ${escapeHtml(lead.position)}</p><p>Otrzymano: ${escapeHtml(lead.created_at)}</p><form class="lead-form" data-id="${escapeHtml(lead.id)}"><label class="field">Status<select name="status">${Object.entries(
-          labels
-        )
-          .map(
-            ([value, label]) =>
-              `<option value="${value}" ${lead.status === value ? 'selected' : ''}>${label}</option>`
-          )
-          .join(
-            ''
-          )}</select></label><label class="field">Notatki<textarea name="notes" maxlength="5000">${escapeHtml(lead.notes)}</textarea></label><button class="button secondary" type="submit">Zapisz</button></form><form class="lead-convert-form" data-id="${escapeHtml(lead.id)}"><h3>Konwertuj w klienta</h3><label class="field">NIP<input name="nip" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric"></label><label class="field">Model rozliczenia<select name="billingModel"><option value="success_fee">Success fee (%)</option><option value="fixed_fee">Stała opłata (PLN)</option></select></label><label class="field">Wartość (procent lub PLN)<input name="fee" type="number" min="0" step="0.01" required></label><label class="field">Zaliczka (PLN)<input name="advance" type="number" min="0" step="0.01" required></label><button class="button" type="submit">Utwórz klienta</button></form></article>`
-    )
-    .join('');
-  return `<section class="page-heading"><div><h1>Zapytania od firm</h1><p>Leady z formularza, statusy i konwersja do klientów.</p></div></section>${state.error ? alertBox(state.error) : ''}${cards || '<section class="panel client-panel"><h2>Brak aktywnych zapytań</h2></section>'}`;
+  const pageTitle = pageTitles[state.view] || escapeHtml(state.brief?.title || 'Aplikacje');
+  return `<div class="mvp-shell"><aside class="mvp-sidebar"><a class="mvp-brand" href="#jobs">HireOS</a><nav aria-label="Nawigacja główna"><button data-action="jobs" aria-current="${state.view === 'jobs' ? 'page' : 'false'}">Rekrutacje</button>${applicationsNav}<button data-action="leads" aria-current="${state.view === 'leads' ? 'page' : 'false'}">Zapytania firm</button><button data-action="clients" aria-current="${state.view === 'clients' ? 'page' : 'false'}">Klienci</button><button data-action="outreach">Test kontrolny outreachu</button></nav><p class="mvp-caption">Panel rekrutera · MVP IT</p></aside><main class="mvp-main"><header class="mvp-top"><span>HireOS / ${pageTitle}</span><span class="tag gray">Panel rekrutera</span></header><div class="mvp-content">${content}<footer class="footer">Dane kandydatów są poufne · decyzję podejmuje rekruter</footer></div></main></div>`;
 }
+
 function alertBox(message, kind = 'error') {
   return `<div class="notice ${kind}" role="${kind === 'error' ? 'alert' : 'status'}">${escapeHtml(message)}</div>`;
 }
@@ -291,10 +272,12 @@ function render() {
   let content = jobsPage();
   if (state.loading) {
     content = alertBox('Ładowanie danych…', 'loading');
+  } else if (state.view === 'outreach') {
+    content = outreachPage();
   } else if (state.view === 'clients') {
     content = (state.error ? alertBox(state.error) : '') + clientsPage(state.clients, escapeHtml);
   } else if (state.view === 'leads') {
-    content = leadsPage();
+    content = leadsPage(state.leads, state.error, escapeHtml, alertBox);
   } else if (state.view === 'brief') {
     content = briefForm();
   } else if (state.view === 'applications') {
@@ -378,6 +361,12 @@ document.addEventListener('click', async (event) => {
   }
   try {
     switch (button.dataset.action) {
+      case 'outreach':
+        state.outreachLive = await request('/api/v1/outreach-live');
+        state.error = '';
+        state.view = 'outreach';
+        render();
+        break;
       case 'jobs':
         state.view = 'jobs';
         state.brief = null;
@@ -483,6 +472,16 @@ async function submitAssignment(event) {
   }
 }
 document.addEventListener('submit', async (event) => {
+  if (event.target.id === 'outreach-live-form') {
+    event.preventDefault();
+    await submitOutreachLive(event.target);
+    return;
+  }
+  if (event.target.id === 'outreach-live-form') {
+    event.preventDefault();
+    await submitOutreachLive(event.target);
+    return;
+  }
   if (event.target.id === 'data-rights-form') {
     event.preventDefault();
     await submitDataRights(event);
@@ -564,4 +563,40 @@ document.addEventListener('submit', async (event) => {
     }
   }
 });
+function outreachPage() {
+  const result = state.outreachLive;
+  const status = result?.outreach_live
+    ? `<p role="status">Kontakt z kandydatami odblokowany. Test: ${escapeHtml(result.control_test.date)}, raport: ${escapeHtml(result.control_test.report_id)}, wykonał(a): ${escapeHtml(result.control_test.who)}.</p>`
+    : '<p>Kontakt z kandydatami jest zablokowany. Dostępne są wyłącznie zadania kontrolne dla odbiorców z listy testowej.</p>';
+  const form = result?.outreach_live
+    ? ''
+    : `<p>Po zaliczonym teście zapisz wynik. Zapis odblokuje kontakt z prawdziwymi kandydatami i trafi do dziennika audytu.</p><form id="outreach-live-form"><label class="field">Data zaliczonego testu<input type="date" name="date" required max="${new Date().toISOString().slice(0, 10)}"></label><label class="field">Identyfikator raportu<input name="report_id" required maxlength="256"></label><label class="field">Kto wykonał test<input name="who" required maxlength="256"></label><label class="field">Hasło rekrutera<input type="password" name="password" autocomplete="current-password" required maxlength="1024"></label><button class="button primary" type="submit">Zapisz zaliczony test i odblokuj kontakt</button></form>`;
+  return `<section class="page-heading"><h1>Test kontrolny outreachu</h1></section><section class="panel">${status}${state.error ? alertBox(state.error) : ''}${form}</section>`;
+}
+async function submitOutreachLive(form) {
+  const data = new FormData(form);
+  const button = form.querySelector('button');
+  button.disabled = true;
+  button.textContent = 'Zapisywanie…';
+  try {
+    state.outreachLive = await request('/api/v1/outreach-live', {
+      method: 'POST',
+      body: JSON.stringify({
+        outreach_live: true,
+        password: data.get('password'),
+        control_test: {
+          date: data.get('date'),
+          report_id: data.get('report_id'),
+          who: data.get('who'),
+        },
+      }),
+    });
+    state.error = '';
+  } catch (error) {
+    state.error = error.message;
+  }
+  form.elements.password.value = '';
+  render();
+}
+
 await loadBriefs();

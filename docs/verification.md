@@ -187,3 +187,44 @@ raport ma zawierać dowody z API i wykonawcy oraz kontrolowanego wątku.
 - Ograniczony i odwoływalny klucz (401): **niezweryfikowany w integracji**.
 - Sprzątnięcie testu / odwołanie kluczy / brak aktywnej rutyny: **niezweryfikowane**.
 - Decyzja właściciela / data / odnośniki do dowodów: **brak; kontakt z prawdziwymi kandydatami niedopuszczony**.
+
+## Bramka testu kontrolnego przed kontaktem (MVP-40)
+
+Domyślnie `outreach_live=false`, również po migracji istniejącej bazy.
+Właściciel konfiguruje `OUTREACH_CONTROL_ALLOWLIST` jako adresy e-mail odbiorców
+kontrolnych rozdzielone przecinkami (np. `kontrola@example.test`). Pusta lista
+blokuje wszystkie zadania przed zaliczeniem testu. Porównanie adresu z pola
+`applications.email` pomija wielkość liter i skrajne spacje; brak wildcardów.
+Adres musi identyfikować kontrolowanego odbiorcę także w używanym kanale outreachu.
+Zmiana konfiguracji wymaga ponownego uruchomienia procesu przez właściciela.
+
+1. Utwórz zadanie kontrolne przez `POST /api/v1/tasks`, dodając
+   `control_recipient: true` do zwykłego payloadu zadania. Adres kandydata musi
+   znajdować się na allowliście. Sam znacznik nie wystarcza. Włącz również limity
+   outreachu zgodnie z [opisem limitów](outreach-limits.md).
+2. Wykonaj test na kontrolowanym odbiorcy: pełny przepływ, odmowa, pauza,
+   przejęcie i brak duplikatów. Zachowaj raport z wynikami; nie zapisuj sukcesu,
+   jeśli dowolny wymagany scenariusz zawiódł.
+3. Zaloguj się do panelu jako rekruter i otwórz **Test kontrolny outreachu**.
+   Podaj datę zaliczonego testu, identyfikator raportu, osobę wykonującą test
+   oraz ponownie hasło rekrutera. Wybierz **Zapisz zaliczony test i odblokuj kontakt**.
+4. Sprawdź status odblokowania i dane raportu w panelu. Zapis jest trwały,
+   transakcyjny, idempotentny i tworzy zdarzenie `outreach_live_enabled`
+   w `audit_events` z aktorem sesji, poprzednim i nowym stanem. Hasło nie jest
+   zapisywane w audycie ani cache żądań. Raport stanowi oświadczenie właściciela;
+   aplikacja nie ocenia automatycznie jego zawartości.
+
+Panel korzysta z `GET/POST /api/v1/outreach-live`. POST wymaga sesji, hasła,
+`Idempotency-Key` oraz `{outreach_live:true, control_test:{date,report_id,who}}`.
+Klucze API, w tym `admin`, nie mogą odblokować bramki. Agent nie powinien
+wykonywać tego kroku: zapis wyniku należy do właściciela. Po pięciu próbach
+potwierdzenia hasła obowiązuje blokada na 15 minut.
+Przed zaliczeniem testu claim zwykłego zadania zwraca HTTP 403 z kodem
+`control_test_required`, bez rezerwacji i naliczenia limitu. Jeżeli kolejka
+zawiera poprawne zadanie kontrolne, zostanie wybrane zamiast zwykłego.
+Preflight i ponowienie claim ponownie sprawdzają bramkę oraz odbiorcę.
+
+Weryfikacja lokalna: `node --experimental-sqlite --test tests/outreach-live.test.mjs`.
+Poza sandboxem sprawdź panel w przeglądarce (telefon i desktop), komunikaty
+błędu hasła, stan po odświeżeniu oraz rzeczywisty raport testu kontrolnego.
+Nie wykonuj kontaktu z prawdziwymi kandydatami w ramach weryfikacji kodu.
